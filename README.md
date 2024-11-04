@@ -1,36 +1,220 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Reports
+No description available
 
-## Getting Started
 
-First, run the development server:
+Language: Javascript
+Columns
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Name	Format	Type	Description
+id	
+bigint
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+number	
+created_at	
+timestamp with time zone
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+string	
+tb_name	
+text
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+string	
+descript	
+text
 
-## Learn More
+string	
+corporation	
+text
 
-To learn more about Next.js, take a look at the following resources:
+string	
+data	
+jsonb
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+json	
+id_table	
+bigint[]
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+array	
+user_id	
+uuid
 
-## Deploy on Vercel
+string	
+report_type	
+public.report_type
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+string	
+is_active	
+boolean
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+boolean	
+updated_at	
+timestamp with time zone
+
+string	
+Read rows
+Documentation
+To read rows in this table, use the select method.
+
+Read all rows
+
+let { data: Reports, error } = await supabase
+  .from('Reports')
+  .select('*')
+Read specific columns
+
+let { data: Reports, error } = await supabase
+  .from('Reports')
+  .select('some_column,other_column')
+Read referenced tables
+
+let { data: Reports, error } = await supabase
+  .from('Reports')
+  .select(`
+    some_column,
+    other_table (
+      foreign_key
+    )
+  `)
+With pagination
+
+let { data: Reports, error } = await supabase
+  .from('Reports')
+  .select('*')
+  .range(0, 9)
+Filtering
+Documentation
+Supabase provides a wide range of filters
+
+With filtering
+
+let { data: Reports, error } = await supabase
+  .from('Reports')
+  .select("*")
+
+  // Filters
+  .eq('column', 'Equal to')
+  .gt('column', 'Greater than')
+  .lt('column', 'Less than')
+  .gte('column', 'Greater than or equal to')
+  .lte('column', 'Less than or equal to')
+  .like('column', '%CaseSensitive%')
+  .ilike('column', '%CaseInsensitive%')
+  .is('column', null)
+  .in('column', ['Array', 'Values'])
+  .neq('column', 'Not equal to')
+
+  // Arrays
+  .contains('array_column', ['array', 'contains'])
+  .containedBy('array_column', ['contained', 'by'])
+Insert rows
+Documentation
+insert lets you insert into your tables. You can also insert in bulk and do UPSERT.
+
+insert will also return the replaced values for UPSERT.
+
+Insert a row
+
+const { data, error } = await supabase
+  .from('Reports')
+  .insert([
+    { some_column: 'someValue', other_column: 'otherValue' },
+  ])
+  .select()
+Insert many rows
+
+const { data, error } = await supabase
+  .from('Reports')
+  .insert([
+    { some_column: 'someValue' },
+    { some_column: 'otherValue' },
+  ])
+  .select()
+Upsert matching rows
+
+const { data, error } = await supabase
+  .from('Reports')
+  .upsert({ some_column: 'someValue' })
+  .select()
+Update rows
+Documentation
+update lets you update rows. update will match all rows by default. You can update specific rows using horizontal filters, e.g. eq, lt, and is.
+
+update will also return the replaced values for UPDATE.
+
+Update matching rows
+
+const { data, error } = await supabase
+  .from('Reports')
+  .update({ other_column: 'otherValue' })
+  .eq('some_column', 'someValue')
+  .select()
+Delete rows
+Documentation
+delete lets you delete rows. delete will match all rows by default, so remember to specify your filters!
+
+Delete matching rows
+
+const { error } = await supabase
+  .from('Reports')
+  .delete()
+  .eq('some_column', 'someValue')
+Subscribe to changes
+Documentation
+Supabase provides realtime functionality and broadcasts database changes to authorized users depending on Row Level Security (RLS) policies.
+
+Subscribe to all events
+
+const channels = supabase.channel('custom-all-channel')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'Reports' },
+    (payload) => {
+      console.log('Change received!', payload)
+    }
+  )
+  .subscribe()
+Subscribe to inserts
+
+const channels = supabase.channel('custom-insert-channel')
+  .on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'Reports' },
+    (payload) => {
+      console.log('Change received!', payload)
+    }
+  )
+  .subscribe()
+Subscribe to updates
+
+const channels = supabase.channel('custom-update-channel')
+  .on(
+    'postgres_changes',
+    { event: 'UPDATE', schema: 'public', table: 'Reports' },
+    (payload) => {
+      console.log('Change received!', payload)
+    }
+  )
+  .subscribe()
+
+Copy
+Subscribe to deletes
+
+const channels = supabase.channel('custom-delete-channel')
+  .on(
+    'postgres_changes',
+    { event: 'DELETE', schema: 'public', table: 'Reports' },
+    (payload) => {
+      console.log('Change received!', payload)
+    }
+  )
+  .subscribe()
+Subscribe to specific rows
+
+const channels = supabase.channel('custom-filter-channel')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'Reports', filter: 'some_column=eq.some_value' },
+    (payload) => {
+      console.log('Change received!', payload)
+    }
+  )
+  .subscribe()

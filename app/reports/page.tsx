@@ -1,17 +1,17 @@
 "use client"
 
-import { SidebarDemo } from "@/components/main/mailbar";
-import Dashboard from "@/components/main/rightbar";
+import { SidebarDemo } from "@/components/main/mailbar"
+import ReportTable from "@/components/main/ReportTable"
+import Dashboard from "@/components/main/rightbar"
 
-
-export default function Home() {
+export default function ReportsPage() {
   return (
-    <div className="h-screen w-screen">
+    <div className="h-screen w-screen bg-neutral-950">
       <SidebarDemo>
         <Dashboard>
-        <h1>Reports</h1>
+          <ReportTable />
         </Dashboard>
       </SidebarDemo>
     </div>
-  );
+  )
 }

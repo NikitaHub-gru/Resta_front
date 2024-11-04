@@ -81,15 +81,30 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
         <IconReportAnalytics className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-    {
-        label: "Пользователи",
-        href: "/users",
-        icon: (
-          <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-        ),
-      },
 
   ];
+
+const adminLinks = [
+  {
+    label: "Админка",
+    href: "#",
+    className: "py-4 gap-2 ",
+  },
+  {
+    label: "Настройки",
+    href: "/reportsSettings",
+    icon: (
+      <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "Пользователи",
+    href: "/users",
+    icon: (
+      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+]
 
   return (
     <div
@@ -107,7 +122,13 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
+            <div className="mt-8 flex justify-start flex-col gap-2">
+              {adminLinks.map((link, idx) => (
+                <SidebarLink key={idx} link={link} />
+              ))}
+            </div>
           </div>
+
           <div>
             <SidebarLink 
               link={{

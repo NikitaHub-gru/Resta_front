@@ -1,0 +1,1352 @@
+[
+  {
+    "param": "PercentOfSummary.ByCol",
+    "name": "% по столбцу",
+    "filteringAllowed": false
+  },
+  {
+    "param": "PercentOfSummary.ByRow",
+    "name": "% по строке",
+    "filteringAllowed": false
+  },
+  {
+    "param": "CloseTime.Minutes15",
+    "name": "15-минутный интервал закрытия",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OpenTime.Minutes15",
+    "name": "15-минутный интервал открытия",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEventDiscountType.ComboId",
+    "name": "ID Комбо",
+    "filteringAllowed": true
+  },
+  {
+    "param": "AuthUser.Id",
+    "name": "ID авторизовавшего",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishId",
+    "name": "ID блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WaiterTeam.Id",
+    "name": "ID бригады официантов",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishCategory.Accounting.Id",
+    "name": "ID бухгалтерской категории блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "GroupOrderId",
+    "name": "ID группового заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "RestorauntGroup.Id",
+    "name": "ID группы",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup.Id",
+    "name": "ID группы блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Id",
+    "name": "ID доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "UniqOrderId.Id",
+    "name": "ID заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SourceOrderId",
+    "name": "ID заказа-источника",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cashier.Id",
+    "name": "ID кассира",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SessionID",
+    "name": "ID кассовой смены",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishCategory.Id",
+    "name": "ID категории блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Courier.Id",
+    "name": "ID курьера",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CookingPlace.Id",
+    "name": "ID места приготовления",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishTaxCategory.Id",
+    "name": "ID налоговой категории",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.DeliveryOperator.Id",
+    "name": "ID оператора доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SoldWithDish.Id",
+    "name": "ID основного блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "RestaurantSection.Id",
+    "name": "ID отделения",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WaiterName.ID",
+    "name": "ID официанта блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderWaiter.Id",
+    "name": "ID официанта заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Id",
+    "name": "ID подразделения",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEvent.Id",
+    "name": "ID позиции заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SoldWithItem.Id",
+    "name": "ID позиции заказа основного блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishTags.IdsCombo",
+    "name": "ID пользовательских свойств (комб.)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishTag.Id",
+    "name": "ID пользовательского свойства",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PaymentTransaction.Id",
+    "name": "ID проводки оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PaymentTransaction.Ids",
+    "name": "ID проводок оплат (комб.)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEventDiscountType.ComboSizeId",
+    "name": "ID размера Комбо",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishSize.Id",
+    "name": "ID размера блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Store.Id",
+    "name": "ID склада",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderType.Id",
+    "name": "ID типа заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PayTypes.GUID",
+    "name": "ID типа оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderIncrease.Type.IDs",
+    "name": "ID типов надбавок",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderDiscount.Type.IDs",
+    "name": "ID типов скидок",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishSize.Scale.Id",
+    "name": "ID шкалы размеров блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Email",
+    "name": "e-mail доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "AuthUser",
+    "name": "Авторизовал",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Address",
+    "name": "Адрес",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Banquet",
+    "name": "Банкет",
+    "filteringAllowed": true
+  },
+  {
+    "param": "NonCashPaymentType",
+    "name": "Безналичный тип оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishName",
+    "name": "Блюдо",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DeletedWithWriteoff",
+    "name": "Блюдо удалено",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WaiterTeam.Name",
+    "name": "Бригада официантов",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishCategory.Accounting",
+    "name": "Бухгалтерская категория блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CreditUser",
+    "name": "В кредит на...",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Currencies.Currency",
+    "name": "Валюта оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CardOwner",
+    "name": "Владелец карты гостя",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ExternalNumber",
+    "name": "Внешний номер заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Storned",
+    "name": "Возврат чека",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderTime.PrechequeLength",
+    "name": "Время в пречеке (мин)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.WayDuration",
+    "name": "Время в пути(мин)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CloseTime",
+    "name": "Время закрытия",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CloseTime",
+    "name": "Время закрытия доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderTime.OrderLengthSum",
+    "name": "Время обсл.сумм.(мин)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "OrderTime.OrderLength",
+    "name": "Время обслуживания (мин)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CookingFinishTime",
+    "name": "Время окончания приготовления",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OpenTime",
+    "name": "Время открытия",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.SendTime",
+    "name": "Время отправки доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.PrintTime",
+    "name": "Время печати доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.BillTime",
+    "name": "Время печати накладной",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PrechequeTime",
+    "name": "Время пречека",
+    "filteringAllowed": true
+  },
+  {
+    "param": "YearOpen",
+    "name": "Год",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.City",
+    "name": "Город",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderDiscount.GuestCard",
+    "name": "Гостевая карта",
+    "filteringAllowed": true
+  },
+  {
+    "param": "RestorauntGroup",
+    "name": "Группа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup",
+    "name": "Группа блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup.TopParent",
+    "name": "Группа блюда 1-го уровня",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup.SecondParent",
+    "name": "Группа блюда 2-го уровня",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup.ThirdParent",
+    "name": "Группа блюда 3-го уровня",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PayTypes.Group",
+    "name": "Группа оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerCreatedDateTyped",
+    "name": "Дата создания клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DayOfWeekOpen",
+    "name": "День недели",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishServicePrintTime.OpenToLastPrintDuration",
+    "name": "Длит: откр.-посл.серв.печать",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.CookingToSendDuration",
+    "name": "Длит: посл.серв.печать-отправка",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.IsDelivery",
+    "name": "Доставка",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishMeasureUnit",
+    "name": "Единица измерения",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cooking.StartDelayTime.Avg",
+    "name": "Задержка начала приготовления (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "OrderDeleted",
+    "name": "Заказ удален",
+    "filteringAllowed": true
+  },
+  {
+    "param": "UniqOrderId.OrdersCount",
+    "name": "Заказов",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.Zone",
+    "name": "Зона доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.ExternalCartographyId",
+    "name": "Идентификатор адреса",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup.Hierarchy",
+    "name": "Иерархия блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Index",
+    "name": "Индекс адреса",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.SourceKey",
+    "name": "Источник доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OriginName",
+    "name": "Источник заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Card",
+    "name": "Карта авторизации",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CashRegisterName",
+    "name": "Касса",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cashier",
+    "name": "Кассир",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Category1",
+    "name": "Категория 1",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Category2",
+    "name": "Категория 2",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Category3",
+    "name": "Категория 3",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Category4",
+    "name": "Категория 4",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Category5",
+    "name": "Категория 5",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishCategory",
+    "name": "Категория блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "QuarterOpen",
+    "name": "Квартал",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishCode",
+    "name": "Код блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishCode.Quick",
+    "name": "Код быстрого набора блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishGroup.Num",
+    "name": "Код группы блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Conception.Code",
+    "name": "Код концепции",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department.Code",
+    "name": "Код подразделения",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishSize.ShortName",
+    "name": "Код размера блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEventDiscountType.DiscountAmount",
+    "name": "Колич. блюд со скидкой",
+    "filteringAllowed": false
+  },
+  {
+    "param": "ItemSaleEventDiscountType.ComboAmount",
+    "name": "Количество Комбо",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishAmountInt",
+    "name": "Количество блюд",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PayTypes.VoucherNum",
+    "name": "Количество ваучеров",
+    "filteringAllowed": false
+  },
+  {
+    "param": "GuestNum",
+    "name": "Количество гостей",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderComment",
+    "name": "Комментарий заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Comment",
+    "name": "Комментарий к блюду",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.DeliveryComment",
+    "name": "Комментарий к доставке",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerComment",
+    "name": "Комментарий к клиенту",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CancelComment",
+    "name": "Комментарий к отмене доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DeletionComment",
+    "name": "Комментарий к удалению блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CreditUser.Company",
+    "name": "Компания-контрагент",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Counteragent.Name",
+    "name": "Контрагент",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Conception",
+    "name": "Концепция",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CardType",
+    "name": "Кредитная карта",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Currencies.CurrencyRate",
+    "name": "Курс валюты оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Courier",
+    "name": "Курьер",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.EcsService",
+    "name": "Курьерская служба",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CookingPlace",
+    "name": "Место приготовления",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Mounth",
+    "name": "Месяц",
+    "filteringAllowed": true
+  },
+  {
+    "param": "IncentiveSumBase.Sum",
+    "name": "Мотивационный бонус",
+    "filteringAllowed": false
+  },
+  {
+    "param": "VAT.Sum",
+    "name": "НДС по чекам(Сумма)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "VAT.Percent",
+    "name": "НДС(%)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "StoreTo",
+    "name": "На склад",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEventDiscountType.ComboName",
+    "name": "Название Комбо",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishForeignName",
+    "name": "Наименование блюда на иностранном языке",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEventDiscountType",
+    "name": "Наименование скидки, надбавки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishTaxCategory.Name",
+    "name": "Налоговая категория",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ProductCostBase.Profit",
+    "name": "Наценка",
+    "filteringAllowed": false
+  },
+  {
+    "param": "ProductCostBase.MarkUp",
+    "name": "Наценка(%)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "WeekInYearOpen",
+    "name": "Неделя года",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WeekInMonthOpen",
+    "name": "Неделя месяца",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Bonus.CardNumber",
+    "name": "Номер бонусной карты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "GroupOrderNum",
+    "name": "Номер группового чека",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Number",
+    "name": "Номер доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerCardNumber",
+    "name": "Номер карты клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CardNumber",
+    "name": "Номер карты оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CashRegisterName.Number",
+    "name": "Номер кассы",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CouponInfo.Number",
+    "name": "Номер купона",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cooking.ServeNumber",
+    "name": "Номер подачи",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SessionNum",
+    "name": "Номер смены",
+    "filteringAllowed": true
+  },
+  {
+    "param": "TableNum",
+    "name": "Номер стола",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderNum",
+    "name": "Номер чека",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SourceOrderNum",
+    "name": "Номер чека-источника",
+    "filteringAllowed": true
+  },
+  {
+    "param": "VatInvoice.InvoiceNumbers",
+    "name": "Номера счетов-фактур",
+    "filteringAllowed": true
+  },
+  {
+    "param": "VatInvoice.DeletedInvoiceNumbers",
+    "name": "Номера удаленных счетов-фактур",
+    "filteringAllowed": true
+  },
+  {
+    "param": "FiscalChequeNumber",
+    "name": "Номера фиск. чеков",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.DeliveryOperator",
+    "name": "Оператор доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OperationType",
+    "name": "Операция",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Delay",
+    "name": "Опоздание доставки(мин)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cooking.FeedLateTime.Avg",
+    "name": "Опоздание подачи (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.CookingLateTime.Avg",
+    "name": "Опоздание приготовления (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "RestaurantSection",
+    "name": "Отделение",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerOpinionComment",
+    "name": "Отзыв клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.DiffBetweenActualDeliveryTimeAndPredictedDeliveryTime",
+    "name": "Отклонение от сроков доставки, фактическое от прогнозируемого (мин)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WaiterName",
+    "name": "Официант блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderWaiter.Name",
+    "name": "Официант заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.AvgMark",
+    "name": "Оценка доставки, %",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.AvgCourierMark",
+    "name": "Оценка курьера, %",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.AvgFoodMark",
+    "name": "Оценка кухни, %",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.AvgOperatorMark",
+    "name": "Оценка оператора, %",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.ExpectedTime",
+    "name": "Планируемое время доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderItems",
+    "name": "Позиций чека",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishFullName",
+    "name": "Полное наименование блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishTags.NamesCombo",
+    "name": "Пользовательские свойства (комб.)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishTag.Name",
+    "name": "Пользовательское свойство",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishSize.Priority",
+    "name": "Порядковый номер размера блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CancelCause",
+    "name": "Причина отмены доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WriteoffReason",
+    "name": "Причина списания",
+    "filteringAllowed": true
+  },
+  {
+    "param": "RemovalType",
+    "name": "Причина удаления блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.PredictedDeliveryTime",
+    "name": "Прогнозируемое время доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.PredictedCookingCompleteTime",
+    "name": "Прогнозируемое время окончания готовки заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "SoldWithDish",
+    "name": "Продано с блюдом",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cooking.GuestWaitTime.Avg",
+    "name": "Продолжительность ожидания гостя (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.ServeTime.Avg",
+    "name": "Продолжительность подачи гостю (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.CookingDuration.Avg",
+    "name": "Продолжительность приготовления (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.Cooking1Duration.Avg",
+    "name": "Продолжительность приготовления 1 (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.Cooking2Duration.Avg",
+    "name": "Продолжительность приготовления 2 (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.Cooking3Duration.Avg",
+    "name": "Продолжительность приготовления 3 (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.Cooking4Duration.Avg",
+    "name": "Продолжительность приготовления 4 (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cooking.KitchenTime.Avg",
+    "name": "Продолжительность работы кухни (средняя)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "IncreasePercent",
+    "name": "Процент надбавки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DiscountPercent",
+    "name": "Процент скидки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PublicExternalData",
+    "name": "Публичные данные плагинов",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PublicExternalData.Xml",
+    "name": "Публичные данные плагинов (XML)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cooking.PublicExternalData",
+    "name": "Публичные данные плагинов о приготовлении",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Cooking.PublicExternalData.Xml",
+    "name": "Публичные данные плагинов о приготовлении (XML)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ItemSaleEventDiscountType.ComboSizeName",
+    "name": "Размер Комбо",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishSize.Name",
+    "name": "Размер блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Region",
+    "name": "Район",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CashLocation",
+    "name": "Расположение кассы",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderServiceType",
+    "name": "Режим обслуживания",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.MarketingSource",
+    "name": "Реклама",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerMarketingSource",
+    "name": "Реклама клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "ProductCostBase.ProductCost",
+    "name": "Себестоимость",
+    "filteringAllowed": false
+  },
+  {
+    "param": "ProductCostBase.PercentWithoutVAT",
+    "name": "Себестоимость без НДС(%)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "ProductCostBase.OneItem",
+    "name": "Себестоимость единицы",
+    "filteringAllowed": false
+  },
+  {
+    "param": "ProductCostBase.Percent",
+    "name": "Себестоимость(%)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishServicePrintTime",
+    "name": "Сервисная печать блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishServicePrintTime.Max",
+    "name": "Сервисная печать последнего блюда",
+    "filteringAllowed": false
+  },
+  {
+    "param": "CashRegisterName.CashRegisterSerialNumber",
+    "name": "Серийный номер ФР",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CouponInfo.Series",
+    "name": "Серия купона",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Store.Name",
+    "name": "Со склада",
+    "filteringAllowed": true
+  },
+  {
+    "param": "WriteoffUser",
+    "name": "Списано на сотрудника",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishAmountInt.PerOrder",
+    "name": "Ср. количество блюд на чек",
+    "filteringAllowed": false
+  },
+  {
+    "param": "OrderTime.AveragePrechequeTime",
+    "name": "Ср.время в пречеке (мин)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.WayDurationAvg",
+    "name": "Ср.время в пути(мин)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "OrderTime.AverageOrderTime",
+    "name": "Ср.время обсл.(мин)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "GuestNum.Avg",
+    "name": "Ср.кол-во гостей на чек",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.DelayAvg",
+    "name": "Ср.опоздание доставки(мин)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt.averageByGuest",
+    "name": "Средняя выручка с гостя",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.AggregatedAvgMark",
+    "name": "Средняя оценка доставки, %",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.AggregatedAvgCourierMark",
+    "name": "Средняя оценка курьера, %",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.AggregatedAvgFoodMark",
+    "name": "Средняя оценка кухни, %",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.AggregatedAvgOperatorMark",
+    "name": "Средняя оценка оператора, %",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt.average",
+    "name": "Средняя сумма заказа",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt.averageWithoutVAT",
+    "name": "Средняя сумма заказа без НДС",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt.averagePriceWithVAT",
+    "name": "Средняя цена",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt.averagePrice",
+    "name": "Средняя цена без НДС",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishSumInt.averagePriceWithVAT",
+    "name": "Средняя цена без скидки",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Delivery.WayDurationSum",
+    "name": "Сумм.время в пути(мин)",
+    "filteringAllowed": false
+  },
+  {
+    "param": "fullSum",
+    "name": "Сумма без НДС не включенного в стоимость",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishSumInt",
+    "name": "Сумма без скидки",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Bonus.Sum",
+    "name": "Сумма бонуса",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Currencies.SumInCurrency",
+    "name": "Сумма в валюте оплаты / заказ",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishReturnSum",
+    "name": "Сумма возврата",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishReturnSum.withoutVAT",
+    "name": "Сумма возврата без НДС",
+    "filteringAllowed": false
+  },
+  {
+    "param": "IncreaseSum",
+    "name": "Сумма надбавки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DiscountSum",
+    "name": "Сумма скидки",
+    "filteringAllowed": false
+  },
+  {
+    "param": "discountWithoutVAT",
+    "name": "Сумма скидки без НДС не включенного в стоимость",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt",
+    "name": "Сумма со скидкой",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishDiscountSumInt.withoutVAT",
+    "name": "Сумма со скидкой без НДС",
+    "filteringAllowed": false
+  },
+  {
+    "param": "sumAfterDiscountWithoutVAT",
+    "name": "Сумма со скидкой без НДС не включенного в стоимость",
+    "filteringAllowed": false
+  },
+  {
+    "param": "Cashier.Code",
+    "name": "Табельный номер кассира",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Phone",
+    "name": "Телефон доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerPhone",
+    "name": "Телефон клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Bonus.Type",
+    "name": "Тип бонуса",
+    "filteringAllowed": true
+  },
+  {
+    "param": "NonCashPaymentType.DocumentType",
+    "name": "Тип документа списания",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.ServiceType",
+    "name": "Тип доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderType",
+    "name": "Тип заказа",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CardTypeName",
+    "name": "Тип карты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerCardType",
+    "name": "Тип карты клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "CookingPlaceType",
+    "name": "Тип места приготовления",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderIncrease.Type",
+    "name": "Тип надбавки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PayTypes",
+    "name": "Тип оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PayTypes.Combo",
+    "name": "Тип оплаты (комб.)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OrderDiscount.Type",
+    "name": "Тип скидки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "DishType",
+    "name": "Тип товара",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Department",
+    "name": "Торговое предприятие",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.Street",
+    "name": "Улица",
+    "filteringAllowed": true
+  },
+  {
+    "param": "OpenDate.Typed",
+    "name": "Учетный день",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.CustomerName",
+    "name": "ФИО клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "Delivery.ActualTime",
+    "name": "Фактическое время доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PayTypes.IsPrintCheque",
+    "name": "Фиск. тип оплаты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PriceCategoryDiscountCardOwner",
+    "name": "ЦК владелец карты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PriceCategoryUserCardOwner",
+    "name": "ЦК контрагент",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PriceCategoryCard",
+    "name": "ЦК номер карты",
+    "filteringAllowed": true
+  },
+  {
+    "param": "PriceCategory",
+    "name": "Ценовая категория клиента",
+    "filteringAllowed": true
+  },
+  {
+    "param": "HourClose",
+    "name": "Час закрытия",
+    "filteringAllowed": true
+  },
+  {
+    "param": "HourOpen",
+    "name": "Час открытия",
+    "filteringAllowed": true
+  },
+  {
+    "param": "UniqOrderId",
+    "name": "Чеков",
+    "filteringAllowed": false
+  },
+  {
+    "param": "DishSize.Scale.Name",
+    "name": "Шкала размеров блюда",
+    "filteringAllowed": true
+  },
+  {
+    "param": "JurName",
+    "name": "Юридическое лицо",
+    "filteringAllowed": true
+  }
+]
