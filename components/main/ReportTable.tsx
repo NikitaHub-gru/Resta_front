@@ -102,13 +102,18 @@ export default function DeliveryOrders() {
       const formattedStartDate = format(startDate, 'yyyy-MM-dd');
       const formattedEndDate = format(endDate, 'yyyy-MM-dd');
 
-      const processedData = selectedReport.data
-        .replace(/False/g, 'false')
-        .replace(/True/g, 'true')
+      const processedData = typeof selectedReport.data === 'string' 
+        ? selectedReport.data
+            .replace(/False/g, 'false')
+            .replace(/True/g, 'true') 
+        : '';
+
+      // Используем корпорацию из выбранного отчета
+      const reportCorporation = selectedReport.corporation;
 
       if (!isMoreThanOneMonth(startDate, endDate)) {
         const response = await fetch(
-          `http://localhost:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}`,
+          `http://localhost:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
           {
             method: 'POST',
             headers: {
@@ -137,7 +142,7 @@ export default function DeliveryOrders() {
           const periodEndDate = format(period.end, 'yyyy-MM-dd');
           
           const response = await fetch(
-            `http://localhost:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}`,
+            `http://localhost:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
             {
               method: 'POST',
               headers: {
@@ -349,7 +354,7 @@ export default function DeliveryOrders() {
 
   // Добавим функцию для форматирования значения в фильтре
   const formatFilterValue = (column: string, value: string): string => {
-    if (value === 'Пусто') return value;
+    if (value === 'Пуо') return value;
     
     if (column === 'OrderTime.OrderLength') {
       return `${value} мин.`;
@@ -370,7 +375,7 @@ export default function DeliveryOrders() {
     return value;
   };
 
-  // Добавл��ем фнкции для быстрого выбора периода
+  // Добавлем фнкции для быстрого выбора периода
   const handleToday = () => {
     const today = new Date();
     setStartDate(today);
@@ -407,7 +412,6 @@ export default function DeliveryOrders() {
         .select('*')
         .eq('is_active', true)
 
-      // Если пользователь не из RestaLabs, показываем только отчеты его корпорации
       if (userCorporation !== 'RestaLabs') {
         query = query.eq('corporation', userCorporation)
       }
@@ -416,10 +420,6 @@ export default function DeliveryOrders() {
       if (error) throw error
 
       setReports(data)
-      // Если есть отчеты, выбираем первый по умолчанию
-      if (data && data.length > 0) {
-        setSelectedReport(data[0])
-      }
     } catch (error) {
       console.error('Ошибка загрузки отчетов:', error)
     } finally {
@@ -428,41 +428,8 @@ export default function DeliveryOrders() {
   }
 
   // Обработчик выбора отчета
-  const handleReportSelect = async (report: Report) => {
+  const handleReportSelect = (report: Report) => {
     setSelectedReport(report)
-    try {
-      if (startDate && endDate) {
-        const formattedStartDate = format(startDate, 'yyyy-MM-dd')
-        const formattedEndDate = format(endDate, 'yyyy-MM-dd')
-        
-        const processedData = report.data
-          .replace(/False/g, 'false')
-          .replace(/True/g, 'true')
-        
-        const response = await fetch(
-          `http://localhost:8000/olap/get_olap?start_date=${formattedStartDate}&end_date=${formattedEndDate}`, //&report_id=${report.id}
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: processedData
-          }
-        )
-        
-        if (!response.ok) {
-          throw new Error('Ошибка при загрузке данных')
-        }
-        
-        const jsonData = await response.json()
-        if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
-          setIsDataTooLarge(false)
-          processReceivedData(jsonData.data)
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка при загрузке данных отчета:', error)
-    }
   }
 
   return (
@@ -485,7 +452,7 @@ export default function DeliveryOrders() {
                   const report = reports.find(r => r.id === Number(e.target.value))
                   if (report) handleReportSelect(report)
                 }}
-                className="flex h-10 w-[300px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                className="flex h-10 w-[300px] rounded-md border border-input bg-[#171717] px-3 py-2 text-sm ring-offset-background [&>option:hover]:bg-muted [&>option]:bg-[#171717] hover:cursor-pointer"
               >
                 <option value="" disabled>Выберите отчет</option>
                 {reports.map((report) => (
@@ -502,10 +469,10 @@ export default function DeliveryOrders() {
           {/* Добавляем выбор периода */}
           <div className="mb-6">
             <div className="rounded-md border p-4 ">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 ">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="min-w-[155px] max-w-[300px] items-center justify-start text-left font-normal">
+                    <Button variant="outline" className="min-w-[155px] max-w-[300px] items-center justify-start text-left font-normal bg-[#171717]">
                       <CalendarIcon className="mr-2 h-4 w-4 " />
                       {startDate && endDate ? (
                         format(startDate, 'd MMMM yyyy', { locale: ru }) + 

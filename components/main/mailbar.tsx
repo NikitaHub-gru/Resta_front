@@ -5,9 +5,11 @@ import {
   IconArrowLeft,
   IconDashboard,
   IconHome,
+  IconJson,
   IconLayoutDashboardFilled,
   IconPhotoScan,
   IconReportAnalytics,
+  IconRobot,
   IconSettings,
   IconUserBolt,
   IconUsers,
@@ -102,6 +104,13 @@ const adminLinks = [
     href: "/users",
     icon: (
       <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "RestaAi",
+    href: "/RestaAi",
+    icon: (
+      <IconRobot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
 ]

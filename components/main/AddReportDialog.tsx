@@ -191,8 +191,8 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
               required
             >
               <option value="SALES">Продажи</option>
-              <option value="INVENTORY">Инвентарь</option>
-              <option value="CUSTOM">Пользовательский</option>
+              <option value="DeliveryOrders">Доставка</option>
+              <option value="TRANSACTIONS ">Транзакции</option>
             </select>
           </div>
 

@@ -14,6 +14,16 @@ import { PencilIcon, TrashIcon } from "lucide-react"
 import { supabase } from "@/lib/supabaseClient"
 import { useToast } from "@/hooks/use-toast"
 import { AddReportDialog } from "./AddReportDialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { CORPORATIONS } from "@/lib/constants"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 interface Report {
   id: number
@@ -31,10 +41,29 @@ export function ReportsSettingsTable() {
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState<Report | null>(null);
+  const [editForm, setEditForm] = useState({
+    tb_name: '',
+    descript: '',
+    data: '',
+    corporation: '',
+    report_type: ''
+  });
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     fetchReports()
   }, [])
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+    };
+    
+    getSession();
+  }, []);
 
   const fetchReports = async () => {
     try {
@@ -79,7 +108,7 @@ export function ReportsSettingsTable() {
 
       setReports(data || [])
     } catch (error) {
-      console.error('Ошибка при загрузке отчетов:', error)
+      console.error('Ошибка при загрузке очетов:', error)
       toast({
         title: "Ошибка",
         description: error instanceof Error ? error.message : "Не удалось загрузить отчеты",
@@ -127,6 +156,72 @@ export function ReportsSettingsTable() {
       })
     }
   }
+
+  const handleEditClick = (report: Report) => {
+    setEditingReport(report);
+    setEditForm({
+      tb_name: report.tb_name,
+      descript: report.descript,
+      data: typeof report.data === 'object' ? JSON.stringify(report.data, null, 2) : report.data,
+      corporation: report.corporation,
+      report_type: report.report_type
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editingReport) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Необходима авторизация');
+
+      const userCorporation = session.user.user_metadata.corporation;
+
+      let parsedData;
+      try {
+        parsedData = JSON.parse(editForm.data);
+      } catch (e) {
+        throw new Error('Некорректный формат JSON');
+      }
+
+      const updates: any = {
+        tb_name: editForm.tb_name,
+        descript: editForm.descript,
+        data: parsedData,
+        report_type: editForm.report_type
+      };
+
+      if (userCorporation === 'RestaLabs') {
+        updates.corporation = editForm.corporation;
+      } else {
+        updates.corporation = editingReport.corporation;
+      }
+
+      const { data, error } = await supabase
+        .from('Reports')
+        .update(updates)
+        .eq('id', editingReport.id)
+        .select();
+
+      if (error) throw error;
+
+      await fetchReports();
+      setIsEditDialogOpen(false);
+      
+      toast({
+        title: "Успешно",
+        description: "Отчет обновлен",
+      });
+    } catch (error) {
+      console.error('Ошибка при обновлении отчета:', error);
+      toast({
+        title: "Ошибка",
+        description: error instanceof Error ? error.message : "Не удалось обновить отчет",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return <div className="text-center p-4">Загрузка...</div>
@@ -177,7 +272,11 @@ export function ReportsSettingsTable() {
                   })}
                 </TableCell>
                 <TableCell className="flex gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleEditClick(report)}
+                  >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
                   <Button 
@@ -199,6 +298,91 @@ export function ReportsSettingsTable() {
           </div>
         )}
       </div>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] bg-[#171717]">
+          <DialogHeader>
+            <DialogTitle>Редактировать отчет</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label htmlFor="corporation">Корпорация</label>
+              <select
+                id="corporation"
+                value={editForm.corporation}
+                onChange={(e) => setEditForm(prev => ({ ...prev, corporation: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-[#171717] px-3 py-2 text-sm ring-offset-background"
+                disabled={session?.user?.user_metadata?.corporation !== 'RestaLabs'}
+              >
+                {CORPORATIONS.map((corp) => (
+                  <option key={corp} value={corp}>
+                    {corp}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="report_type">Тип отчета</label>
+              <select
+                id="report_type"
+                value={editForm.report_type}
+                onChange={(e) => setEditForm(prev => ({ ...prev, report_type: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-[#171717] px-3 py-2 text-sm ring-offset-background"
+              >
+                <option value="SALES">Продажи</option>
+                <option value="DeliveryOrders">Доставка</option>
+                <option value="TRANSACTIONS">Транзакции</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="tb_name">Название отчета</label>
+              <Input
+                id="tb_name"
+                value={editForm.tb_name}
+                onChange={(e) => setEditForm(prev => ({ ...prev, tb_name: e.target.value }))}
+                className="bg-[#171717]"
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="descript">Описание</label>
+              <Input
+                id="descript"
+                value={editForm.descript}
+                onChange={(e) => setEditForm(prev => ({ ...prev, descript: e.target.value }))}
+                className="bg-[#171717]"
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="data">Данные</label>
+              <div className="relative rounded-md border bg-[#1e1e1e]">
+                <ScrollArea className="h-[200px] w-full overflow-hidden">
+                  <textarea
+                    id="data"
+                    value={editForm.data}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, data: e.target.value }))}
+                    className="w-full h-full bg-transparent text-[#d4d4d4] font-mono text-sm leading-relaxed resize-none outline-none p-4"
+                    style={{ 
+                      fontFamily: 'Consolas, Monaco, "Andale Mono", monospace',
+                      whiteSpace: 'pre',
+                      msOverflowStyle: 'none',  // Скрываем скроллбар в IE
+                      scrollbarWidth: 'none',   // Скрываем скроллбар в Firefox
+                    }}
+                    spellCheck="false"
+                  />
+                  <ScrollBar orientation="vertical" />
+                </ScrollArea>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handleEditSubmit}>
+              Сохранить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
