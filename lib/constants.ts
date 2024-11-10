@@ -6,5 +6,6 @@ export const CORPORATIONS = [
   "Love&Rolls",
   "Butter&Brot",
   "Днём с Огнём",
-  "GSF"
+  "GSF",
+  "Лосось №1"
 ] as const;
