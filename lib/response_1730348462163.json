@@ -1348,5 +1348,50 @@
     "param": "JurName",
     "name": "Юридическое лицо",
     "filteringAllowed": true
+  },
+  {
+    "param": "total_orders",
+    "name": "Количество чеков",
+    "filteringAllowed": true
+  },
+  {
+    "param": "orders_by_count",
+    "name": "Количество чеков по количеству гостей",
+    "filteringAllowed": true
+  },
+  {
+    "param": "1-2",
+    "name": "Количество чеков с 1-2 гостями",
+    "filteringAllowed": true
+  },
+  {
+    "param": "3-4",
+    "name": "Количество чеков с 3-4 гостями",
+    "filteringAllowed": true
+  },
+  {
+    "param": "4+",
+    "name": "Количество чеков с 4+ гостями",
+    "filteringAllowed": true
+  },
+  {
+    "param": "trip_info",
+    "name": "Поездки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "trips_count",
+    "name": "Количество поездок",
+    "filteringAllowed": true
+  },
+  {
+    "param": "total_payment_for_trips",
+    "name": "Сумма оплаты поездок",
+    "filteringAllowed": true
+  },
+  {
+    "param": "payment_per_trip",
+    "name": "Сумма оплаты за поездку",
+    "filteringAllowed": true
   }
 ]
