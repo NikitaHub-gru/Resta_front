@@ -1393,5 +1393,15 @@
     "param": "payment_per_trip",
     "name": "Сумма оплаты за поездку",
     "filteringAllowed": true
+  },
+  {
+    "param": "idle_time",
+    "name": "Время на полке (мин)",
+    "filteringAllowed": true
+  },
+  {
+    "param": "cooking_time",
+    "name": "Время приготовления (мин)",
+    "filteringAllowed": true
   }
 ]

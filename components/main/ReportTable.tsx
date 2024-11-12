@@ -108,12 +108,13 @@ export default function DeliveryOrders() {
             .replace(/True/g, 'true') 
         : '';
 
-      // Используем корпорацию из выбранного отчета
+      // И��пользуем корпорацию из выбранного отчета
       const reportCorporation = selectedReport.corporation;
 
       if (!isMoreThanOneMonth(startDate, endDate)) {
         const response = await fetch(
-          `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+          // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+          `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
           {
             method: 'POST',
             headers: {
@@ -142,7 +143,8 @@ export default function DeliveryOrders() {
           const periodEndDate = format(period.end, 'yyyy-MM-dd');
           
           const response = await fetch(
-            `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+            // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+            `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
             {
               method: 'POST',
               headers: {
@@ -272,6 +274,35 @@ export default function DeliveryOrders() {
     return passesFilters && passesSearch;
   });
 
+  // Обновленная функция formatDate
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return '—';
+    
+    // Проверяем, содержит ли строка реальное время (не 00:00 или 07:00)
+    const hasActualTime = (str: string): boolean => {
+      const timeMatch = str.match(/\d{2}:\d{2}(:\d{2})?$/);
+      if (!timeMatch) return false;
+      
+      const time = timeMatch[0];
+      return time !== '00:00:00' && time !== '00:00' && time !== '07:00:00' && time !== '07:00';
+    };
+
+    try {
+      const date = new Date(dateString);
+      
+      if (hasActualTime(dateString)) {
+        // Если есть реальное время, возвращаем дату со временем
+        return format(date, "d MMMM yyyy HH:mm", { locale: ru });
+      } else {
+        // Если времени нет или оно дефолтное, возвращаем только дату
+        return format(date, "d MMMM yyyy", { locale: ru });
+      }
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Используйте эту функцию в formatCellValue
   const formatCellValue = (value: string | number | null, column: string): string => {
     if (value === null || value === undefined || value === '') return '—';
     
@@ -281,11 +312,7 @@ export default function DeliveryOrders() {
     
     if (column.toLowerCase().includes('time') || 
         (column.toLowerCase().includes('date') && column !== 'OrderTime.OrderLength')) {
-      try {
-        return format(new Date(String(value)), "d MMMM yyyy HH:mm", { locale: ru });
-      } catch {
-        return String(value);
-      }
+      return formatDate(String(value));
     }
     
     return String(value);
@@ -433,387 +460,390 @@ export default function DeliveryOrders() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="rounded-lg border bg-[#171717] text-card-foreground shadow-sm">
-        <div className="flex flex-col space-y-1.5 p-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-semibold leading-none tracking-tight">
-                {selectedReport?.tb_name || 'Выберите отчет'}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {selectedReport?.descript || 'Описание отчета будет здесь'}
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <select
-                value={selectedReport?.id || ''}
-                onChange={(e) => {
-                  const report = reports.find(r => r.id === Number(e.target.value))
-                  if (report) handleReportSelect(report)
-                }}
-                className="flex h-10 w-[300px] rounded-md border border-input bg-[#171717] px-3 py-2 text-sm ring-offset-background [&>option:hover]:bg-muted [&>option]:bg-[#171717] hover:cursor-pointer"
-              >
-                <option value="" disabled>Выберите отчет</option>
-                {reports.map((report) => (
-                  <option key={report.id} value={report.id}>
-                    {report.tb_name}
-                  </option>
-                ))}
-              </select>
+    <ScrollArea className="h-[calc(100vh-2rem)] w-full">
+      <div className="container mx-auto py-10">
+        <div className="rounded-lg border bg-[#171717] text-card-foreground shadow-sm">
+          <div className="flex flex-col space-y-1.5 p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-semibold leading-none tracking-tight">
+                  {selectedReport?.tb_name || 'Выберите отчет'}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {selectedReport?.descript || 'Описание отчета будет здесь'}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <select
+                  value={selectedReport?.id || ''}
+                  onChange={(e) => {
+                    const report = reports.find(r => r.id === Number(e.target.value))
+                    if (report) handleReportSelect(report)
+                  }}
+                  className="flex h-10 w-[300px] rounded-md border border-input bg-[#171717] px-3 py-2 text-sm ring-offset-background [&>option:hover]:bg-muted [&>option]:bg-[#171717] hover:cursor-pointer"
+                >
+                  <option value="" disabled>Выберите отчет</option>
+                  {reports.map((report) => (
+                    <option key={report.id} value={report.id}>
+                      {report.tb_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="p-6 pt-0">
-          {/* Добавляем выбор периода */}
-          <div className="mb-6">
-            <div className="rounded-md border p-4 ">
-              <div className="flex items-center gap-4 ">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="min-w-[155px] max-w-[300px] items-center justify-start text-left font-normal bg-[#171717]">
-                      <CalendarIcon className="mr-2 h-4 w-4 " />
-                      {startDate && endDate ? (
-                        format(startDate, 'd MMMM yyyy', { locale: ru }) + 
-                        ' - ' + 
-                        format(endDate, 'd MMMM yyyy', { locale: ru })
-                      ) : (
-                        "Выберите период"
-                      )}
+          <div className="p-6 pt-0">
+            {/* Добавляем выбор периода */}
+            <div className="mb-6">
+              <div className="rounded-md border p-4 ">
+                <div className="flex items-center gap-4 ">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="min-w-[155px] max-w-[300px] items-center justify-start text-left font-normal bg-[#171717]">
+                        <CalendarIcon className="mr-2 h-4 w-4 " />
+                        {startDate && endDate ? (
+                          format(startDate, 'd MMMM yyyy', { locale: ru }) + 
+                          ' - ' + 
+                          format(endDate, 'd MMMM yyyy', { locale: ru })
+                        ) : (
+                          "Выберите период"
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-auto p-0 z-50" 
+                      align="start"
+                      sideOffset={5}
+                      side="bottom"
+                    >
+                      <div className="border rounded-md bg-[#171717] shadow-md p-3" style={{ minWidth: '600px' }}>
+                        <Calendar
+                          mode="range"
+                          selected={{ 
+                            from: startDate,
+                            to: endDate
+                          }}
+                          onSelect={(range) => {
+                            setStartDate(range?.from);
+                            setEndDate(range?.to);
+                          }}
+                          numberOfMonths={2}
+                          locale={ru}
+                          className="w-full bg-[#171717]"
+                        />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="link" 
+                      onClick={handleToday}
+                      className="text-sm"
+                    >
+                      Сегодня
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-auto p-0 z-50" 
-                    align="start"
-                    sideOffset={5}
-                    side="bottom"
-                  >
-                    <div className="border rounded-md bg-[#171717] shadow-md p-3" style={{ minWidth: '600px' }}>
-                      <Calendar
-                        mode="range"
-                        selected={{ 
-                          from: startDate,
-                          to: endDate
-                        }}
-                        onSelect={(range) => {
-                          setStartDate(range?.from);
-                          setEndDate(range?.to);
-                        }}
-                        numberOfMonths={2}
-                        locale={ru}
-                        className="w-full bg-[#171717]"
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    variant="link" 
-                    onClick={handleToday}
-                    className="text-sm"
-                  >
-                    Сегодня
-                  </Button>
-                  <Button 
-                    variant="link" 
-                    onClick={handleYesterday}
-                    className="text-sm"
-                  >
-                    Вчера
-                  </Button>
-                  <Button 
-                    variant="link" 
-                    onClick={handleWeek}
-                    className="text-sm"
-                  >
-                    Неделя
+                    <Button 
+                      variant="link" 
+                      onClick={handleYesterday}
+                      className="text-sm"
+                    >
+                      Вчера
+                    </Button>
+                    <Button 
+                      variant="link" 
+                      onClick={handleWeek}
+                      className="text-sm"
+                    >
+                      Неделя
+                    </Button>
+                  </div>
+                  
+                  <Button onClick={fetchData}>
+                    Получить данные
                   </Button>
                 </div>
-                
-                <Button onClick={fetchData}>
-                  Получить данные
-                </Button>
               </div>
             </div>
-          </div>
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center space-y-4 p-8">
-              <div className="relative">
-                <div className="h-24 w-24 rounded-full border-4 border-muted"></div>
-                <div className="absolute left-0 top-0 h-24 w-24 animate-spin rounded-full border-4 border-t-primary"></div>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-lg font-medium">Загрузка данных</p>
-                <p className="text-sm text-muted-foreground">Пожалуйста, подождите...</p>
-              </div>
-            </div>
-          ) : isDataTooLarge ? (
-            <div className="flex flex-col items-center justify-center space-y-4 p-8">
-              <Frown className="h-16 w-16 text-muted-foreground" />
-              <p className="text-lg text-center text-muted-foreground">
-                Объем анных слишком большой для отбражения в таблице.
-                <br />
-                Пожалуйста, воспользуйтесь экспортом в Excel.
-              </p>
-              <Button onClick={() => {
-                const exportData = prepareDataForExport(data);
-                const worksheet = XLSX.utils.json_to_sheet(exportData);
-                
-                const columns = Object.keys(exportData[0] || {});
-                const columnWidths: { [key: string]: number } = {};
-                
-                columns.forEach(col => {
-                  let maxLength = col.length;
-                  exportData.forEach(row => {
-                    const cellLength = String(row[col] || '').length;
-                    maxLength = Math.max(maxLength, cellLength);
-                  });
-                  columnWidths[col] = maxLength + 2;
-                });
-                
-                worksheet['!cols'] = columns.map(col => ({
-                  wch: columnWidths[col]
-                }));
-                
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Заказы на доставк");
-                XLSX.writeFile(workbook, `delivery_orders_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-              }}>
-                <Download className="mr-2 h-4 w-4" />
-                Экспорт в Excel
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-6">
-                <div className="relative w-[300px]">
-                  <Input
-                    placeholder="Поиск по всем полям..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#171717] h-10 pl-10"
-                  />
-                  <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center space-y-4 p-8">
+                <div className="relative">
+                  <div className="h-24 w-24 rounded-full border-4 border-muted"></div>
+                  <div className="absolute left-0 top-0 h-24 w-24 animate-spin rounded-full border-4 border-t-primary"></div>
                 </div>
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-lg font-medium">Загрузка анных</p>
+                  <p className="text-sm text-muted-foreground">Пожалуйста, подождите...</p>
+                </div>
+              </div>
+            ) : isDataTooLarge ? (
+              <div className="flex flex-col items-center justify-center space-y-4 p-8">
+                <Frown className="h-16 w-16 text-muted-foreground" />
+                <p className="text-lg text-center text-muted-foreground">
+                  Объем анных слишком большой для отбражения в таблице.
+                  <br />
+                  Пожалуйста, воспользуйтесь экспортом в Excel.
+                </p>
                 <Button onClick={() => {
-                  const exportData = prepareDataForExport(filteredData);
+                  const exportData = prepareDataForExport(data);
                   const worksheet = XLSX.utils.json_to_sheet(exportData);
                   
-                  // Получаем все колонки
                   const columns = Object.keys(exportData[0] || {});
-                  
-                  // Настраиваем ширину для каждой колонки
                   const columnWidths: { [key: string]: number } = {};
                   
-                  // Проходим по всем ячейкам, чтобы найти максимальную длину содержимого
                   columns.forEach(col => {
-                    // Начинаем с длины заголовка
                     let maxLength = col.length;
-                    
-                    // Проверяем длину каждого значения в колонке
                     exportData.forEach(row => {
                       const cellLength = String(row[col] || '').length;
                       maxLength = Math.max(maxLength, cellLength);
                     });
-                    
-                    // Устанавливаем ширину колонки (примерно 1 символ = 1 единица ширины)
-                    columnWidths[col] = maxLength + 2; // +2 для отступов
+                    columnWidths[col] = maxLength + 2;
                   });
                   
-                  // Применем настройки ирины к колонкам
                   worksheet['!cols'] = columns.map(col => ({
                     wch: columnWidths[col]
                   }));
                   
                   const workbook = XLSX.utils.book_new();
-                  XLSX.utils.book_append_sheet(workbook, worksheet, "Заказы на доставку");
+                  XLSX.utils.book_append_sheet(workbook, worksheet, "Заказы на доставк");
                   XLSX.writeFile(workbook, `delivery_orders_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
                 }}>
                   <Download className="mr-2 h-4 w-4" />
                   Экспорт в Excel
                 </Button>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="relative w-[300px]">
+                    <Input
+                      placeholder="Поиск по всем полям..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-[#171717] h-10 pl-10"
+                    />
+                    <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  </div>
+                  <Button onClick={() => {
+                    const exportData = prepareDataForExport(filteredData);
+                    const worksheet = XLSX.utils.json_to_sheet(exportData);
+                    
+                    // Получаем все колонки
+                    const columns = Object.keys(exportData[0] || {});
+                    
+                    // Настраиваем ширину для каждой колонки
+                    const columnWidths: { [key: string]: number } = {};
+                    
+                    // Проходим по всем ячейкам, чтобы найти максимальную длину содержимого
+                    columns.forEach(col => {
+                      // Начинаем с длины заголовка
+                      let maxLength = col.length;
+                      
+                      // Проверяем длину каждого значения в колонке
+                      exportData.forEach(row => {
+                        const cellLength = String(row[col] || '').length;
+                        maxLength = Math.max(maxLength, cellLength);
+                      });
+                      
+                      // Устанавливаем ширину колонки (примерно 1 символ = 1 единица ширины)
+                      columnWidths[col] = maxLength + 2; // +2 для отступов
+                    });
+                    
+                    // Применем настройки ирины к колонкам
+                    worksheet['!cols'] = columns.map(col => ({
+                      wch: columnWidths[col]
+                    }));
+                    
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Заказы на доставку");
+                    XLSX.writeFile(workbook, `delivery_orders_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
+                  }}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Экспорт в Excel
+                  </Button>
+                </div>
 
-              <div className="rounded-md border">
-                <ScrollArea className="h-[500px] w-full">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        {columns.map((column) => (
-                          <TableHead 
-                            key={column} 
-                            className="sticky top-0 bg-[#171717]"
-                            style={{ 
-                              width: `${calculateColumnWidth(column)}px`,
-                              minWidth: `${calculateColumnWidth(column)}px`
-                            }}
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium">{getColumnDisplayName(column)}</span>
-                                <div className="flex items-center gap-1">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                        <Filter className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[400px] bg-[#171717] border">
-                                      <div className="px-2 py-2">
-                                        <Input
-                                          placeholder="Поиск..."
-                                          value={filterSearchTerms[column] || ''}
-                                          onChange={(e) => setFilterSearchTerms(prev => ({
-                                            ...prev,
-                                            [column]: e.target.value
-                                          }))}
-                                          className="h-8"
-                                        />
-                                      </div>
-                                      <div className="max-h-[400px] overflow-y-auto bg-[#171717]">
-                                        {Array.from(filters[column] || [])
-                                          .filter(value => 
-                                            formatFilterValue(column, value)
-                                              .toLowerCase()
-                                              .includes((filterSearchTerms[column] || '').toLowerCase())
-                                          )
-                                          .map((value) => (
-                                            <DropdownMenuCheckboxItem
-                                              key={value}
-                                              checked={activeFilters[column]?.includes(value)}
-                                              onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                  handleFilter(column, value);
-                                                } else {
-                                                  removeFilter(column, value);
-                                                }
-                                              }}
-                                              className="bg-[#171717]"
-                                            >
-                                              <div className="flex items-center justify-between w-full gap-2">
-                                                <span className="break-words whitespace-normal">
-                                                  {formatFilterValue(column, value)}
-                                                </span>
-                                                <span className="ml-2 text-xs text-muted-foreground shrink-0">
-                                                  {getValueCount(column, value)}
-                                                </span>
-                                              </div>
-                                            </DropdownMenuCheckboxItem>
-                                          ))}
-                                      </div>
-                                      {activeFilters[column]?.length > 0 && (
-                                        <div className="border-t px-2 py-2 bg-[#171717]">
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="w-full"
-                                            onClick={() => clearFilters(column)}
-                                          >
-                                            Очистить все
-                                          </Button>
-                                        </div>
-                                      )}
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                        {sortConfig?.key === column ? (
-                                          sortConfig.direction.includes('asc') ? (
-                                            <SortAsc className="h-4 w-4" />
-                                          ) : (
-                                            <SortDesc className="h-4 w-4" />
-                                          )
-                                        ) : (
-                                          <SortAsc className="h-4 w-4" />
-                                        )}
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={() => handleSort(column, "asc")}>
-                                        Сортировать по возрастанию
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleSort(column, "desc")}>
-                                        Сортировать по убыванию
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleSort(column, "alpha-asc")}>
-                                        Сортировать по алфавиту (А-Я)
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleSort(column, "alpha-desc")}>
-                                        Сортировать по алфавиту (Я-А)
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                              </div>
-                              {activeFilters[column]?.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  {activeFilters[column].map((filter) => (
-                                    <span
-                                      key={filter}
-                                      className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs"
-                                    >
-                                      {formatFilterValue(column, filter)}
-                                      <button
-                                        onClick={() => removeFilter(column, filter)}
-                                        className="text-muted-foreground hover:text-foreground"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </button>
-                                    </span>
-                                  ))}
-                                  <button
-                                    onClick={() => clearFilters(column)}
-                                    className="text-xs text-muted-foreground hover:text-foreground"
-                                  >
-                                    Очистить
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredData.map((row, index) => (
-                        <TableRow key={index}>
+                <div className="rounded-md border">
+                  <ScrollArea className="h-[500px] w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
                           {columns.map((column) => (
-                            <TableCell 
+                            <TableHead 
                               key={column} 
-                              className="whitespace-nowrap"
+                              className="sticky top-0 bg-[#171717]"
                               style={{ 
                                 width: `${calculateColumnWidth(column)}px`,
                                 minWidth: `${calculateColumnWidth(column)}px`
                               }}
                             >
-                              {formatCellValue(row[column], column)}
-                            </TableCell>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium">{getColumnDisplayName(column)}</span>
+                                  <div className="flex items-center gap-1">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                          <Filter className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-[400px] bg-[#171717] border">
+                                        <div className="px-2 py-2">
+                                          <Input
+                                            placeholder="Поиск..."
+                                            value={filterSearchTerms[column] || ''}
+                                            onChange={(e) => setFilterSearchTerms(prev => ({
+                                              ...prev,
+                                              [column]: e.target.value
+                                            }))}
+                                            className="h-8"
+                                          />
+                                        </div>
+                                        <div className="max-h-[400px] overflow-y-auto bg-[#171717]">
+                                          {Array.from(filters[column] || [])
+                                            .filter(value => 
+                                              formatFilterValue(column, value)
+                                                .toLowerCase()
+                                                .includes((filterSearchTerms[column] || '').toLowerCase())
+                                            )
+                                            .map((value) => (
+                                              <DropdownMenuCheckboxItem
+                                                key={value}
+                                                checked={activeFilters[column]?.includes(value)}
+                                                onCheckedChange={(checked) => {
+                                                  if (checked) {
+                                                    handleFilter(column, value);
+                                                  } else {
+                                                    removeFilter(column, value);
+                                                  }
+                                                }}
+                                                className="bg-[#171717]"
+                                              >
+                                                <div className="flex items-center justify-between w-full gap-2">
+                                                  <span className="break-words whitespace-normal">
+                                                    {formatFilterValue(column, value)}
+                                                  </span>
+                                                  <span className="ml-2 text-xs text-muted-foreground shrink-0">
+                                                    {getValueCount(column, value)}
+                                                  </span>
+                                                </div>
+                                              </DropdownMenuCheckboxItem>
+                                            ))}
+                                        </div>
+                                        {activeFilters[column]?.length > 0 && (
+                                          <div className="border-t px-2 py-2 bg-[#171717]">
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="w-full"
+                                              onClick={() => clearFilters(column)}
+                                            >
+                                              Очистить все
+                                            </Button>
+                                          </div>
+                                        )}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                          {sortConfig?.key === column ? (
+                                            sortConfig.direction.includes('asc') ? (
+                                              <SortAsc className="h-4 w-4" />
+                                            ) : (
+                                              <SortDesc className="h-4 w-4" />
+                                            )
+                                          ) : (
+                                            <SortAsc className="h-4 w-4" />
+                                          )}
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleSort(column, "asc")}>
+                                          Сортировать по возрастанию
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleSort(column, "desc")}>
+                                          Сортировать по убыванию
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleSort(column, "alpha-asc")}>
+                                          Сортировать по алфавиту (А-Я)
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleSort(column, "alpha-desc")}>
+                                          Сортировать по алфавиту (Я-А)
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </div>
+                                {activeFilters[column]?.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {activeFilters[column].map((filter) => (
+                                      <span
+                                        key={filter}
+                                        className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs"
+                                      >
+                                        {formatFilterValue(column, filter)}
+                                        <button
+                                          onClick={() => removeFilter(column, filter)}
+                                          className="text-muted-foreground hover:text-foreground"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </span>
+                                    ))}
+                                    <button
+                                      onClick={() => clearFilters(column)}
+                                      className="text-xs text-muted-foreground hover:text-foreground"
+                                    >
+                                      Очистить
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </TableHead>
                           ))}
                         </TableRow>
-                      ))}
-                      {filteredData.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={columns.length}
-                            className="h-24 text-center"
-                          >
-                           
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              </div>
-            </>
-          )}
+                      </TableHeader>
+                      <TableBody>
+                        {filteredData.map((row, index) => (
+                          <TableRow key={index}>
+                            {columns.map((column) => (
+                              <TableCell 
+                                key={column} 
+                                className="whitespace-nowrap"
+                                style={{ 
+                                  width: `${calculateColumnWidth(column)}px`,
+                                  minWidth: `${calculateColumnWidth(column)}px`
+                                }}
+                              >
+                                {formatCellValue(row[column], column)}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                        {filteredData.length === 0 && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={columns.length}
+                              className="h-24 text-center"
+                            >
+                             
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+      <ScrollBar orientation="vertical" />
+    </ScrollArea>
   );
 }
