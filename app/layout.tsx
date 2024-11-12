@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import AuthWrapper from "@/components/main/AuthWrapper";
-
-
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,12 +15,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-
     <html lang="en" className="dark">
       <body className="bg-background text-foreground">
         <AuthWrapper>
           {children}
         </AuthWrapper>
+        <Toaster />
       </body>
     </html>
   );

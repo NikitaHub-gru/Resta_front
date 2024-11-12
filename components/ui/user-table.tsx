@@ -10,44 +10,44 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal, Search } from "lucide-react";
+import { Search, Pencil, Trash2, Terminal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { USER_ROLES, CORPORATIONS } from "@/lib/constants";
-import { User } from '@supabase/supabase-js';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Check } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle2 } from "lucide-react";
+import { CircleX } from "lucide-react";
 
-
-
-interface EditFormData {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  user_metadata?: {
-    name?: string;
-    corporation?: string;
-    role?: string;
-  };
+interface User {
+  id: string;
+  corporation: string;
+  email: string;
+  first_name: string;
+  name: string;
+  role: string;
+  created_at: string;
 }
 
 export function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
-  const [sortField, setSortField] = useState<"email" | "created_at" | "user_metadata">("email");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
   const { toast } = useToast();
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editFormData, setEditFormData] = useState<EditFormData>({});
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -55,18 +55,16 @@ export function UserTable() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
-      const data = await response.json();
+      const response = await fetch('http://localhost:8000/olap/users');
+      if (!response.ok) throw new Error('Failed to fetch users');
       
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      setUsers(data.users);
+      const { data } = await response.json();
+      setUsers(data);
     } catch (error) {
+      console.error('Ошибка при загрузке пользователей:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch users",
+        title: "Ошибка",
+        description: "Не удалось загрузить список пользователей",
         variant: "destructive",
       });
     } finally {
@@ -74,274 +72,199 @@ export function UserTable() {
     }
   };
 
-  const handleSort = (field: typeof sortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
+  const filteredUsers = users.filter((user) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.name?.toLowerCase().includes(searchLower) ||
+      user.first_name?.toLowerCase().includes(searchLower) ||
+      user.corporation?.toLowerCase().includes(searchLower) ||
+      user.role?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "d MMMM yyyy HH:mm", { locale: ru });
+    } catch {
+      return dateString;
     }
   };
 
-  const filteredAndSortedUsers = users
-    .filter((user) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        user.email?.toLowerCase().includes(searchLower) ||
-        user.user_metadata?.name?.toLowerCase().includes(searchLower) ||
-        user.user_metadata?.corporation?.toLowerCase().includes(searchLower) ||
-        user.user_metadata?.role?.toLowerCase().includes(searchLower)
-      );
-    })
-    .sort((a, b) => {
-      if (sortField === "user_metadata") {
-        const aValue = String(a.user_metadata?.name || '');
-        const bValue = String(b.user_metadata?.name || '');
-        return sortDirection === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      } else {
-        const aValue = String(a[sortField] || '');
-        const bValue = String(b[sortField] || '');
-        return sortDirection === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-    });
-
-  const handleUpdateUser = async () => {
+  const handleDeleteUser = async (user: User) => {
     try {
-      if (!editingUser) {
-        console.log('No user selected for editing');
-        return;
-      }
-
-      const updateData = {
-        name: editFormData.user_metadata?.name,
-        email: editFormData.email,
-        role: editFormData.user_metadata?.role,
-        corporations: [editFormData.user_metadata?.corporation]
-      };
-
-      console.log('Sending update request for user:', editingUser.id);
-      console.log('Update data:', updateData);
-
-      const response = await fetch(`/api/users/${editingUser.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
+      const response = await fetch(`http://localhost:8000/olap/delete_users/${user.id}`, {
+        method: 'POST',
       });
-
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || 'Failed to update user');
-      }
 
       const result = await response.json();
-      console.log('Update successful:', result);
+      console.log('Server response:', result);
 
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
+      if (result.toString() === "True") {
+        toast({
+          title: "",
+          description: (
+            <div>
+            <Alert className="border-0 bg-transparent">
+              <div className="flex items-center">
+                <CheckCircle2 className="h-4 w-4 ml-1 text-green-500" />
+                <AlertTitle className="ml-2 text-green-500">Успешно</AlertTitle>
+              </div>
+              <AlertDescription className="ml-2 text-muted-foreground">
+                Пользователь {user.email} был успешно удален
+              </AlertDescription>
+            </Alert>
+          </div>
+          ),
+          variant: "default",
+          duration: 4000,
+          className: "slide-in-out",
+        });
 
-      await fetchUsers();
-      setIsEditDialogOpen(false);
-      setEditFormData({});
-
+        await fetchUsers();
+      } else {
+        toast({
+          title: "",
+          description: (
+            <div >
+            <Alert className="border-0 bg-transparent">
+              <div className="flex items-center">
+                <CircleX className="h-4 w-4 ml-1 text-red-600" />
+                <AlertTitle className="ml-2 text-red-600 text-[1.2rem]">Ошибка</AlertTitle>
+              </div>
+              <AlertDescription className="ml-2 text-muted-foreground">
+                Не удалось удалить пользователя {user.email}
+              </AlertDescription>
+            </Alert>
+            </div>
+          ),
+          variant: "default",
+          duration: 4000,
+          className: "slide-in-out",
+        });
+      }
     } catch (error) {
-      console.error('Update error:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update user",
-        variant: "destructive",
-      });
+      console.error('Error during delete:', error);
+    } finally {
+      setUserToDelete(null);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
+    <ScrollArea className="h-[calc(100vh-2rem)] w-full">
+      <div className="space-y-4">
+        <div className="flex items-center space-x-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Поиск пользователей..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </div>
+
+        <div className="rounded-md border">
+          <ScrollArea className="h-[500px] w-full">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ФИО</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Корпорация</TableHead>
+                  <TableHead>Роль</TableHead>
+                  <TableHead>Дата создания</TableHead>
+                  <TableHead className="w-[100px]">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-6 w-[150px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[200px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[150px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {[user.first_name, user.name].filter(Boolean).join(' ') || 'Не указано'}
+                      </TableCell>
+                      <TableCell>{user.email || 'Не указано'}</TableCell>
+                      <TableCell>{user.corporation || 'Не указано'}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10">
+                          {user.role || 'Пользователь'}
+                        </span>
+                      </TableCell>
+                      <TableCell>{formatDate(user.created_at)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 p-0"
+                            onClick={() => {
+                              // Здесь будет логика редактирования
+                              console.log('Edit user:', user.id);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                            onClick={() => setUserToDelete(user)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+                {!loading && filteredUsers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-4">
+                      Пользователи не найдены
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </div>
       </div>
+      <ScrollBar orientation="vertical" />
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead onClick={() => handleSort("user_metadata")} className="cursor-pointer">
-                <div className="flex items-center space-x-1">
-                  <span>Name</span>
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead onClick={() => handleSort("email")} className="cursor-pointer">
-                <div className="flex items-center space-x-1">
-                  <span>Email</span>
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead>
-                <div className="flex items-center space-x-1">
-                  <span>Corporation</span>
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead>
-                <div className="flex items-center space-x-1">
-                  <span>Role</span>
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-6 w-[150px]" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-[200px]" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-[150px]" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-[100px]" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-[30px]" /></TableCell>
-                </TableRow>
-              ))
-            ) : (
-              filteredAndSortedUsers.map((user) => (
-                <TableRow key={user.id} className="group">
-                  <TableCell className="font-medium">{user.user_metadata?.name || user.email}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.user_metadata?.corporation || 'Not specified'}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10">
-                      {user.user_metadata?.role || 'User'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          setEditingUser(user);
-                          setEditFormData({
-                            email: user.email,
-                            user_metadata: {
-                              name: user.user_metadata?.name,
-                              corporation: user.user_metadata?.corporation,
-                              role: user.user_metadata?.role
-                            }
-                          });
-                          setIsEditDialogOpen(true);
-                        }}>
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-destructive"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={editFormData.user_metadata?.name || ''}
-                onChange={(e) => setEditFormData({
-                  ...editFormData,
-                  user_metadata: { ...editFormData.user_metadata, name: e.target.value }
-                })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                value={editFormData.email || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="corporation">Corporation</Label>
-              <select
-                id="corporation"
-                value={editFormData.user_metadata?.corporation || ''}
-                onChange={(e) => setEditFormData({
-                  ...editFormData,
-                  user_metadata: { ...editFormData.user_metadata, corporation: e.target.value }
-                })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>Select corporation</option>
-                {CORPORATIONS.map((corp) => (
-                  <option key={corp} value={corp}>
-                    {corp}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <select
-                id="role"
-                value={editFormData.user_metadata?.role || ''}
-                onChange={(e) => setEditFormData({
-                  ...editFormData,
-                  user_metadata: { ...editFormData.user_metadata, role: e.target.value }
-                })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>Select role</option>
-                {USER_ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleUpdateUser}>
-                Save Changes
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие нельзя отменить. Пользователь {userToDelete?.email} будет удален из системы.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => userToDelete && handleDeleteUser(userToDelete)}
+            >
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </ScrollArea>
   );
 }

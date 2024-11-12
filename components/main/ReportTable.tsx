@@ -30,6 +30,7 @@ import {
 import { getColumnDisplayName, getColumnOriginalName } from '@/lib/const';
 import { addDays, subDays, startOfWeek, startOfMonth, endOfMonth, addMonths } from "date-fns";
 import { supabase } from "@/lib/supabaseClient"
+import { UserTable } from "@/components/ui/user-table";
 
 type DeliveryOrder = {
   [key: string]: string | number | null;
@@ -108,7 +109,7 @@ export default function DeliveryOrders() {
             .replace(/True/g, 'true') 
         : '';
 
-      // И��пользуем корпорацию из выбранного отчета
+      // Ипользуем корпорацию из выбранного отчета
       const reportCorporation = selectedReport.corporation;
 
       if (!isMoreThanOneMonth(startDate, endDate)) {
@@ -843,6 +844,14 @@ export default function DeliveryOrders() {
           </div>
         </div>
       </div>
+
+      <div className="mt-8">
+        <div className="rounded-lg border bg-[#171717] text-card-foreground shadow-sm p-6">
+          <h2 className="text-2xl font-semibold mb-6">Пользователи системы</h2>
+          <UserTable />
+        </div>
+      </div>
+
       <ScrollBar orientation="vertical" />
     </ScrollArea>
   );
