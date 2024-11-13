@@ -1,12 +1,18 @@
 import { CORPORATIONS } from "@/lib/constants";
 import { supabase } from "@/lib/supabaseClient";
 
-export async function getAuthUser() {
+export async function getAuthUser(): Promise<{
+  email: string | undefined;
+  name: any;
+  corporation: any;
+  role: string;
+}> {
   const { data: { user } } = await supabase.auth.getUser();
   return {
     email: user?.email,
     name: user?.user_metadata?.name || user?.email,
-    corporation: user?.user_metadata?.corporation
+    corporation: user?.user_metadata?.corporation,
+    role: user?.user_metadata?.role || ""
   };
 }
 

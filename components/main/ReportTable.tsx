@@ -115,7 +115,7 @@ export default function DeliveryOrders() {
       if (!isMoreThanOneMonth(startDate, endDate)) {
         const response = await fetch(
           // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-          `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+          `http://192.168.0.5:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
           {
             method: 'POST',
             headers: {
@@ -145,7 +145,7 @@ export default function DeliveryOrders() {
           
           const response = await fetch(
             // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-            `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+            `http://192.168.0.5:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
             {
               method: 'POST',
               headers: {
@@ -844,14 +844,6 @@ export default function DeliveryOrders() {
           </div>
         </div>
       </div>
-
-      <div className="mt-8">
-        <div className="rounded-lg border bg-[#171717] text-card-foreground shadow-sm p-6">
-          <h2 className="text-2xl font-semibold mb-6">Пользователи системы</h2>
-          <UserTable />
-        </div>
-      </div>
-
       <ScrollBar orientation="vertical" />
     </ScrollArea>
   );

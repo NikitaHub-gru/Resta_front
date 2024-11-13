@@ -9,13 +9,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { PlusIcon } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { useToast } from "@/hooks/use-toast"
-import { CORPORATIONS } from "@/lib/constants"
 
 interface AddReportDialogProps {
   onSuccess?: () => void;
+}
+
+interface Corporation {
+  [key: string]: string;
 }
 
 export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
@@ -29,18 +32,51 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
     is_active: true,
     corporation: ""
   })
-  const [hasFullAccess, setHasFullAccess] = useState(false)
+  const [corporations, setCorporations] = useState<Corporation>({})
 
-  // Проверяем права доступа при открытии диалога
-  const checkUserAccess = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      const userCorporation = session.user.user_metadata.corporation
-      const userRole = session.user.user_metadata.role
-      // Полный доступ есть у RestaLabs или у админов
-      setHasFullAccess(userCorporation === 'RestaLabs' || userRole === 'Admin')
+  useEffect(() => {
+    const fetchCorporations = async () => {
+      try {
+        console.log('Fetching corporations...');
+        const response = await fetch('http://192.168.0.5:8000/olap/get_corporations', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch corporations: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Corporations data received:', data);
+        
+        if (typeof data === 'object' && data !== null) {
+          setCorporations(data);
+        } else {
+          throw new Error('Invalid data format received');
+        }
+      } catch (error) {
+        console.error('Error fetching corporations:', error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить список корпораций",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchCorporations();
+    
+    if (open) {
+      fetchCorporations();
     }
-  }
+  }, [open]);
+
+  useEffect(() => {
+    console.log('Corporations state updated:', corporations);
+  }, [corporations]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,12 +87,10 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
         throw new Error('Необходима авторизации')
       }
 
-      const userCorporation = session.user.user_metadata.corporation
-
       const reportData = {
         tb_name: formData.tb_name,
         descript: formData.descript,
-        corporation: hasFullAccess ? formData.corporation : userCorporation,
+        corporation: formData.corporation,
         data: formData.data,
         report_type: formData.report_type,
         is_active: formData.is_active,
@@ -98,15 +132,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
   }
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(newOpen) => {
-        setOpen(newOpen)
-        if (newOpen) {
-          checkUserAccess()
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="bg-white text-black">
           <PlusIcon className="h-4 w-4 mr-2" />
@@ -131,27 +157,32 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
             />
           </div>
 
-          {hasFullAccess && (
-            <div className="space-y-2">
-              <label htmlFor="corporation" className="text-sm font-medium">
-                Корпорация
-              </label>
-              <select
-                id="corporation"
-                value={formData.corporation}
-                onChange={(e) => setFormData({ ...formData, corporation: e.target.value })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                required
-              >
-                <option value="">Выберите корпорацию</option>
-                {CORPORATIONS.map((corp) => (
-                  <option key={corp} value={corp}>
-                    {corp}
+          <div className="space-y-2">
+            <label htmlFor="corporation" className="text-sm font-medium">
+              Корпорация
+            </label>
+            <select
+              id="corporation"
+              value={formData.corporation}
+              onChange={(e) => {
+                console.log('Selected corporation:', e.target.value);
+                setFormData({ ...formData, corporation: e.target.value });
+              }}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              required
+            >
+              <option value="">Выберите корпорацию</option>
+              {Object.entries(corporations).length > 0 ? (
+                Object.entries(corporations).map(([id, name]) => (
+                  <option key={id} value={name}>
+                    {name}
                   </option>
-                ))}
-              </select>
-            </div>
-          )}
+                ))
+              ) : (
+                <option value="" disabled>Загрузка корпораций...</option>
+              )}
+            </select>
+          </div>
 
           <div className="space-y-2">
             <label htmlFor="descript" className="text-sm font-medium">
@@ -224,5 +255,5 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 } 

@@ -34,19 +34,32 @@ interface SidebarLinkProps {
 export function SidebarDemo({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [userData, setUserData] = useState<{ name: string; email: string; corporation: string }>({
+  const [userData, setUserData] = useState<{ 
+    name: string; 
+    email: string; 
+    corporation: string;
+    role: string;
+  }>({
     name: "",
     email: "",
     corporation: "",
+    role: "",
   });
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const user = await getAuthUser();
+      const user = (await getAuthUser()) as {
+        email: string | undefined;
+        name: any;
+        corporation: any;
+        role: string;
+      };
       setUserData({
         name: user?.name || "",
         email: user?.email || "",
-        corporation: user?.corporation || "RestaLabs"
+        corporation: user?.corporation || "RestaLabs",
+        role: user?.role || "",
       });
     };
     fetchUser();
@@ -131,11 +144,13 @@ const adminLinks = [
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
-            <div className="mt-8 flex justify-start flex-col gap-2">
-              {adminLinks.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
-            </div>
+            {userData.role === 'Admin' && (
+              <div className="mt-8 flex justify-start flex-col gap-2">
+                {adminLinks.map((link, idx) => (
+                  <SidebarLink key={idx} link={link} />
+                ))}
+              </div>
+            )}
           </div>
 
           <div>

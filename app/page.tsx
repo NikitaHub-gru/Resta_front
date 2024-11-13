@@ -12,11 +12,9 @@ export default function Home() {
     <div className="h-screen w-screen">
       <SidebarDemo>
         <Dashboard>
-          <ul>
-            {users?.map((user: any) => (
-              <li key={user.id}>{user.email}</li>
-            ))}
-          </ul>
+        <div className="flex justify-center items-center h-full">
+          <h1 className="text-5xl font-bold">Hello</h1>
+        </div>
         </Dashboard>
       </SidebarDemo>
     </div>

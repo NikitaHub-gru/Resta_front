@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Search, Pencil, Trash2, Terminal } from "lucide-react";
+import { Search, Pencil, Trash2, Terminal, PlusCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
@@ -31,6 +31,7 @@ import { Check } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2 } from "lucide-react";
 import { CircleX } from "lucide-react";
+import { EditUserDialog } from "@/components/ui/edit-user-dialog";
 
 interface User {
   id: string;
@@ -48,6 +49,10 @@ export function UserTable() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [currentUserCorporation] = useState<string>("RestaLabs");
+  const [isAddingUser, setIsAddingUser] = useState(false);
+
 
   useEffect(() => {
     fetchUsers();
@@ -55,7 +60,13 @@ export function UserTable() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/olap/users');
+      let url = 'http://192.168.0.5:8000/olap/users';
+      
+      if (currentUserCorporation && currentUserCorporation !== 'RestaLabs') {
+        url += `?corporation=${currentUserCorporation}`;
+      }
+
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch users');
       
       const { data } = await response.json();
@@ -64,7 +75,7 @@ export function UserTable() {
       console.error('Ошибка при загрузке пользователей:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось загрузить список пользователей",
+        description: "Не удалоь загрузить список пользователей",
         variant: "destructive",
       });
     } finally {
@@ -94,7 +105,11 @@ export function UserTable() {
 
   const handleDeleteUser = async (user: User) => {
     try {
-      const response = await fetch(`http://localhost:8000/olap/delete_users/${user.id}`, {
+      if (currentUserCorporation !== 'RestaLabs' && user.corporation !== currentUserCorporation) {
+        throw new Error('У вас нет прав для удаления этого пользователя');
+      }
+
+      const response = await fetch(`http://192.168.0.5:8000/olap/delete_users/${user.id}`, {
         method: 'POST',
       });
 
@@ -146,8 +161,156 @@ export function UserTable() {
       }
     } catch (error) {
       console.error('Error during delete:', error);
+      toast({
+        title: "",
+        description: (
+          <Alert className="border-0 bg-transparent">
+            <div className="flex items-center">
+              <CircleX className="h-4 w-4 ml-1 text-red-600" />
+              <AlertTitle className="ml-2 text-red-600">Ошибка</AlertTitle>
+            </div>
+            <AlertDescription className="ml-2 text-muted-foreground">
+              {error instanceof Error ? error.message : "Не удалось удалить пользователя"}
+            </AlertDescription>
+          </Alert>
+        ),
+        variant: "default",
+      });
     } finally {
       setUserToDelete(null);
+    }
+  };
+
+  const handleSaveUser = async (userData: any) => {
+    try {
+      if (!editingUser) return;
+
+      if (currentUserCorporation !== 'RestaLabs' && editingUser.corporation !== currentUserCorporation) {
+        throw new Error('У вас нет прав для редактирвания этого пользователя');
+      }
+
+      if (currentUserCorporation !== 'RestaLabs') {
+        userData.corporation = currentUserCorporation;
+      }
+
+      const numericId = editingUser.id.replace(/-/g, '');
+
+      const queryParams = new URLSearchParams({
+        email: userData.email,
+        first_name: userData.first_name || '',
+        name: userData.name,
+        corporation: userData.corporation,
+        role: userData.role,
+        ...(userData.password ? { password: userData.password } : {})
+      });
+
+      const response = await fetch(
+        `http://192.168.0.5:8000/olap/edit_user/${numericId}?${queryParams}`,
+        { method: 'PUT' }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to update user');
+      }
+
+      toast({
+        title: "",
+        description: (
+          <Alert className="border-0 bg-transparent">
+            <div className="flex items-center">
+              <CheckCircle2 className="h-4 w-4 ml-1 text-green-500" />
+              <AlertTitle className="ml-2 text-green-500">Успешно</AlertTitle>
+            </div>
+            <AlertDescription className="ml-2 text-muted-foreground">
+              Пользователь {userData.email} успешно обновлен
+            </AlertDescription>
+          </Alert>
+        ),
+        variant: "default",
+      });
+
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast({
+        title: "",
+        description: (
+          <Alert className="border-0 bg-transparent">
+            <div className="flex items-center">
+              <CircleX className="h-4 w-4 ml-1 text-red-600" />
+              <AlertTitle className="ml-2 text-red-600">Ошибка</AlertTitle>
+            </div>
+            <AlertDescription className="ml-2 text-muted-foreground">
+              {error instanceof Error ? error.message : "Не удалось обновить пользователя"}
+            </AlertDescription>
+          </Alert>
+        ),
+        variant: "default",
+      });
+    } finally {
+      setEditingUser(null);
+    }
+  };
+
+  const handleCreateUser = async (userData: any) => {
+    try {
+      console.log('Creating user with data:', userData);
+
+      // Формируем URL в правильном формате
+      const url = `http://192.168.0.5:8000/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`;
+
+      console.log('Request URL:', url);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Не удалось создать пользователя');
+      }
+
+      toast({
+        title: "",
+        description: (
+          <Alert className="border-0 bg-transparent">
+            <div className="flex items-center">
+              <CheckCircle2 className="h-4 w-4 ml-1 text-green-500" />
+              <AlertTitle className="ml-2 text-green-500">Успешно</AlertTitle>
+            </div>
+            <AlertDescription className="ml-2 text-muted-foreground">
+              Пользователь {userData.email} успешно создан
+            </AlertDescription>
+          </Alert>
+        ),
+        variant: "default",
+      });
+
+      // Закрываем диалог
+      setIsAddingUser(false);
+      // Обновляем список пользователей
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      toast({
+        title: "",
+        description: (
+          <Alert className="border-0 bg-transparent">
+            <div className="flex items-center">
+              <CircleX className="h-4 w-4 ml-1 text-red-600" />
+              <AlertTitle className="ml-2 text-red-600">Ошибка</AlertTitle>
+            </div>
+            <AlertDescription className="ml-2 text-muted-foreground">
+              {error instanceof Error ? error.message : "Не удалось создать пользователя"}
+            </AlertDescription>
+          </Alert>
+        ),
+        variant: "default",
+      });
     }
   };
 
@@ -164,6 +327,13 @@ export function UserTable() {
               className="pl-8"
             />
           </div>
+          <Button 
+            className="flex items-center gap-2"
+            onClick={() => setIsAddingUser(true)}
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add User
+          </Button>
         </div>
 
         <div className="rounded-md border">
@@ -211,10 +381,7 @@ export function UserTable() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 p-0"
-                            onClick={() => {
-                              // Здесь будет логика редактирования
-                              console.log('Edit user:', user.id);
-                            }}
+                            onClick={() => setEditingUser(user)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -265,6 +432,23 @@ export function UserTable() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditUserDialog
+        user={editingUser || undefined}
+        isOpen={!!editingUser || isAddingUser}
+        onClose={() => {
+          setEditingUser(null);
+          setIsAddingUser(false);
+        }}
+        onSave={async (userData) => {
+          if (editingUser?.id) {
+            await handleSaveUser(userData);
+          } else {
+            await handleCreateUser(userData);
+          }
+        }}
+        currentUserCorporation={currentUserCorporation}
+      />
     </ScrollArea>
   );
 }

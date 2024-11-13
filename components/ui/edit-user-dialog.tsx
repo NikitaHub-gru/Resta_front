@@ -4,154 +4,138 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { User, CreateUserData } from "@/lib/supabaseDataBase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { USER_ROLES, CORPORATIONS } from "@/lib/constants";
-import { createUser} from "@/lib/newuser";
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle2, CircleX } from "lucide-react";
+import { useForm } from "react-hook-form";
+
+interface User {
+  id: string;
+  corporation: string;
+  email: string;
+  first_name: string;
+  name: string;
+  role: string;
+  created_at: string;
+}
 
 interface EditUserDialogProps {
   user?: User;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (userData: CreateUserData & { password?: string }) => Promise<void>;
+  onSave: (userData: any) => void;
+  currentUserCorporation: string;
 }
 
-async function updateUser(
-  userId: string, 
-  userData: {
-    name: string;
-    email: string;
-    role: string;
-    corporation: string;
-    password?: string;
-  }
-) {
-  try {
-    const response = await fetch(`/api/users/${userId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-        corporations: [userData.corporation], // Преобразуем в массив для API
-        ...(userData.password ? { password: userData.password } : {})
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to update user');
-    }
-
-    return { data, error: null };
-  } catch (error) {
-    console.error('Update user error:', error);
-    return { 
-      data: null, 
-      error: error instanceof Error ? error : new Error('An unknown error occurred') 
-    };
-  }
+interface Corporation {
+  id: string;
+  name: string;
 }
 
-export function EditUserDialog({ user, isOpen, onClose, onSave }: EditUserDialogProps) {
+export function EditUserDialog({
+  user,
+  isOpen,
+  onClose,
+  onSave,
+  currentUserCorporation = "RestaLabs",
+}: EditUserDialogProps) {
   const { toast } = useToast();
-  const [formData, setFormData] = useState<CreateUserData & { password?: string }>({
-    name: user?.name || "",
-    first_name: user?.first_name || "",
-    email: user?.email || "",
-    password: "",
-    corporation: user?.corporation || "",
-    role: user?.role || "",
+  const hasFullAccess = currentUserCorporation === 'RestaLabs';
+  const [corporations, setCorporations] = useState<Corporation[]>([]);
+  
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      first_name: "",
+      email: "",
+      password: "",
+      corporation: currentUserCorporation,
+      role: "",
+    },
   });
-  const [passwordError, setPasswordError] = useState<string>("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      if (!formData.name || !formData.email || !formData.corporation || !formData.role) {
-        toast({
-          title: "Ошибка ва��идации",
-          description: "Пожалуйста, заполните все обязательные поля",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!user && (!formData.password || formData.password.length < 6)) {
-        toast({
-          title: "Ошибка валидации",
-          description: "Пароль должен содержать минимум 6 символов",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (user) {
-        const { error: updateError } = await updateUser(user.id, {
-          name: formData.name,
-          email: formData.email,
-          role: formData.role,
-          corporation: formData.corporation,
-          ...(formData.password ? { password: formData.password } : {})
-        });
-        
-        if (updateError) {
-          throw new Error(updateError.message);
-        }
-
-        toast({
-          title: "Успех",
-          description: "Пользователь успешно обновлен",
-        });
-      } else {
-        const { data: authData, error: authError } = await createUser({
-          ...formData,
-          password: formData.password || ''
-        });
-        
-        if (authError) {
-          throw new Error(authError.message);
-        }
-
-        toast({
-          title: "Успех",
-          description: "Пользователь успешно создан",
-        });
-      }
-
-      if (user && !formData.password) {
-        const { password, ...dataWithoutPassword } = formData;
-        await onSave(dataWithoutPassword);
-      } else {
-        await onSave(formData);
-      }
-      
-      onClose();
-    } catch (error) {
-      console.error('Error details:', error);
-      toast({
-        title: "Ошибка",
-        description: error instanceof Error ? error.message : "Не удалось сохранить пользователя",
-        variant: "destructive",
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.name || "",
+        first_name: user.first_name || "",
+        email: user.email || "",
+        password: "",
+        corporation: user.corporation || currentUserCorporation,
+        role: user.role || "",
+      });
+    } else {
+      form.reset({
+        name: "",
+        first_name: "",
+        email: "",
+        password: "",
+        corporation: currentUserCorporation,
+        role: "",
       });
     }
-  };
+  }, [user, currentUserCorporation, form]);
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setFormData({ ...formData, password: newPassword });
-    
-    if (!user && newPassword.length > 0 && newPassword.length < 6) {
-      setPasswordError("Пароль должен содержать минимум 6 символов");
-    } else {
-      setPasswordError("");
+  useEffect(() => {
+    const fetchCorporations = async () => {
+      try {
+        const response = await fetch('http://192.168.0.5:8000/olap/get_corporations', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch corporations: ${response.status}`);
+        }
+        
+        const { data } = await response.json();
+        console.log('Corporations data received:', data);
+        
+        if (Array.isArray(data)) {
+          setCorporations(data);
+        } else {
+          throw new Error('Invalid data format received');
+        }
+      } catch (error) {
+        console.error('Error fetching corporations:', error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить список корпораций",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (isOpen) {
+      fetchCorporations();
+    }
+  }, [isOpen]);
+
+  const onSubmit = async (data: any) => {
+    try {
+      onSave(data);
+      onClose();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "",
+        description: (
+          <Alert className="border-0 bg-transparent">
+            <div className="flex items-center">
+              <CircleX className="h-4 w-4 ml-1 text-red-600" />
+              <AlertTitle className="ml-2 text-red-600">Ошибка</AlertTitle>
+            </div>
+            <AlertDescription className="ml-2 text-muted-foreground">
+              {error instanceof Error ? error.message : "Не удалось сохранить данные"}
+            </AlertDescription>
+          </Alert>
+        ),
+        variant: "default",
+      });
     }
   };
 
@@ -159,24 +143,22 @@ export function EditUserDialog({ user, isOpen, onClose, onSave }: EditUserDialog
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{user ? "Edit User" : "Add New User"}</DialogTitle>
+          <DialogTitle>{user?.id ? "Редактировать пользователя" : "Добавить пользователя"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
+            <Label htmlFor="name">Фамилия *</Label>
             <Input
               id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              {...form.register('name')}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="first_name">First Name</Label>
+            <Label htmlFor="first_name">Имя</Label>
             <Input
               id="first_name"
-              value={formData.first_name}
-              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+              {...form.register('first_name')}
             />
           </div>
           <div className="space-y-2">
@@ -184,56 +166,52 @@ export function EditUserDialog({ user, isOpen, onClose, onSave }: EditUserDialog
             <Input
               id="email"
               type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              {...form.register('email')}
               required
             />
           </div>
-          {!user && (
-            <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={handlePasswordChange}
-                required
-                placeholder="Enter password"
-              />
-              {passwordError && (
-                <p className="text-sm text-red-500 mt-1">
-                  {passwordError}
-                </p>
-              )}
-            </div>
-          )}
           <div className="space-y-2">
-            <Label htmlFor="corporation">Corporation *</Label>
+            <Label htmlFor="password">Пароль {!user && '*'}</Label>
+            <Input
+              id="password"
+              type="password"
+              {...form.register('password')}
+              required={!user}
+              placeholder={user ? "Оставьте пустым, чтобы не менять" : "Введите пароль"}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="corporation">Корпорация *</Label>
             <select
               id="corporation"
-              value={formData.corporation}
-              onChange={(e) => setFormData({ ...formData, corporation: e.target.value })}
+              {...form.register('corporation')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               required
+              disabled={!hasFullAccess}
             >
-              <option value="" disabled>Select corporation</option>
-              {CORPORATIONS.map((corp) => (
-                <option key={corp} value={corp}>
-                  {corp}
-                </option>
-              ))}
+              {hasFullAccess ? (
+                <>
+                  <option value="">Выберите корпорацию</option>
+                  {corporations.map((corp) => (
+                    <option key={corp.id} value={corp.name}>
+                      {corp.name}
+                    </option>
+                  ))}
+                </>
+              ) : (
+                <option value={currentUserCorporation}>{currentUserCorporation}</option>
+              )}
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role">Role *</Label>
+            <Label htmlFor="role">Роль *</Label>
             <select
               id="role"
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              {...form.register('role')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               required
             >
-              <option value="" disabled>Select role</option>
+              <option value="">Выберите роль</option>
               {USER_ROLES.map((role) => (
                 <option key={role} value={role}>
                   {role}
@@ -243,9 +221,9 @@ export function EditUserDialog({ user, isOpen, onClose, onSave }: EditUserDialog
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Отмена
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">Сохранить</Button>
           </div>
         </form>
       </DialogContent>

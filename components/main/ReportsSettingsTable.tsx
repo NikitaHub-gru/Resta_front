@@ -28,7 +28,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 interface Report {
   id: number
   corporation: string
-  user_id: string
+  // user_id: string
   tb_name: string
   descript: string
   data: any
@@ -84,7 +84,6 @@ export function ReportsSettingsTable() {
         .select(`
           id,
           corporation,
-          user_id,
           tb_name,
           descript,
           data,
