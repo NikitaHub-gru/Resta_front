@@ -60,7 +60,7 @@ export function UserTable() {
 
   const fetchUsers = async () => {
     try {
-      let url = 'http://192.168.0.5:8000/olap/users';
+      let url = 'https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/users';
       
       if (currentUserCorporation && currentUserCorporation !== 'RestaLabs') {
         url += `?corporation=${currentUserCorporation}`;
@@ -109,7 +109,7 @@ export function UserTable() {
         throw new Error('У вас нет прав для удаления этого пользователя');
       }
 
-      const response = await fetch(`http://192.168.0.5:8000/olap/delete_users/${user.id}`, {
+      const response = await fetch(`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/delete_users/${user.id}`, {
         method: 'POST',
       });
 
@@ -205,7 +205,7 @@ export function UserTable() {
       });
 
       const response = await fetch(
-        `http://192.168.0.5:8000/olap/edit_user/${numericId}?${queryParams}`,
+        `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/edit_user/${numericId}?${queryParams}`,
         { method: 'PUT' }
       );
 
@@ -258,7 +258,7 @@ export function UserTable() {
       console.log('Creating user with data:', userData);
 
       // Формируем URL в правильном формате
-      const url = `http://192.168.0.5:8000/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`;
+      const url = `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`;
 
       console.log('Request URL:', url);
 

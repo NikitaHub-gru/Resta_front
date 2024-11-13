@@ -81,7 +81,7 @@ export function EditUserDialog({
   useEffect(() => {
     const fetchCorporations = async () => {
       try {
-        const response = await fetch('http://192.168.0.5:8000/olap/get_corporations', {
+        const response = await fetch('https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_corporations', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
