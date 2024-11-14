@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Search, Pencil, Trash2, Terminal, PlusCircle } from "lucide-react";
+import { Search, Pencil, Trash2, PlusCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
@@ -33,30 +33,26 @@ import { CheckCircle2 } from "lucide-react";
 import { CircleX } from "lucide-react";
 import { EditUserDialog } from "@/components/ui/edit-user-dialog";
 
-interface User {
+interface UserData {
   id: string;
-  corporation: string;
   email: string;
-  first_name: string;
-  name: string;
-  role: string;
+  role?: string;
   created_at: string;
+  corporation: string;
+  first_name?: string;
+  name?: string;
+  password?: string;
 }
 
 export function UserTable() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<UserData | null>(null);
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [currentUserCorporation] = useState<string>("RestaLabs");
   const [isAddingUser, setIsAddingUser] = useState(false);
-
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -75,7 +71,7 @@ export function UserTable() {
       console.error('Ошибка при загрузке пользователей:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалоь загрузить список пользователей",
+        description: "Не удалоь загрузить список поьзователей",
         variant: "destructive",
       });
     } finally {
@@ -83,14 +79,14 @@ export function UserTable() {
     }
   };
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const filteredUsers = users.filter((user) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      user.email?.toLowerCase().includes(searchLower) ||
-      user.name?.toLowerCase().includes(searchLower) ||
-      user.first_name?.toLowerCase().includes(searchLower) ||
-      user.corporation?.toLowerCase().includes(searchLower) ||
-      user.role?.toLowerCase().includes(searchLower)
+      user.email?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -103,7 +99,7 @@ export function UserTable() {
     }
   };
 
-  const handleDeleteUser = async (user: User) => {
+  const handleDeleteUser = async (user: UserData) => {
     try {
       if (currentUserCorporation !== 'RestaLabs' && user.corporation !== currentUserCorporation) {
         throw new Error('У вас нет прав для удаления этого пользователя');
@@ -181,7 +177,7 @@ export function UserTable() {
     }
   };
 
-  const handleSaveUser = async (userData: any) => {
+  const handleSaveUser = async (userData: UserData) => {
     try {
       if (!editingUser) return;
 
@@ -195,14 +191,13 @@ export function UserTable() {
 
       const numericId = editingUser.id.replace(/-/g, '');
 
-      const queryParams = new URLSearchParams({
-        email: userData.email,
-        first_name: userData.first_name || '',
-        name: userData.name,
-        corporation: userData.corporation,
-        role: userData.role,
-        ...(userData.password ? { password: userData.password } : {})
-      });
+      const queryParams = new URLSearchParams();
+      if (userData.email) queryParams.set('email', userData.email);
+      if (userData.first_name) queryParams.set('first_name', userData.first_name);
+      if (userData.name) queryParams.set('name', userData.name);
+      if (userData.corporation) queryParams.set('corporation', userData.corporation);
+      if (userData.role) queryParams.set('role', userData.role);
+      if (userData.password) queryParams.set('password', userData.password);
 
       const response = await fetch(
         `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/edit_user/${numericId}?${queryParams}`,
@@ -253,7 +248,7 @@ export function UserTable() {
     }
   };
 
-  const handleCreateUser = async (userData: any) => {
+  const handleCreateUser = async (userData: UserData) => {
     try {
       console.log('Creating user with data:', userData);
 
@@ -368,7 +363,7 @@ export function UserTable() {
                         {[user.first_name, user.name].filter(Boolean).join(' ') || 'Не указано'}
                       </TableCell>
                       <TableCell>{user.email || 'Не указано'}</TableCell>
-                      <TableCell>{user.corporation || 'Не указано'}</TableCell>
+                      <TableCell>{user.corporation || 'Не указан'}</TableCell>
                       <TableCell>
                         <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10">
                           {user.role || 'Пользователь'}
@@ -401,7 +396,7 @@ export function UserTable() {
                 {!loading && filteredUsers.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-4">
-                      Пользователи не найдены
+                      Пользоватеи не найдены
                     </TableCell>
                   </TableRow>
                 )}
@@ -434,7 +429,13 @@ export function UserTable() {
       </AlertDialog>
 
       <EditUserDialog
-        user={editingUser || undefined}
+        user={editingUser ? {
+          ...editingUser,
+          first_name: editingUser.first_name || '',
+          name: editingUser.name || '',
+          role: editingUser.role || '',
+          corporation: editingUser.corporation || ''
+        } : undefined}
         isOpen={!!editingUser || isAddingUser}
         onClose={() => {
           setEditingUser(null);
