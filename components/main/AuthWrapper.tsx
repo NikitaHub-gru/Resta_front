@@ -33,6 +33,12 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     return () => subscription.unsubscribe()
   }, [router, pathname])
 
+  useEffect(() => {
+    if (session) {
+      // Используем session
+    }
+  }, [session])
+
   if (isLoading) {
     return <Component />
   }

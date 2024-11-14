@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { SidebarDemo } from "@/components/main/mailbar";
-import Dashboard from "@/components/main/rightbar";
+import { Dashboard } from "@/components/main/rightbar";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { Mistral } from "@mistralai/mistralai";
 import CodeComparison from "@/components/ui/code-comparison";
@@ -46,11 +46,6 @@ export default function ReportsPage() {
             console.error("Ошибка при получении ответа от AI:", error);
             setResponse("Ошибка при получении ответа от AI.");
         }
-    };
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(response);
-        alert("JSON скопирован в буфер обмена!");
     };
 
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { SidebarDemo } from "@/components/main/mailbar";
-import Dashboard from "@/components/main/rightbar";
+import { Dashboard } from "@/components/main/rightbar";
 import { ReportsSettingsTable } from "@/components/main/ReportsSettingsTable";
 
 export default function ReportsSettingsPage() {

@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody,  useSidebar } from "../ui/sidebar";
 import {
   IconArrowLeft,
-  IconBrandGithub,
   IconHome,
   IconLayoutDashboardFilled,
   IconReportAnalytics,
@@ -11,7 +10,6 @@ import {
   IconSettings,
   IconUserBolt,
   IconUsers,
-  IconLogout,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -29,15 +27,17 @@ interface SidebarLinkProps {
   };
 }
 
+interface UserData {
+  name: string;
+  email: string;
+  corporation: string;
+  role: string;
+}
+
 export function SidebarDemo({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [userData, setUserData] = useState<{ 
-    name: string; 
-    email: string; 
-    corporation: string;
-    role: string;
-  }>({
+  const [userData, setUserData] = useState<UserData>({
     name: "",
     email: "",
     corporation: "",

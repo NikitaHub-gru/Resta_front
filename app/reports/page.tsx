@@ -1,8 +1,8 @@
 "use client"
 
-import { SidebarDemo } from "@/components/main/mailbar"
-import ReportTable from "@/components/main/ReportTable"
-import Dashboard from "@/components/main/rightbar"
+import { SidebarDemo } from "@/components/main/mailbar";
+import { Dashboard } from "@/components/main/rightbar";
+import  ReportTable  from "@/components/main/ReportTable";
 
 export default function ReportsPage() {
   return (

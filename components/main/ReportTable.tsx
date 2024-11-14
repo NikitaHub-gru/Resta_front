@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Download, Search, SortAsc, SortDesc, Filter, X, Frown, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -57,6 +57,10 @@ interface TableData {
   // добавьте другие поля
 }
 
+interface ExportData {
+  [key: string]: string | number | Date | null;
+}
+
 export default function DeliveryOrders() {
   const [data, setData] = useState<DeliveryOrder[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
@@ -96,8 +100,8 @@ export default function DeliveryOrders() {
     return diffDays >= 15;
   };
 
-  // Обновленная функция загрузки данных
-  const fetchData = async () => {
+  // Оборачиваем fetchData в useCallback
+  const fetchData = useCallback(async () => {
     if (!startDate || !endDate || !selectedReport) {
       return;
     }
@@ -118,8 +122,8 @@ export default function DeliveryOrders() {
 
       if (!isMoreThanOneMonth(startDate, endDate)) {
         const response = await fetch(
-          `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-          // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+          // `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+          `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
           {
             method: 'POST',
             headers: {
@@ -148,8 +152,8 @@ export default function DeliveryOrders() {
           const periodEndDate = format(period.end, 'yyyy-MM-dd');
           
           const response = await fetch(
-            `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-            // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+            // `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+            `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
             {
               method: 'POST',
               headers: {
@@ -177,7 +181,7 @@ export default function DeliveryOrders() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [startDate, endDate, selectedReport]);
 
   // Вспомогательная функция для обработки полученных данных
   const processReceivedData = (receivedData: DeliveryOrder[]) => {
@@ -201,10 +205,6 @@ export default function DeliveryOrders() {
     });
     setFilters(initialFilters);
   };
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const handleSort = (key: string, sortType: "asc" | "desc" | "alpha-asc" | "alpha-desc") => {
     const sorted = [...data].sort((a, b) => {
@@ -359,9 +359,9 @@ export default function DeliveryOrders() {
   };
 
   // Обновим функцию для преобразования данных перед экспортом
-  const prepareDataForExport = (data: DeliveryOrder[]): any[] => {
+  const prepareDataForExport = (data: DeliveryOrder[]): ExportData[] => {
     return data.map(row => {
-      const transformedRow: { [key: string]: any } = {};
+      const transformedRow: ExportData = {};
       Object.entries(row).forEach(([key, value]) => {
         const russianKey = getColumnDisplayName(key);
         
@@ -544,21 +544,30 @@ export default function DeliveryOrders() {
                   <div className="flex gap-2">
                     <Button 
                       variant="link" 
-                      onClick={handleToday}
+                      onClick={() => {
+                        handleToday();
+                        // Убираем автоматический вызов fetchData
+                      }}
                       className="text-sm"
                     >
                       Сегодня
                     </Button>
                     <Button 
                       variant="link" 
-                      onClick={handleYesterday}
+                      onClick={() => {
+                        handleYesterday();
+                        // Убираем автоматический вызов fetchData
+                      }}
                       className="text-sm"
                     >
                       Вчера
                     </Button>
                     <Button 
                       variant="link" 
-                      onClick={handleWeek}
+                      onClick={() => {
+                        handleWeek();
+                        // Убираем автоматический вызов fetchData
+                      }}
                       className="text-sm"
                     >
                       Неделя

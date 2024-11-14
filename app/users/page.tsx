@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { SidebarDemo } from "@/components/main/mailbar";
-import Dashboard from "@/components/main/rightbar";
+import { Dashboard } from "@/components/main/rightbar";
 import { Users } from "lucide-react";
 import { UserTable } from "@/components/ui/user-table";
 

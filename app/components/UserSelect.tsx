@@ -1,7 +1,19 @@
 import { useEffect, useState } from 'react';
 
-const UserSelect = ({ onChange }: { onChange: (user: any) => void }) => {
-  const [users, setUsers] = useState<any[]>([]);
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  role?: string;
+}
+
+interface UserSelectProps {
+  onChange: (user: User | null) => void;
+  value?: User;
+}
+
+const UserSelect: React.FC<UserSelectProps> = ({ onChange, value }) => {
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

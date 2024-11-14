@@ -23,8 +23,20 @@ const data = [
   { name: "Jun", value: 700 },
 ]
 
-const CustomXAxis = (props: any) => <XAxis {...props} allowDuplicatedCategory={false} />
-const CustomYAxis = (props: any) => <YAxis {...props} allowDecimals={false} />
+interface AxisProps {
+  dataKey: string;
+  stroke: string;
+  allowDecimals?: boolean;
+  allowDuplicatedCategory?: boolean;
+}
+
+const CustomXAxis: React.FC<AxisProps> = (props) => (
+  <XAxis {...props} allowDuplicatedCategory={false} />
+);
+
+const CustomYAxis: React.FC<AxisProps> = (props) => (
+  <YAxis {...props} allowDecimals={false} />
+);
 
 interface FeatureData {
   id: string;
@@ -73,7 +85,7 @@ export function FeaturesSection() {
                   <LineChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <CustomXAxis dataKey="name" stroke="black" />
-                    <CustomYAxis stroke="black" />
+                    <CustomYAxis dataKey="value" stroke="black" />
                     <Tooltip contentStyle={{ backgroundColor: 'black', color: 'white' }} />
                     <Line
                       type="monotone"
@@ -100,7 +112,7 @@ export function FeaturesSection() {
                   <BarChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <CustomXAxis dataKey="name" stroke="white" />
-                    <CustomYAxis stroke="white" />
+                    <CustomYAxis dataKey="value" stroke="white" />
                     <Tooltip contentStyle={{ backgroundColor: 'black', color: 'white' }} />
                     <Bar
                       dataKey="value"
