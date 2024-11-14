@@ -9,7 +9,7 @@ interface User {
 
 interface UserSelectProps {
   onChange: (user: User | null) => void;
-  value?: User;
+  value?: User | null;
 }
 
 const UserSelect: React.FC<UserSelectProps> = ({ onChange, value }) => {
@@ -19,7 +19,7 @@ const UserSelect: React.FC<UserSelectProps> = ({ onChange, value }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users'); // Запрос к вашему API
+        const response = await fetch('/api/users');
         const data = await response.json();
 
         if (response.ok) {
@@ -42,11 +42,18 @@ const UserSelect: React.FC<UserSelectProps> = ({ onChange, value }) => {
   }
 
   return (
-    <select onChange={(e) => onChange(users[e.target.selectedIndex])}>
+    <select 
+      value={value?.id || ''}
+      onChange={(e) => {
+        const selectedUser = users.find(user => user.id === e.target.value);
+        onChange(selectedUser || null);
+      }}
+      className="w-full p-2 border rounded"
+    >
       <option value="">Выберите пользователя</option>
       {users.map((user) => (
         <option key={user.id} value={user.id}>
-          {user.email} {/* Предполагается, что у пользователя есть поле email */}
+          {user.email} {user.name ? `(${user.name})` : ''}
         </option>
       ))}
     </select>
