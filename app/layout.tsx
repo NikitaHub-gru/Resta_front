@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import AuthWrapper from "@/components/main/AuthWrapper";
 import { Toaster } from "@/components/ui/toaster";

@@ -3,20 +3,18 @@ import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody,  useSidebar } from "../ui/sidebar";
 import {
   IconArrowLeft,
-  IconDashboard,
+  IconBrandGithub,
   IconHome,
-  IconJson,
   IconLayoutDashboardFilled,
-  IconPhotoScan,
   IconReportAnalytics,
   IconRobot,
   IconSettings,
   IconUserBolt,
   IconUsers,
+  IconLogout,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";

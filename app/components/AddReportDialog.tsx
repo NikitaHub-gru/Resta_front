@@ -1,14 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import UserSelect from './UserSelect'; // Импортируйте компонент UserSelect
 
-const AddReportDialog = ({ onAddReport }: { onAddReport: (report: any) => void }) => {
-  const [reportData, setReportData] = useState({ title: '', content: '' });
+interface ReportDialogProps {
+  onSubmit: (data: ReportData) => void;
+  // другие props
+}
+
+interface ReportData {
+  title: string;
+  content: string;
+  userId: number;
+  // другие поля
+}
+
+const AddReportDialog = ({ onSubmit }: ReportDialogProps) => {
+  const [reportData, setReportData] = useState({ title: '', content: '', userId: 0 });
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedUser) {
-      onAddReport({ ...reportData, userId: selectedUser.id }); // Добавляем ID выбранного пользователя
+      onSubmit({ ...reportData, userId: selectedUser.id }); // Добавляем ID выбранного пользователя
     } else {
       console.error('Пользователь не выбран');
     }

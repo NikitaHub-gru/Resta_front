@@ -26,6 +26,22 @@ const data = [
 const CustomXAxis = (props: any) => <XAxis {...props} allowDuplicatedCategory={false} />
 const CustomYAxis = (props: any) => <YAxis {...props} allowDecimals={false} />
 
+interface FeatureData {
+  id: string;
+  title: string;
+  description: string;
+  // добавьте другие необходимые поля
+}
+
+const FeatureCard: React.FC<FeatureData> = ({ title, description }) => {
+  return (
+    <div className="p-6">
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </div>
+  );
+};
+
 export function FeaturesSection() {
   return (
     <section className="py-24">

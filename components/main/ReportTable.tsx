@@ -52,6 +52,11 @@ interface Report {
   corporation: string
 }
 
+interface TableData {
+  id: string;
+  // добавьте другие поля
+}
+
 export default function DeliveryOrders() {
   const [data, setData] = useState<DeliveryOrder[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
@@ -199,7 +204,7 @@ export default function DeliveryOrders() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleSort = (key: string, sortType: "asc" | "desc" | "alpha-asc" | "alpha-desc") => {
     const sorted = [...data].sort((a, b) => {

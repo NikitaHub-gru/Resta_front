@@ -25,24 +25,28 @@ import { Input } from "@/components/ui/input"
 import { CORPORATIONS } from "@/lib/constants"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
-interface Report {
-  id: number
-  corporation: string
-  // user_id: string
-  tb_name: string
-  descript: string
-  data: any
-  created_at: string
-  report_type: string
-  is_active: boolean
+interface ReportData {
+  id: string;
+  corporation: string;
+  tb_name: string;
+  descript: string;
+  data: any;
+  created_at: string;
+  report_type: string;
+  is_active: boolean;
+}
+
+interface FetchError {
+  message: string;
+  status?: number;
 }
 
 export function ReportsSettingsTable() {
-  const [reports, setReports] = useState<Report[]>([])
-  const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
+  const [reports, setReports] = useState<ReportData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingReport, setEditingReport] = useState<Report | null>(null);
+  const [editingReport, setEditingReport] = useState<ReportData | null>(null);
   const [editForm, setEditForm] = useState({
     tb_name: '',
     descript: '',
@@ -51,19 +55,6 @@ export function ReportsSettingsTable() {
     report_type: ''
   });
   const [session, setSession] = useState<any>(null);
-
-  useEffect(() => {
-    fetchReports()
-  }, [])
-
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      setSession(currentSession);
-    };
-    
-    getSession();
-  }, []);
 
   const fetchReports = async () => {
     try {
@@ -118,7 +109,20 @@ export function ReportsSettingsTable() {
     }
   }
 
-  const handleDelete = async (id: number) => {
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+    };
+    
+    getSession();
+  }, []);
+
+  const handleDelete = async (id: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Необходима авторизация')
@@ -156,7 +160,7 @@ export function ReportsSettingsTable() {
     }
   }
 
-  const handleEditClick = (report: Report) => {
+  const handleEditClick = (report: ReportData) => {
     setEditingReport(report);
     setEditForm({
       tb_name: report.tb_name,
