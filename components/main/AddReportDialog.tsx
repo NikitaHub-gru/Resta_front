@@ -18,7 +18,7 @@ interface AddReportDialogProps {
 }
 
 interface Corporation {
-  [key: string]: string;
+  [key: string]: string | { id: string; name: string } | null;
 }
 
 export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
@@ -49,14 +49,19 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
           throw new Error(`Failed to fetch corporations: ${response.status}`);
         }
         
-        const data = await response.json();
+        const { data } = await response.json();
         console.log('Corporations data received:', data);
         
-        if (typeof data === 'object' && data !== null) {
-          setCorporations(data);
-        } else {
-          throw new Error('Invalid data format received');
-        }
+        const formattedData = Object.entries(data).reduce((acc, [id, value]) => {
+          if (value && typeof value === 'object' && 'name' in value) {
+            acc[id] = (value as { name: string }).name;
+          } else {
+            acc[id] = String(value) || id;
+          }
+          return acc;
+        }, {} as Record<string, string>);
+        
+        setCorporations(formattedData);
       } catch (error) {
         console.error('Error fetching corporations:', error);
         toast({
@@ -79,57 +84,31 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
   }, [corporations]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        throw new Error('Необходима авторизации')
-      }
+      const jsonData = typeof formData.data === 'object' 
+        ? JSON.stringify(formData.data) 
+        : formData.data;
 
-      const reportData = {
-        tb_name: formData.tb_name,
-        descript: formData.descript,
-        corporation: formData.corporation,
-        data: formData.data,
-        report_type: formData.report_type,
-        is_active: formData.is_active,
-        user_id: session.user.id
-      }
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('Reports')
-        .insert([reportData])
-        .select()
-        .single()
+        .insert([
+          {
+            ...formData,
+            data: JSON.parse(jsonData),
+          },
+        ]);
 
-      if (error) throw error
-
-      toast({
-        title: "Успешно",
-        description: "Отчет создан",
-      })
-
-      setOpen(false)
-      setFormData({
-        tb_name: "",
-        descript: "",
-        data: "{}",
-        report_type: "SALES",
-        is_active: true,
-        corporation: ""
-      })
+      if (error) throw error;
       
-      onSuccess?.()
+      onSuccess?.();
+      setOpen(false);
+      
     } catch (error) {
-      console.error('Ошибка при создании отчета:', error)
-      toast({
-        title: "Ошибка",
-        description: error instanceof Error ? error.message : "Не удалось создать отчет",
-        variant: "destructive",
-      })
+      console.error('Error:', error);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -174,8 +153,8 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
               <option value="">Выберите корпорацию</option>
               {Object.entries(corporations).length > 0 ? (
                 Object.entries(corporations).map(([id, name]) => (
-                  <option key={id} value={name}>
-                    {name}
+                  <option key={id} value={typeof name === 'string' ? name : ''}>
+                    {typeof name === 'string' ? name : ''}
                   </option>
                 ))
               ) : (

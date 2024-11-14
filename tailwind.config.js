@@ -63,8 +63,19 @@ module.exports = {
   			pulse: 'pulse var(--duration) ease-out infinite',
   			orbit: 'orbit calc(var(--duration)*1s) linear infinite',
   			marquee: 'marquee var(--duration) infinite linear',
+        "meteor-effect": "meteor 5s linear infinite",
   			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
   		},
+      keyframes: {
+        meteor: {
+          "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+          "70%": { opacity: "1" },
+          "100%": {
+            transform: "rotate(215deg) translateX(-500px)",
+            opacity: "0",
+          },
+        },
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
