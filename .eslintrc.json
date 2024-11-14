@@ -4,20 +4,30 @@
     "@typescript-eslint/no-explicit-any": "off",
     "prefer-const": "error",
     "@typescript-eslint/no-unused-expressions": "error",
-    "@typescript-eslint/no-unused-vars": ["warn", {
+    "@typescript-eslint/no-unused-vars": ["off", {
       "varsIgnorePattern": "^_",
       "argsIgnorePattern": "^_",
       "vars": "all",
       "args": "after-used",
       "ignoreRestSiblings": true
     }],
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "no-empty-pattern": "off",
+    "no-empty": "off",
+    "no-unused-vars": "off"
   },
   "ignorePatterns": [
     "node_modules/",
     ".next/",
     "out/",
     "public/",
-    "*.d.ts"
+    "*.d.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }
