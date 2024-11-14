@@ -30,7 +30,6 @@ import {
 import { getColumnDisplayName, getColumnOriginalName } from '@/lib/const';
 import { addDays, subDays, startOfWeek, startOfMonth, endOfMonth, addMonths } from "date-fns";
 import { supabase } from "@/lib/supabaseClient"
-import { UserTable } from "@/components/ui/user-table";
 
 type DeliveryOrder = {
   [key: string]: string | number | null;
@@ -114,7 +113,7 @@ export default function DeliveryOrders() {
 
       if (!isMoreThanOneMonth(startDate, endDate)) {
         const response = await fetch(
-          `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+          `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
           // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
           {
             method: 'POST',
@@ -144,7 +143,7 @@ export default function DeliveryOrders() {
           const periodEndDate = format(period.end, 'yyyy-MM-dd');
           
           const response = await fetch(
-            `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+            `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
             // `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
             {
               method: 'POST',
