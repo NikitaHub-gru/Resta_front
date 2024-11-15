@@ -2,5 +2,8 @@
 const nextConfig = {
   swcMinify: false,
 }
-
-module.exports = nextConfig
+module.exports = {
+  images: {
+    unoptimized: true,
+  },
+}
