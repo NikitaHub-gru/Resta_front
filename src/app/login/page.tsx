@@ -9,7 +9,7 @@ import ForgotPasswordPopup from "@/components/ui/forgot-password-popup"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 import { BorderBeam } from "@/components/ui/border-beam";
-import { header_font, main_text_font } from "@/app/fonts/font";
+import { header_font, main_text_font } from "@/src/app/fonts/font";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 
 

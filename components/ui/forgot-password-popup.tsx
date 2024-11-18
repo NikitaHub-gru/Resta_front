@@ -6,7 +6,7 @@ import { X, Mail } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabaseClient";
 import ShinyButton from "@/components/ui/shiny-button";
-import { main_text_font, header_font } from "@/app/fonts/font";
+import { main_text_font, header_font } from "@/src/app/fonts/font";
 
 interface ForgotPasswordPopupProps {
   isOpen: boolean;

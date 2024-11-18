@@ -9,7 +9,7 @@ import { DotPattern } from "@/components/ui/dot-pattern";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { BorderBeam } from "@/components/ui/border-beam";
-import { header_font } from "@/app/fonts/font";
+import { header_font } from "@/src/app/fonts/font";
 export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
