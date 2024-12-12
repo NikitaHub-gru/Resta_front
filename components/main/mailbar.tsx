@@ -81,7 +81,24 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
         <IconHome className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-    ...(userData.corporation === "Grill№1"
+    ...(userData.corporation === "RestaLabs"
+      ? [
+          {
+            label: "Поиск заказов",
+            href: "/orders",
+            icon: (
+              <IconShoppingCartSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
+          {
+            label: "Отчеты",
+            href: "/reports",
+            icon: (
+              <IconLayoutDashboardFilled className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
+        ]
+      : userData.corporation === "Grill№1"
       ? [
           {
             label: "Поиск заказов",
