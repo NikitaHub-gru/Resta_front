@@ -2,10 +2,12 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+
+    // Or if using `src` directory:
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -44,11 +46,11 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
         neutral: {
-          950: '#0a0a0a',
-          900: '#171717',
-          800: '#262626',
-          700: '#404040',
-        }
+          950: "#0a0a0a",
+          900: "#171717",
+          800: "#262626",
+          700: "#404040",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -56,16 +58,17 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       animation: {
-  			shimmer: 'shimmer 2s linear infinite',
-  			'shimmer-slide': 'shimmer-slide var(--speed) ease-in-out infinite alternate',
-  			'spin-around': 'spin-around calc(var(--speed) * 2) infinite linear',
-  			'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
-  			pulse: 'pulse var(--duration) ease-out infinite',
-  			orbit: 'orbit calc(var(--duration)*1s) linear infinite',
-  			marquee: 'marquee var(--duration) infinite linear',
+        shimmer: "shimmer 2s linear infinite",
+        "shimmer-slide":
+          "shimmer-slide var(--speed) ease-in-out infinite alternate",
+        "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
+        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
+        pulse: "pulse var(--duration) ease-out infinite",
+        orbit: "orbit calc(var(--duration)*1s) linear infinite",
+        marquee: "marquee var(--duration) infinite linear",
         "meteor-effect": "meteor 5s linear infinite",
-  			'marquee-vertical': 'marquee-vertical var(--duration) linear infinite'
-  		},
+        "marquee-vertical": "marquee-vertical var(--duration) linear infinite",
+      },
       keyframes: {
         meteor: {
           "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
@@ -79,4 +82,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} 
+};

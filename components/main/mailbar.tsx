@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Sidebar, SidebarBody,  useSidebar } from "../ui/sidebar";
+import { Sidebar, SidebarBody, useSidebar } from "../ui/sidebar";
 import {
   IconArrowLeft,
   IconHome,
@@ -10,6 +10,7 @@ import {
   IconSettings,
   IconUserBolt,
   IconUsers,
+  IconShoppingCartSearch,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -66,9 +67,9 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     } else {
-      router.push('/login');
+      router.push("/login");
     }
   };
 
@@ -80,13 +81,25 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
         <IconHome className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-    {
-      label: "Отчеты",
-      href: "/reports",
-      icon: (
-        <IconLayoutDashboardFilled className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
+    ...(userData.corporation === "Grill№1"
+      ? [
+          {
+            label: "Поиск заказов",
+            href: "/orders",
+            icon: (
+              <IconShoppingCartSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
+        ]
+      : [
+          {
+            label: "Отчеты",
+            href: "/reports",
+            icon: (
+              <IconLayoutDashboardFilled className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
+        ]),
     {
       label: "Dashboard",
       href: "#",
@@ -94,37 +107,36 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
         <IconReportAnalytics className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
-
   ];
 
-const adminLinks = [
-  {
-    label: "Админка",
-    href: "#",
-    className: "py-4 gap-2 ",
-  },
-  {
-    label: "Настройки",
-    href: "/reportsSettings",
-    icon: (
-      <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-  {
-    label: "Пользователи",
-    href: "/users",
-    icon: (
-      <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-  {
-    label: "RestaAi",
-    href: "/RestaAi",
-    icon: (
-      <IconRobot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-    ),
-  },
-]
+  const adminLinks = [
+    {
+      label: "Админка",
+      href: "#",
+      className: "py-4 gap-2 ",
+    },
+    {
+      label: "Настройки",
+      href: "/reportsSettings",
+      icon: (
+        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Пользователи",
+      href: "/users",
+      icon: (
+        <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "RestaAi",
+      href: "/RestaAi",
+      icon: (
+        <IconRobot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+  ];
 
   return (
     <div
@@ -142,7 +154,7 @@ const adminLinks = [
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
-            {userData.role === 'Admin' && (
+            {userData.role === "Admin" && (
               <div className="mt-8 flex justify-start flex-col gap-2">
                 {adminLinks.map((link, idx) => (
                   <SidebarLink key={idx} link={link} />
@@ -152,25 +164,27 @@ const adminLinks = [
           </div>
 
           <div>
-            <SidebarLink 
+            <SidebarLink
               link={{
                 label: userData.name,
                 href: "#",
-                icon: <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-6 w-6 flex-shrink-0" />
+                icon: (
+                  <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-6 w-6 flex-shrink-0" />
+                ),
               }}
             />
           </div>
           <div className="flex flex-col gap-2 justify-end">
-            <SidebarLink 
+            <SidebarLink
               link={{
-              label: "Logout",
-              href: "#",
-              icon: (
+                label: "Logout",
+                href: "#",
+                icon: (
                   <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
                 ),
-              onClick: handleLogout, // Добавляем обработчик
-            }}
-          />
+                onClick: handleLogout, // Добавляем обработчик
+              }}
+            />
           </div>
         </SidebarBody>
       </Sidebar>
@@ -178,7 +192,11 @@ const adminLinks = [
     </div>
   );
 }
-export const Logo = ({ userData }: { userData: { name: string; email: string; corporation: string } }) => {
+export const Logo = ({
+  userData,
+}: {
+  userData: { name: string; email: string; corporation: string };
+}) => {
   return (
     <Link
       href="#"
@@ -208,7 +226,6 @@ export const LogoIcon = () => {
 
 // Dummy dashboard component with content
 
-
 const SidebarLink = ({ link }: SidebarLinkProps) => {
   const { open } = useSidebar();
   const handleClick = (e: React.MouseEvent) => {
@@ -226,7 +243,7 @@ const SidebarLink = ({ link }: SidebarLinkProps) => {
     >
       {link.icon}
       {open && (
-        <motion.span 
+        <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
