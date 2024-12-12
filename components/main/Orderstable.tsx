@@ -426,7 +426,7 @@ export default function DeliveryOrders() {
     }
   };
 
-  // Обновим ф��нкцию для преобразования данных перед экспортом
+  // Обновим функцию для преобразования данных перед экспортом
   const prepareDataForExport = (data: DeliveryOrder[]): ExportData[] => {
     return data.map((row) => {
       const transformedRow: ExportData = {};
@@ -587,7 +587,7 @@ export default function DeliveryOrders() {
                         variant="outline"
                         className="min-w-[155px] max-w-[300px] items-center justify-start text-left font-normal bg-[#171717]"
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4 " />
+                        <CalendarIcon className="mr-2 h-4 w-4" />
                         {startDate && endDate
                           ? format(startDate, "d MMMM yyyy", { locale: ru }) +
                             " - " +
@@ -692,7 +692,7 @@ export default function DeliveryOrders() {
                   <div className="absolute left-0 top-0 h-24 w-24 animate-spin rounded-full border-4 border-t-primary"></div>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <p className="text-lg font-medium">Загрузка анных</p>
+                  <p className="text-lg font-medium">Загрузка данных</p>
                   <p className="text-sm text-muted-foreground">
                     Пожалуйста, подождите...
                   </p>
@@ -790,7 +790,7 @@ export default function DeliveryOrders() {
                       XLSX.utils.book_append_sheet(
                         workbook,
                         worksheet,
-                        "Заказы на доставку"
+                        "Заказы на достав��у"
                       );
                       XLSX.writeFile(
                         workbook,
@@ -962,7 +962,7 @@ export default function DeliveryOrders() {
                                             handleSort(column, "alpha-desc")
                                           }
                                         >
-                                          Сортировать по алфавиту (Я-��)
+                                          Сортировать по алфа��иту (Я-А)
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
