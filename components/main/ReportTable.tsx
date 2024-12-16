@@ -1,5 +1,7 @@
 "use client";
 
+const ALL_COMPANIES = "all_companies";
+
 import { useState, useEffect, useCallback } from "react";
 import {
   Download,
@@ -11,6 +13,7 @@ import {
   Frown,
   CalendarIcon,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import * as XLSX from "xlsx";
@@ -99,6 +102,9 @@ export default function DeliveryOrders() {
   const [isLoading, setIsLoading] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  // Add new states for company handling
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<string>("");
 
   // Добавим функцию для разбиения периода на месяцы
   const getMonthPeriods = (
@@ -487,6 +493,12 @@ export default function DeliveryOrders() {
     fetchAvailableReports();
   }, []);
 
+  // Add function to extract unique companies from reports
+  const extractCompanies = (reports: Report[]) => {
+    const uniqueCompanies = Array.from(new Set(reports.map(report => report.corporation)));
+    setCompanies(uniqueCompanies);
+  };
+
   const fetchAvailableReports = async () => {
     try {
       const {
@@ -506,11 +518,18 @@ export default function DeliveryOrders() {
       if (error) throw error;
 
       setReports(data);
+      extractCompanies(data);
     } catch (error) {
       console.error("Ошибка загрузки отчетов:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Add company selection handler
+  const handleCompanySelect = (company: string) => {
+    setSelectedCompany(company === ALL_COMPANIES ? "" : company);
+    setSelectedReport(null); // Reset selected report when company changes
   };
 
   // Обработчик выбора отчета
@@ -522,39 +541,58 @@ export default function DeliveryOrders() {
     <ScrollArea className="h-[calc(100vh-2rem)] w-full">
       <div className="container mx-auto py-10">
         <div className="rounded-lg border bg-[#171717] text-card-foreground shadow-sm">
-          <div className="flex flex-col space-y-1.5 p-6">
+            <div className="flex flex-col space-y-1.5 p-6">
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-semibold leading-none tracking-tight">
-                  {selectedReport?.tb_name || "Выберите отчет"}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {selectedReport?.descript || "Описание отчета будет здесь"}
-                </p>
+              <h2 className="text-2xl font-semibold leading-none tracking-tight">
+                {selectedReport?.tb_name || "Выберите отчет"}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {selectedReport?.descript || "Описание отчета будет здесь"}
+              </p>
               </div>
-              <div className="flex items-center gap-4">
-                <select
-                  value={selectedReport?.id || ""}
-                  onChange={(e) => {
-                    const report = reports.find(
-                      (r) => r.id === Number(e.target.value)
-                    );
-                    if (report) handleReportSelect(report);
-                  }}
-                  className="flex h-10 w-[300px] rounded-md border border-input bg-[#171717] px-3 py-2 text-sm ring-offset-background [&>option:hover]:bg-muted [&>option]:bg-[#171717] hover:cursor-pointer"
-                >
-                  <option value="" disabled>
-                    Выберите отчет
-                  </option>
-                  {reports.map((report) => (
-                    <option key={report.id} value={report.id}>
-                      {report.tb_name}
-                    </option>
+                <div className="flex items-center gap-4">
+                {/* Company select */}
+                <Select value={selectedCompany || ALL_COMPANIES} onValueChange={handleCompanySelect}>
+                  <SelectTrigger className="w-[200px] bg-[#171717]">
+                  <SelectValue placeholder="Все компании" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  <SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
+                  {companies.map((company) => (
+                  <SelectItem key={company} value={company}>
+                  {company}
+                  </SelectItem>
                   ))}
-                </select>
-              </div>
+                  </SelectContent>
+                </Select>
+                
+                {/* Report select */}
+                <Select 
+                  value={selectedReport?.id?.toString() || ""} 
+                  onValueChange={(value) => {
+                  const report = reports
+                    .filter(r => !selectedCompany || r.corporation === selectedCompany)
+                    .find(r => r.id === Number(value));
+                  if (report) handleReportSelect(report);
+                  }}
+                >
+                  <SelectTrigger className="w-[300px] bg-[#171717]">
+                  <SelectValue placeholder="Выберите отчет" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  {reports
+                    .filter(report => !selectedCompany || report.corporation === selectedCompany)
+                    .map((report) => (
+                    <SelectItem key={report.id} value={report.id.toString()}>
+                      {report.tb_name}
+                    </SelectItem>
+                  ))}
+                  </SelectContent>
+                </Select>
+                </div>
             </div>
-          </div>
+            </div>
 
           <div className="p-6 pt-0">
             {/* Добавляем выбор периода */}
