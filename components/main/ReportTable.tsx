@@ -67,6 +67,18 @@ type FilterConfig = {
   [key: string]: Set<string>;
 };
 
+// Helper function to parse delivery zone with color
+const parseDeliveryZone = (value: string) => {
+  const match = value.match(/\[(#[0-9A-Fa-f]{6})\](.*)/);
+  if (match) {
+    return {
+      color: match[1],
+      text: match[2].trim()
+    };
+  }
+  return null;
+};
+
 interface Report {
   id: number;
   tb_name: string;
@@ -81,7 +93,14 @@ interface TableData {
 }
 
 interface ExportData {
-  [key: string]: string | number | Date | null;
+  [key: string]: string | number | Date | null | {
+    v: string | number;
+    s: {
+      fill: {
+        fgColor: { rgb: string }
+      }
+    }
+  };
 }
 
 export default function DeliveryOrders() {
@@ -360,11 +379,11 @@ export default function DeliveryOrders() {
   const formatCellValue = (
     value: string | number | null,
     column: string
-  ): string => {
+  ): string | JSX.Element => {
     if (value === null || value === undefined || value === "") return "—";
 
     if (column === "OrderTime.OrderLength") {
-      return `${value} мин.`;
+      return `${value}`;
     }
 
     if (
@@ -372,12 +391,41 @@ export default function DeliveryOrders() {
       (column.toLowerCase().includes("date") &&
         column !== "OrderTime.OrderLength")
     ) {
+      if (column === "cookingTosend_time") {
+        const numericValue = parseFloat(String(value));
+        const color = numericValue > 40 ? "#ff0000" : "#00ff00";
+        return (
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-block w-3 h-3 rounded-full"
+              style={{ backgroundColor: color }}
+            />
+            <span>{`${value}`}</span>
+          </div>
+        );
+      }
       return formatDate(String(value));
     }
 
+    // Handle delivery zone with color
+    if (column === "delivery_zone" && typeof value === "string") {
+      const zoneInfo = parseDeliveryZone(value);
+      if (zoneInfo) {
+        return (
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-block w-3 h-3 rounded-full"
+              style={{ backgroundColor: zoneInfo.color }}
+            />
+            <span>{zoneInfo.text}</span>
+          </div>
+        );
+      }
+    }
+
+    // Default case: convert value to string
     return String(value);
   };
-
   // Добавим функцию для расчета ширины колонки
   const calculateColumnWidth = (columnName: string): number => {
     const displayName = getColumnDisplayName(columnName);
@@ -421,7 +469,32 @@ export default function DeliveryOrders() {
         const russianKey = getColumnDisplayName(key);
 
         if (key === "OrderTime.OrderLength") {
-          transformedRow[russianKey] = value ? `${value} мин.` : "—";
+          transformedRow[russianKey] = value ? `${value}` : "—";
+        } else if (key === "delivery_zone" && typeof value === "string") {
+          const zoneInfo = parseDeliveryZone(value);
+          if (zoneInfo) {
+            transformedRow[russianKey] = {
+              v: zoneInfo.text,
+              s: {
+                fill: {
+                  fgColor: { rgb: zoneInfo.color.replace('#', '') }
+                }
+              }
+            };
+          } else {
+            transformedRow[russianKey] = value;
+          }
+        } else if (key === "cookingTosend_time") {
+          const numericValue = parseFloat(String(value));
+          const color = numericValue > 40 ? "#ff0000" : "#00ff00";
+          transformedRow[russianKey] = {
+            v: `${value}`,
+            s: {
+              fill: {
+                fgColor: { rgb: color.replace('#', '') }
+              }
+            }
+          };
         } else if (
           key.toLowerCase().includes("time") ||
           (key.toLowerCase().includes("date") &&
@@ -447,7 +520,7 @@ export default function DeliveryOrders() {
     if (value === "Пуо") return value;
 
     if (column === "OrderTime.OrderLength") {
-      return `${value} мин.`;
+      return `${value}`;
     }
 
     if (
@@ -544,7 +617,7 @@ export default function DeliveryOrders() {
             <div className="flex flex-col space-y-1.5 p-6">
             <div className="flex justify-between items-center">
               <div>
-              <h2 className="text-2xl font-semibold leading-none tracking-tight">
+              <h2 className="text-2xl font-semibold leading-none tracking-tight mb-5">
                 {selectedReport?.tb_name || "Выберите отчет"}
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -725,11 +798,11 @@ export default function DeliveryOrders() {
                     XLSX.utils.book_append_sheet(
                       workbook,
                       worksheet,
-                      "Заказы на доставк"
+                      `Кастомный отчет ${selectedReport?.tb_name}`
                     );
                     XLSX.writeFile(
                       workbook,
-                      `delivery_orders_${format(new Date(), "yyyy-MM-dd")}.xlsx`
+                      `${selectedReport?.tb_name}${format(new Date(), "yyyy-MM-dd")}.xlsx`
                     );
                   }}
                 >
@@ -750,51 +823,60 @@ export default function DeliveryOrders() {
                     <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                   <Button
-                    onClick={() => {
-                      const exportData = prepareDataForExport(filteredData);
-                      const worksheet = XLSX.utils.json_to_sheet(exportData);
+                      onClick={() => {
+                        const exportData = prepareDataForExport(filteredData);
+                        const worksheet = XLSX.utils.json_to_sheet(exportData, { cellStyles: true });
 
-                      // Получаем все колонки
-                      const columns = Object.keys(exportData[0] || {});
+                        // Get all columns
+                        const columns = Object.keys(exportData[0] || {});
+                        const columnWidths: { [key: string]: number } = {};
 
-                      // Настраиваем ширину для каждой колонки
-                      const columnWidths: { [key: string]: number } = {};
+                        // Calculate column widths
+                        columns.forEach((col) => {
+                          let maxLength = col.length;
 
-                      // Проходим по всем ячейкам, чтобы найти максимальную длину содержимого
-                      columns.forEach((col) => {
-                        // Начинаем с длины заголовка
-                        let maxLength = col.length;
-
-                        // Проверяем длину каждого значения в колонке
-                        exportData.forEach((row) => {
-                          const cellLength = String(row[col] || "").length;
-                          maxLength = Math.max(maxLength, cellLength);
+                          interface CellValue {
+                            v?: string | number;
+                            s?: {
+                              fill?: {
+                                fgColor?: {
+                                  rgb?: string;
+                                };
+                              };
+                            };
+                          }
+                          
+                          exportData.forEach((row) => {
+                            const cellValue = row[col] as Date | CellValue;
+                            const cellLength = 
+                              cellValue instanceof Date 
+                                ? String(cellValue).length 
+                                : String((cellValue as CellValue).v || cellValue || "").length;
+                            
+                            maxLength = Math.max(maxLength, cellLength);
+                            columnWidths[col] = maxLength;
+                          });
                         });
 
-                        // Устанавливаем ширину колонки (примерно 1 символ = 1 единица ширины)
-                        columnWidths[col] = maxLength + 2; // +2 для отступов
-                      });
+                        worksheet["!cols"] = columns.map((col) => ({
+                          wch: columnWidths[col],
+                        }));
 
-                      // Применем настройки ирины к колонкам
-                      worksheet["!cols"] = columns.map((col) => ({
-                        wch: columnWidths[col],
-                      }));
-
-                      const workbook = XLSX.utils.book_new();
-                      XLSX.utils.book_append_sheet(
-                        workbook,
-                        worksheet,
-                        "Заказы на доставку"
-                      );
-                      XLSX.writeFile(
-                        workbook,
-                        `delivery_orders_${format(
-                          new Date(),
-                          "yyyy-MM-dd"
-                        )}.xlsx`
-                      );
-                    }}
-                  >
+                        const workbook = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(
+                          workbook,
+                          worksheet,
+                          "Заказы на доставку"
+                        );
+                        XLSX.writeFile(
+                          workbook,
+                          `${selectedReport?.tb_name}_${format(
+                            new Date(),
+                            "yyyy-MM-dd"
+                          )}.xlsx`
+                        );
+                      }}
+                    >
                     <Download className="mr-2 h-4 w-4" />
                     Экспорт в Excel
                   </Button>

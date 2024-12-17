@@ -1403,5 +1403,18 @@
     "param": "cooking_time",
     "name": "Время приготовления (мин)",
     "filteringAllowed": true
+  },
+  {
+    "param": "cookingTosend_time",
+    "name": "Время с приготовления до доставки",
+    "filteringAllowed": true
+  },
+  {
+    "param": "delivery_zone",
+    "name": "Зона доставки",
+    "filteringAllowed": true
+    
   }
+
+  
 ]
