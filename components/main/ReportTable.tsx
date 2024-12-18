@@ -1,7 +1,10 @@
 "use client";
 
+import { collectAndProcessGrcData } from "@/hooks/calcul-grc";
+
 const ALL_COMPANIES = "all_companies";
 
+import Calculleit from "@/components/ui/calculleit";
 import { useState, useEffect, useCallback } from "react";
 import {
   Download,
@@ -13,7 +16,13 @@ import {
   Frown,
   CalendarIcon,
 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import * as XLSX from "xlsx";
@@ -53,6 +62,18 @@ import {
   addMonths,
 } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+import GrcPage from "../ui/grc-page";
 
 type DeliveryOrder = {
   [key: string]: string | number | null;
@@ -73,7 +94,7 @@ const parseDeliveryZone = (value: string) => {
   if (match) {
     return {
       color: match[1],
-      text: match[2].trim()
+      text: match[2].trim(),
     };
   }
   return null;
@@ -93,14 +114,19 @@ interface TableData {
 }
 
 interface ExportData {
-  [key: string]: string | number | Date | null | {
-    v: string | number;
-    s: {
-      fill: {
-        fgColor: { rgb: string }
-      }
-    }
-  };
+  [key: string]:
+    | string
+    | number
+    | Date
+    | null
+    | {
+        v: string | number;
+        s: {
+          fill: {
+            fgColor: { rgb: string };
+          };
+        };
+      };
 }
 
 export default function DeliveryOrders() {
@@ -124,6 +150,7 @@ export default function DeliveryOrders() {
   // Add new states for company handling
   const [companies, setCompanies] = useState<string[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<string>("");
+  const [isDataFetched, setIsDataFetched] = useState(false);
 
   // Добавим функцию для разбиения периода на месяцы
   const getMonthPeriods = (
@@ -160,6 +187,7 @@ export default function DeliveryOrders() {
 
     try {
       setIsLoading(true);
+      setIsDataFetched(false); // Reset when starting new fetch
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
@@ -194,6 +222,7 @@ export default function DeliveryOrders() {
         if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
           setIsDataTooLarge(false);
           processReceivedData(jsonData.data);
+          setIsDataFetched(true); // Set to true after successful fetch
         }
       } else {
         setIsDataTooLarge(true);
@@ -231,6 +260,7 @@ export default function DeliveryOrders() {
     } catch (error) {
       console.error("Ошибка при загрузке данных:", error);
       setData([]);
+      setIsDataFetched(false);
     } finally {
       setIsLoading(false);
     }
@@ -477,9 +507,9 @@ export default function DeliveryOrders() {
               v: zoneInfo.text,
               s: {
                 fill: {
-                  fgColor: { rgb: zoneInfo.color.replace('#', '') }
-                }
-              }
+                  fgColor: { rgb: zoneInfo.color.replace("#", "") },
+                },
+              },
             };
           } else {
             transformedRow[russianKey] = value;
@@ -491,9 +521,9 @@ export default function DeliveryOrders() {
             v: `${value}`,
             s: {
               fill: {
-                fgColor: { rgb: color.replace('#', '') }
-              }
-            }
+                fgColor: { rgb: color.replace("#", "") },
+              },
+            },
           };
         } else if (
           key.toLowerCase().includes("time") ||
@@ -568,7 +598,9 @@ export default function DeliveryOrders() {
 
   // Add function to extract unique companies from reports
   const extractCompanies = (reports: Report[]) => {
-    const uniqueCompanies = Array.from(new Set(reports.map(report => report.corporation)));
+    const uniqueCompanies = Array.from(
+      new Set(reports.map((report) => report.corporation))
+    );
     setCompanies(uniqueCompanies);
   };
 
@@ -614,58 +646,71 @@ export default function DeliveryOrders() {
     <ScrollArea className="h-[calc(100vh-2rem)] w-full">
       <div className="container mx-auto py-10">
         <div className="rounded-lg border bg-[#171717] text-card-foreground shadow-sm">
-            <div className="flex flex-col space-y-1.5 p-6">
+          <div className="flex flex-col space-y-1.5 p-6">
             <div className="flex justify-between items-center">
               <div>
-              <h2 className="text-2xl font-semibold leading-none tracking-tight mb-5">
-                {selectedReport?.tb_name || "Выберите отчет"}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {selectedReport?.descript || "Описание отчета будет здесь"}
-              </p>
+                <h2 className="text-2xl font-semibold leading-none tracking-tight mb-5">
+                  {selectedReport?.tb_name || "Выберите отчет"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {selectedReport?.descript || "Описание отчета будет здесь"}
+                </p>
               </div>
-                <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4">
                 {/* Company select */}
-                <Select value={selectedCompany || ALL_COMPANIES} onValueChange={handleCompanySelect}>
+                <Select
+                  value={selectedCompany || ALL_COMPANIES}
+                  onValueChange={handleCompanySelect}
+                >
                   <SelectTrigger className="w-[200px] bg-[#171717]">
-                  <SelectValue placeholder="Все компании" />
+                    <SelectValue placeholder="Все компании" />
                   </SelectTrigger>
                   <SelectContent>
-                  <SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
-                  {companies.map((company) => (
-                  <SelectItem key={company} value={company}>
-                  {company}
-                  </SelectItem>
-                  ))}
+                    <SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
+                    {companies.map((company) => (
+                      <SelectItem key={company} value={company}>
+                        {company}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                
+
                 {/* Report select */}
-                <Select 
-                  value={selectedReport?.id?.toString() || ""} 
+                <Select
+                  value={selectedReport?.id?.toString() || ""}
                   onValueChange={(value) => {
-                  const report = reports
-                    .filter(r => !selectedCompany || r.corporation === selectedCompany)
-                    .find(r => r.id === Number(value));
-                  if (report) handleReportSelect(report);
+                    const report = reports
+                      .filter(
+                        (r) =>
+                          !selectedCompany || r.corporation === selectedCompany
+                      )
+                      .find((r) => r.id === Number(value));
+                    if (report) handleReportSelect(report);
                   }}
                 >
                   <SelectTrigger className="w-[300px] bg-[#171717]">
-                  <SelectValue placeholder="Выберите отчет" />
+                    <SelectValue placeholder="Выберите отчет" />
                   </SelectTrigger>
                   <SelectContent>
-                  {reports
-                    .filter(report => !selectedCompany || report.corporation === selectedCompany)
-                    .map((report) => (
-                    <SelectItem key={report.id} value={report.id.toString()}>
-                      {report.tb_name}
-                    </SelectItem>
-                  ))}
+                    {reports
+                      .filter(
+                        (report) =>
+                          !selectedCompany ||
+                          report.corporation === selectedCompany
+                      )
+                      .map((report) => (
+                        <SelectItem
+                          key={report.id}
+                          value={report.id.toString()}
+                        >
+                          {report.tb_name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
-                </div>
+              </div>
             </div>
-            </div>
+          </div>
 
           <div className="p-6 pt-0">
             {/* Добавляем выбор периода */}
@@ -747,7 +792,85 @@ export default function DeliveryOrders() {
                     </Button>
                   </div>
 
-                  <Button onClick={fetchData}>Получить данные</Button>
+                  <div className="flex items-center gap-4">
+                    <Button onClick={fetchData}>Получить данные</Button>
+                    {selectedReport?.id === 17 && isDataFetched && (
+                      <Sheet>
+                        <SheetTrigger asChild>
+                          <Button>Рассчитать</Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                          <SheetHeader>
+                            <SheetTitle>Ввод данных</SheetTitle>
+                            <SheetDescription>
+                              Введите информацию о курьерах
+                            </SheetDescription>
+                          </SheetHeader>
+                          <>
+                            <GrcPage
+                              data={filteredData}
+                              onCalculate={(formData) => {
+                                try {
+                                  console.log(
+                                    "Received form data in ReportTable:",
+                                    formData
+                                  );
+                                  const result = collectAndProcessGrcData(
+                                    formData,
+                                    filteredData
+                                  );
+                                  console.log("Calculation result:", result);
+
+                                  // Update the table data with calculation results
+                                  if (result && Array.isArray(result)) {
+                                    setData(result);
+                                    processReceivedData(result);
+                                  }
+
+                                  // Close the sheet after calculation
+                                  const closeButton = document.querySelector(
+                                    ".sheet-close-button"
+                                  ) as HTMLButtonElement;
+                                  if (closeButton) {
+                                    closeButton.click();
+                                  }
+                                } catch (error) {
+                                  console.error(
+                                    "Error during calculation:",
+                                    error
+                                  );
+                                }
+                              }}
+                            />
+                          </>
+
+                          <SheetFooter className="pt-10">
+                            <SheetClose
+                              asChild
+                              className="flex items-center justify-center w-full h-[50px] sheet-close-button"
+                            >
+                              <Button
+                                type="submit"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  console.log("Calculate button clicked");
+                                  const grcPageElement =
+                                    document.querySelector(".grc-page");
+                                  if (grcPageElement) {
+                                    grcPageElement.dispatchEvent(
+                                      new Event("calculate")
+                                    );
+                                  }
+                                }}
+                              >
+                                Рассчитать
+                              </Button>
+                            </SheetClose>
+                          </SheetFooter>
+                        </SheetContent>
+                      </Sheet>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -802,7 +925,10 @@ export default function DeliveryOrders() {
                     );
                     XLSX.writeFile(
                       workbook,
-                      `${selectedReport?.tb_name}${format(new Date(), "yyyy-MM-dd")}.xlsx`
+                      `${selectedReport?.tb_name}${format(
+                        new Date(),
+                        "yyyy-MM-dd"
+                      )}.xlsx`
                     );
                   }}
                 >
@@ -823,60 +949,64 @@ export default function DeliveryOrders() {
                     <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
                   <Button
-                      onClick={() => {
-                        const exportData = prepareDataForExport(filteredData);
-                        const worksheet = XLSX.utils.json_to_sheet(exportData, { cellStyles: true });
+                    onClick={() => {
+                      const exportData = prepareDataForExport(filteredData);
+                      const worksheet = XLSX.utils.json_to_sheet(exportData, {
+                        cellStyles: true,
+                      });
 
-                        // Get all columns
-                        const columns = Object.keys(exportData[0] || {});
-                        const columnWidths: { [key: string]: number } = {};
+                      // Get all columns
+                      const columns = Object.keys(exportData[0] || {});
+                      const columnWidths: { [key: string]: number } = {};
 
-                        // Calculate column widths
-                        columns.forEach((col) => {
-                          let maxLength = col.length;
+                      // Calculate column widths
+                      columns.forEach((col) => {
+                        let maxLength = col.length;
 
-                          interface CellValue {
-                            v?: string | number;
-                            s?: {
-                              fill?: {
-                                fgColor?: {
-                                  rgb?: string;
-                                };
+                        interface CellValue {
+                          v?: string | number;
+                          s?: {
+                            fill?: {
+                              fgColor?: {
+                                rgb?: string;
                               };
                             };
-                          }
-                          
-                          exportData.forEach((row) => {
-                            const cellValue = row[col] as Date | CellValue;
-                            const cellLength = 
-                              cellValue instanceof Date 
-                                ? String(cellValue).length 
-                                : String((cellValue as CellValue).v || cellValue || "").length;
-                            
-                            maxLength = Math.max(maxLength, cellLength);
-                            columnWidths[col] = maxLength;
-                          });
+                          };
+                        }
+
+                        exportData.forEach((row) => {
+                          const cellValue = row[col] as Date | CellValue;
+                          const cellLength =
+                            cellValue instanceof Date
+                              ? String(cellValue).length
+                              : String(
+                                  (cellValue as CellValue).v || cellValue || ""
+                                ).length;
+
+                          maxLength = Math.max(maxLength, cellLength);
+                          columnWidths[col] = maxLength;
                         });
+                      });
 
-                        worksheet["!cols"] = columns.map((col) => ({
-                          wch: columnWidths[col],
-                        }));
+                      worksheet["!cols"] = columns.map((col) => ({
+                        wch: columnWidths[col],
+                      }));
 
-                        const workbook = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(
-                          workbook,
-                          worksheet,
-                          "Заказы на доставку"
-                        );
-                        XLSX.writeFile(
-                          workbook,
-                          `${selectedReport?.tb_name}_${format(
-                            new Date(),
-                            "yyyy-MM-dd"
-                          )}.xlsx`
-                        );
-                      }}
-                    >
+                      const workbook = XLSX.utils.book_new();
+                      XLSX.utils.book_append_sheet(
+                        workbook,
+                        worksheet,
+                        "Заказы на доставку"
+                      );
+                      XLSX.writeFile(
+                        workbook,
+                        `${selectedReport?.tb_name}_${format(
+                          new Date(),
+                          "yyyy-MM-dd"
+                        )}.xlsx`
+                      );
+                    }}
+                  >
                     <Download className="mr-2 h-4 w-4" />
                     Экспорт в Excel
                   </Button>
