@@ -5,6 +5,8 @@ import { RussianRuble, Waypoints } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useCallback } from "react";
 import { collectAndProcessGrcData } from "@/hooks/calcul-grc";
+import { SheetClose, SheetFooter } from "./sheet";
+import { Button } from "./button";
 
 interface CourierEntry {
   kmPerDay: string;
@@ -27,6 +29,8 @@ interface ProcessedGrcData {
   couriers: {
     [courierName: string]: CourierEntry[];
   };
+  inputData: any[];
+  serverResponse?: any[];
 }
 
 interface GrcPageProps {
@@ -35,6 +39,7 @@ interface GrcPageProps {
 }
 
 export default function GrcPage({ data, onCalculate }: GrcPageProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const courierNames = Array.from(
     new Set(data.map((item) => item["ФИО Курьера"]))
   )
@@ -42,6 +47,7 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
     .sort();
 
   // State for global settings
+
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({
     hourlyWage: "",
     checkWage: "",
@@ -90,67 +96,69 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
       }));
     };
 
-  // Process and calculate GRC data
-  const handleCalculate = useCallback(() => {
-    const processedData = {
-      hourlyWage: globalSettings.hourlyWage,
-      checkWage: globalSettings.checkWage,
-      fuelExpense: globalSettings.fuelExpense,
-      speedBonus: globalSettings.speedBonus,
-      couriers: courierData,
-    };
+  const handleCalculate = useCallback(async () => {
+    if (isSubmitting) return;
 
-    // Send data to API
-    fetch(
-      // "https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=2024-12-17&end_date=2024-12-17&report_id=17&corporation=%D0%93%D1%80%D0%B8%D0%BB%D1%8C%D0%BD%D0%B8%D1%86%D0%B0",
-      "http://test.API",
-      {
+    try {
+      setIsSubmitting(true);
+
+      const processedData = {
+        hourlyWage: globalSettings.hourlyWage,
+        checkWage: globalSettings.checkWage,
+        fuelExpense: globalSettings.fuelExpense,
+        speedBonus: globalSettings.speedBonus,
+        couriers: courierData,
+        inputData: data,
+      };
+
+      const response = await fetch("http://localhost:8000/olap/send_grc", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(processedData),
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Success:", data);
-        if (onCalculate) {
-          onCalculate(processedData);
-        }
-      })
-      .catch((error) => {
-        console.error("Error sending data:", error);
       });
-  }, [globalSettings, courierData, onCalculate]);
 
-  // Add event listener for calculate event
-  useEffect(() => {
-    const handleCalculateEvent = () => {
-      console.log("Calculate event triggered in GrcPage");
-      try {
-        handleCalculate();
-      } catch (error) {
-        console.error("Error during calculation:", error);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    };
 
-    const element = document.querySelector(".grc-page");
-    if (element) {
-      element.addEventListener("calculate", handleCalculateEvent);
-      return () => {
-        element.removeEventListener("calculate", handleCalculateEvent);
-      };
+      const responseData = await response.json();
+      console.log("Success:", responseData);
+
+      // Если есть данные от сервера и они в правильном формате
+      if (
+        responseData &&
+        responseData.data &&
+        Array.isArray(responseData.data)
+      ) {
+        // Вызываем onCalculate с полученными данными
+        if (onCalculate) {
+          onCalculate({
+            ...processedData,
+            serverResponse: responseData.data, // Добавляем данные от сервера
+          });
+        }
+      }
+
+      // Закрываем окно
+      const closeButton = document.querySelector(
+        ".sheet-close-button"
+      ) as HTMLButtonElement;
+      if (closeButton) {
+        setTimeout(() => {
+          closeButton.click();
+        }, 100);
+      }
+    } catch (error) {
+      console.error("Error sending data:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [handleCalculate]);
+  }, [globalSettings, courierData, onCalculate, data, isSubmitting]);
 
   return (
-    <ScrollArea className="h-[650px] w-full grc-page">
+    <ScrollArea className="h-[750px] w-full grc-page">
       <div className="space-y-6 p-4">
         <h1 className="text-2xl font-semibold flex justify-center">Курьеры</h1>
         <p className="items-center justify-center flex">Для всех курьеров</p>
@@ -260,6 +268,18 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
           ))}
         </div>
       </div>
+      <SheetFooter className="pt-5">
+        <Button
+          type="submit"
+          onClick={handleCalculate}
+          disabled={isSubmitting}
+          className="w-full h-[50px]"
+        >
+          {isSubmitting ? "Отправка..." : "Рассчитать"}
+        </Button>
+        {/* Добавляем скрытую кнопку для закрытия */}
+        <SheetClose className="sheet-close-button hidden" />
+      </SheetFooter>
     </ScrollArea>
   );
 }

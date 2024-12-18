@@ -1,7 +1,5 @@
 "use client";
-
 import { collectAndProcessGrcData } from "@/hooks/calcul-grc";
-
 const ALL_COMPANIES = "all_companies";
 
 import Calculleit from "@/components/ui/calculleit";
@@ -799,14 +797,14 @@ export default function DeliveryOrders() {
                         <SheetTrigger asChild>
                           <Button>Рассчитать</Button>
                         </SheetTrigger>
-                        <SheetContent>
+                        <SheetContent className="h-full">
                           <SheetHeader>
                             <SheetTitle>Ввод данных</SheetTitle>
                             <SheetDescription>
                               Введите информацию о курьерах
                             </SheetDescription>
                           </SheetHeader>
-                          <>
+                          <div>
                             <GrcPage
                               data={filteredData}
                               onCalculate={(formData) => {
@@ -815,24 +813,13 @@ export default function DeliveryOrders() {
                                     "Received form data in ReportTable:",
                                     formData
                                   );
-                                  const result = collectAndProcessGrcData(
-                                    formData,
-                                    filteredData
-                                  );
-                                  console.log("Calculation result:", result);
 
-                                  // Update the table data with calculation results
-                                  if (result && Array.isArray(result)) {
-                                    setData(result);
-                                    processReceivedData(result);
-                                  }
-
-                                  // Close the sheet after calculation
-                                  const closeButton = document.querySelector(
-                                    ".sheet-close-button"
-                                  ) as HTMLButtonElement;
-                                  if (closeButton) {
-                                    closeButton.click();
+                                  // Если есть данные от сервера, обновляем таблицу
+                                  if (formData.serverResponse) {
+                                    setData(formData.serverResponse);
+                                    processReceivedData(
+                                      formData.serverResponse
+                                    );
                                   }
                                 } catch (error) {
                                   console.error(
@@ -842,31 +829,7 @@ export default function DeliveryOrders() {
                                 }
                               }}
                             />
-                          </>
-
-                          <SheetFooter className="pt-10">
-                            <SheetClose
-                              asChild
-                              className="flex items-center justify-center w-full h-[50px] sheet-close-button"
-                            >
-                              <Button
-                                type="submit"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  console.log("Calculate button clicked");
-                                  const grcPageElement =
-                                    document.querySelector(".grc-page");
-                                  if (grcPageElement) {
-                                    grcPageElement.dispatchEvent(
-                                      new Event("calculate")
-                                    );
-                                  }
-                                }}
-                              >
-                                Рассчитать
-                              </Button>
-                            </SheetClose>
-                          </SheetFooter>
+                          </div>
                         </SheetContent>
                       </Sheet>
                     )}
