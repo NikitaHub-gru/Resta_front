@@ -111,7 +111,7 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
         inputData: data,
       };
 
-      const response = await fetch("http://localhost:8000/olap/send_grc", {
+      const response = await fetch("https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/send_grc", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
