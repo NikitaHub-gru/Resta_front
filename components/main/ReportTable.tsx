@@ -174,7 +174,7 @@ export default function DeliveryOrders() {
   const isMoreThanOneMonth = (start: Date, end: Date): boolean => {
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 15;
+    return diffDays >= 90;
   };
 
   // Оборачиваем fetchData в useCallback
