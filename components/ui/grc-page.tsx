@@ -158,7 +158,7 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
   }, [globalSettings, courierData, onCalculate, data, isSubmitting]);
 
   return (
-    <ScrollArea className="h-[750px] w-full grc-page">
+    <ScrollArea className="h-[650px] overflow-y-auto">
       <div className="space-y-6 p-4">
         <h1 className="text-2xl font-semibold flex justify-center">Курьеры</h1>
         <p className="items-center justify-center flex">Для всех курьеров</p>
