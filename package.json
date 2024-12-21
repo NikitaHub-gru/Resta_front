@@ -45,6 +45,7 @@
     "shiki": "^1.22.2",
     "simplex-noise": "^4.0.3",
     "sonner": "^1.5.0",
+    "styled-components": "^6.1.13",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",

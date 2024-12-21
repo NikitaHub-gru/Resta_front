@@ -72,6 +72,8 @@ import {
 } from "@/components/ui/sheet";
 
 import GrcPage from "../ui/grc-page";
+import Loading_page from "../loadingP/Loading_comp";
+import Zagruzka from "../loadingP/zagruzka";
 
 type DeliveryOrder = {
   [key: string]: string | number | null;
@@ -839,16 +841,12 @@ export default function DeliveryOrders() {
             </div>
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center space-y-4 p-8">
-                <div className="relative">
-                  <div className="h-24 w-24 rounded-full border-4 border-muted"></div>
-                  <div className="absolute left-0 top-0 h-24 w-24 animate-spin rounded-full border-4 border-t-primary"></div>
+              <div className="flex flex-col justify-center items-center pt-20">
+                <div className="h-[200px]">
+                  <Loading_page />
                 </div>
-                <div className="flex flex-col items-center gap-2">
-                  <p className="text-lg font-medium">Загрузка данных</p>
-                  <p className="text-sm text-muted-foreground">
-                    Пожалуйста, подождите...
-                  </p>
+                <div className="flex items-center justify-center w-full h-2">
+                  <Zagruzka />
                 </div>
               </div>
             ) : isDataTooLarge ? (

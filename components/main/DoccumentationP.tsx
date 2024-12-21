@@ -6,6 +6,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import Loading_page from "../loadingP/Loading_comp";
+import Zagruzka from "../loadingP/zagruzka";
+
 
 interface Report {
   id: number;
@@ -22,5 +25,6 @@ export default function DoccumentationPage() {
     <div className="items-center justify-center w-full h-full flex">
       <p className="text-6xl font-bold">Тут будет документация</p>
     </div>
+    // <Zagruzka/>
   );
 }
