@@ -1,4 +1,5 @@
 "use client";
+import { ReportInfoModal } from "@/components/ui/report-info-modal";
 import { collectAndProcessGrcData } from "@/hooks/calcul-grc";
 const ALL_COMPANIES = "all_companies";
 
@@ -13,6 +14,7 @@ import {
   X,
   Frown,
   CalendarIcon,
+  Info,
 } from "lucide-react";
 import {
   Select,
@@ -106,6 +108,7 @@ interface Report {
   descript: string;
   data: string;
   corporation: string;
+  description_info?: string; // Added this optional property
 }
 
 interface TableData {
@@ -657,6 +660,13 @@ export default function DeliveryOrders() {
                 </p>
               </div>
               <div className="flex items-center gap-4">
+                {selectedReport && (
+                  <ReportInfoModal
+                    title={selectedReport.tb_name}
+                    description={selectedReport.descript}
+                    description_info={selectedReport.description_info}
+                  />
+                )}
                 {/* Company select */}
                 <Select
                   value={selectedCompany || ALL_COMPANIES}
