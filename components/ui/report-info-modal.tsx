@@ -45,7 +45,7 @@ export function ReportInfoModal({
           <Info className="w-[30px] h-[30px]" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px]  w-full bg-[#171717] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[800px] w-full bg-[#171717] max-h-[90vh] overflow-hidden">
         <BorderBeam size={250} duration={12} delay={9} />
         <DialogHeader>
           <DialogDescription>
@@ -54,15 +54,22 @@ export function ReportInfoModal({
                 <h4 className="text-lg text-center mb-4">
                   Информация о отчете:
                 </h4>
-                <ScrollArea className="h-[calc(90vh-180px)] w-full rounded-md">
-                  <div className="text-sm text-white px-8">
-                    {description_info.split("\n\n").map((paragraph, index) => (
-                      <p key={index} className="mb-4 whitespace-pre-line">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                </ScrollArea>
+                <div
+                  className="relative w-full"
+                  style={{ height: "calc(70vh - 100px)" }}
+                >
+                  <ScrollArea className="w-full h-full absolute inset-0">
+                    <div className="text-sm text-white px-8 py-4 justify-center">
+                      {description_info
+                        .split("\n\n")
+                        .map((paragraph, index) => (
+                          <p key={index} className="mb-4 whitespace-pre-line">
+                            {paragraph}
+                          </p>
+                        ))}
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
             )}
           </DialogDescription>
