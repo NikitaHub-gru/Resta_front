@@ -36,7 +36,7 @@ export default function ApiTester() {
         body: method !== "GET" ? body.trim() : undefined
       };
 
-      const response = await fetch('http://localhost:8000/request_api', {
+      const response = await fetch('https://nikitahub-gru-resta-back-f1fb.twc1.net/request_api', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
