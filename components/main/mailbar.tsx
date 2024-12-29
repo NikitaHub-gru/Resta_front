@@ -9,8 +9,10 @@ import {
   IconFileTypeDoc,
   IconSettings,
   IconUserBolt,
-  IconUsers,
   IconShoppingCartSearch,
+  IconUsers,
+  IconGitPullRequestDraft,
+  IconCalendarStar,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -154,12 +156,40 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       ),
     },
   ];
+  const Engineerlinks = [
+    {
+      label: "Инженеры",
+      href: "#",
+      className: "py-4 gap-2 ",
+    },
+    {
+      label: "API",
+      href: "/request",
+      icon: (
+        <IconGitPullRequestDraft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "ToDo",
+      href: "/todolist",
+      icon: (
+        <IconCalendarStar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
+      label: "Документация",
+      href: "/docs",
+      icon: (
+        <IconFileTypeDoc className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+  ];
 
   return (
     <div
       className={cn(
         "flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full border border-neutral-200 dark:border-neutral-700 overflow-hidden",
-        "h-screen" // Изменили h-[60vh] на h-screen
+        "h-screen"
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
@@ -174,6 +204,13 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
             {userData.role === "Admin" && (
               <div className="mt-8 flex justify-start flex-col gap-2">
                 {adminLinks.map((link, idx) => (
+                  <SidebarLink key={idx} link={link} />
+                ))}
+              </div>
+            )}
+            {(userData.role === "Engineer" || userData.role === "Admin") && (
+              <div className="mt-8 flex justify-start flex-col gap-2">
+                {Engineerlinks.map((link, idx) => (
                   <SidebarLink key={idx} link={link} />
                 ))}
               </div>
@@ -199,7 +236,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
                 icon: (
                   <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
                 ),
-                onClick: handleLogout, // Добавляем обработчик
+                onClick: handleLogout,
               }}
             />
           </div>

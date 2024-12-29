@@ -1,4 +1,4 @@
-export const USER_ROLES = ["Admin", "Manager", "User"] as const;
+export const USER_ROLES = ["Admin", "Manager", "User", "Engineer"] as const;
 
 export const CORPORATIONS = [
   "RestaLabs",
@@ -7,5 +7,5 @@ export const CORPORATIONS = [
   "Butter&Brot",
   "Днём с Огнём",
   "GSF",
-  "Лосось №1"
+  "Лосось №1",
 ] as const;

@@ -33,16 +33,13 @@ export function Navbar() {
           <div className="flex items-center gap-6 overflow-x-auto">
             <div className="hidden md:flex items-center gap-2 shrink-0">
               <Phone className="h-5 w-5" />
-              <span className="whitespace-nowrap">+7 (XXX) XXX-XX-XX</span>
+              <span className="whitespace-nowrap">+7 (923) 008-45-72</span>
             </div>
             <div className="hidden md:flex items-center gap-2 shrink-0">
               <Mail className="h-5 w-5" />
-              <span className="whitespace-nowrap">info@restalabs.ru</span>
+              <span className="whitespace-nowrap">restalabs22brn@yandex.ru</span>
             </div>
-            <div className="hidden md:flex items-center gap-2 shrink-0">
-              <Globe className="h-5 w-5" />
-              <span className="whitespace-nowrap">restalabs.ru</span>
-            </div>
+           
             {showButton && (
               <Button className="shrink-0">Начать</Button>
             )}

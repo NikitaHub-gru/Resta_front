@@ -1,18 +1,19 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { ChartPie, BarChart3, TrendingUp } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ChartPie, BarChart3, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Meteors } from "../ui/meteors";
+import { getAuthUser } from "@/hooks/getauthuser";
 
 export function HeroSection() {
-  const router = useRouter()
-  
+  const router = useRouter();
+
   return (
     <div className="relative min-h-screen flex items-center">
       <div className="absolute inset-0 from-primary/5 to-secondary/5" />
-      
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -21,21 +22,40 @@ export function HeroSection() {
           className="text-center"
         >
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-          Преобразуйте Свой бизнес в сфере HoReCa
-            <span className="text-primary block mt-2">С помощью расширенной аналитики</span>
+            Преобразуйте Свой бизнес в сфере HoReCa
+            <span className="text-primary block mt-2">
+              С помощью расширенной аналитики
+            </span>
           </h1>
           <p className="mt-6 text-xl text-muted-foreground max-w-3xl mx-auto">
-          Благодаря нашим комплексным решениям для создания отчетов, разработанным специально для отелей, ресторанов и предприятий общественного питания, вы сможете получать ценные аналитические данные и стимулировать рост.
+            Благодаря нашим комплексным решениям для создания отчетов,
+            разработанным специально для отелей, ресторанов и предприятий
+            общественного питания, вы сможете получать ценные аналитические
+            данные и стимулировать рост.
           </p>
           <div className="mt-10 flex justify-center gap-4">
-            <Button size="lg"
-            onClick={() => {
-              router.push('/reports')
-            }}>Начать</Button>
-            <Button size="lg" variant="outline"
-            onClick={() => {
-              router.push('https://restu.ru/')
-            }}>Информация о компании</Button>
+            <Button
+              size="lg"
+              onClick={async () => {
+                const user = await getAuthUser();
+                if (user.corporation === "Grill№1") {
+                  router.push("/orders");
+                } else {
+                  router.push("/reports");
+                }
+              }}
+            >
+              Начать
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => {
+                router.push("https://restu.ru/");
+              }}
+            >
+              Информация о компании
+            </Button>
           </div>
         </motion.div>
 
@@ -49,18 +69,21 @@ export function HeroSection() {
             {
               icon: ChartPie,
               title: "Аналитика в реальном времени",
-              description: "Мониторинг вашей бизнес-производительности в реальном времени с интерактивными панелями"
+              description:
+                "Мониторинг вашей бизнес-производительности в реальном времени с интерактивными панелями",
             },
             {
               icon: BarChart3,
               title: "Отчеты по вашим потребностям",
-              description: "Создание и настройка отчетов, специально адаптированных к вашим конкретным бизнес-потребностям"
+              description:
+                "Создание и настройка отчетов, специально адаптированных к вашим конкретным бизнес-потребностям",
             },
             {
               icon: TrendingUp,
               title: "Прогнозные данные",
-              description: "Принятие данных-ориентированных решений с использованием AI-powered forecasting and trends"
-            }
+              description:
+                "Принятие данных-ориентированных решений с использованием AI-powered forecasting and trends",
+            },
           ].map((feature, index) => (
             <div
               key={index}
@@ -75,6 +98,6 @@ export function HeroSection() {
           ))}
         </motion.div>
       </div>
-      </div>
-  )
+    </div>
+  );
 }
