@@ -2,6 +2,7 @@
 import { ReportInfoModal } from "@/components/ui/report-info-modal";
 import { collectAndProcessGrcData } from "@/hooks/calcul-grc";
 import { getAuthUser } from "@/hooks/getauthuser";
+import { useToast } from "@/components/ui/use-toast";
 const ALL_COMPANIES = "all_companies";
 
 import Calculleit from "@/components/ui/calculleit";
@@ -134,6 +135,7 @@ interface ExportData {
 }
 
 export default function DeliveryOrders() {
+  const { toast } = useToast();
   const [data, setData] = useState<DeliveryOrder[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -933,7 +935,7 @@ export default function DeliveryOrders() {
                               const currentTimestamp = new Date().toISOString();
 
                               const response = await fetch(
-                                "http://127.0.0.1:8000/olap/save_report",
+                                "https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/save_report",
                                 {
                                   method: "POST",
                                   headers: {
@@ -955,9 +957,21 @@ export default function DeliveryOrders() {
                                 throw new Error("Failed to save report");
                               }
 
+                              toast({
+                                title: "Успешно",
+                                description: "Отчет успешно сохранен",
+                                variant: "default",
+                              });
+
                               console.log("Report saved successfully");
                             } catch (error) {
                               console.error("Error saving report:", error);
+                              toast({
+                                title: "Ошибка",
+                                description:
+                                  "Не удалось сохранить отчет, вы не произвели расчет сотрудников!",
+                                variant: "destructive",
+                              });
                             }
                           }}
                         >

@@ -11,14 +11,12 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" className="dark">
       <body className="bg-background text-foreground">
-        <AuthWrapper>
-          {children}
-        </AuthWrapper>
+        <AuthWrapper>{children}</AuthWrapper>
         <Toaster />
       </body>
     </html>
