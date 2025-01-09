@@ -99,6 +99,13 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
               <IconLayoutDashboardFilled className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
           },
+          {
+            label: "История",
+            href: "/history",
+            icon: (
+              <IconCalendarStar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
         ]
       : userData.corporation === "Grill№1"
       ? [
@@ -107,6 +114,23 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
             href: "/orders",
             icon: (
               <IconShoppingCartSearch className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
+        ]
+      : userData.corporation === "Грильница"
+      ? [
+          {
+            label: "Отчеты",
+            href: "/reports",
+            icon: (
+              <IconLayoutDashboardFilled className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+          },
+          {
+            label: "История",
+            href: "/history",
+            icon: (
+              <IconCalendarStar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
           },
         ]
@@ -119,6 +143,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
             ),
           },
         ]),
+
     {
       label: "Dashboard",
       href: "#",
@@ -167,20 +192,6 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       href: "/request",
       icon: (
         <IconGitPullRequestDraft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "ToDo",
-      href: "/todolist",
-      icon: (
-        <IconCalendarStar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-    },
-    {
-      label: "Документация",
-      href: "/docs",
-      icon: (
-        <IconFileTypeDoc className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
     },
   ];

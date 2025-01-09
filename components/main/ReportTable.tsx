@@ -1,6 +1,7 @@
 "use client";
 import { ReportInfoModal } from "@/components/ui/report-info-modal";
 import { collectAndProcessGrcData } from "@/hooks/calcul-grc";
+import { getAuthUser } from "@/hooks/getauthuser";
 const ALL_COMPANIES = "all_companies";
 
 import Calculleit from "@/components/ui/calculleit";
@@ -804,47 +805,49 @@ export default function DeliveryOrders() {
 
                   <div className="flex items-center gap-4">
                     <Button onClick={fetchData}>Получить данные</Button>
-                    {selectedReport?.id === 17 && isDataFetched && (
-                      <Sheet>
-                        <SheetTrigger asChild>
-                          <Button>Рассчитать</Button>
-                        </SheetTrigger>
-                        <SheetContent className="h-full">
-                          <SheetHeader>
-                            <SheetTitle>Ввод данных</SheetTitle>
-                            <SheetDescription>
-                              Введите информацию о курьерах
-                            </SheetDescription>
-                          </SheetHeader>
-                          <div>
-                            <GrcPage
-                              data={filteredData}
-                              onCalculate={(formData) => {
-                                try {
-                                  console.log(
-                                    "Received form data in ReportTable:",
-                                    formData
-                                  );
+                    {isDataFetched &&
+                      selectedReport?.id !== undefined &&
+                      [17, 30, 31, 32, 33, 34].includes(selectedReport.id) && (
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button>Рассчитать</Button>
+                          </SheetTrigger>
+                          <SheetContent className="h-full">
+                            <SheetHeader>
+                              <SheetTitle>Ввод данных</SheetTitle>
+                              <SheetDescription>
+                                Введите информацию о курьерах
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div>
+                              <GrcPage
+                                data={filteredData}
+                                onCalculate={(formData) => {
+                                  try {
+                                    console.log(
+                                      "Received form data in ReportTable:",
+                                      formData
+                                    );
 
-                                  // Если есть данные от сервера, обновляем таблицу
-                                  if (formData.serverResponse) {
-                                    setData(formData.serverResponse);
-                                    processReceivedData(
-                                      formData.serverResponse
+                                    // Если есть данные от сервера, обновляем таблицу
+                                    if (formData.serverResponse) {
+                                      setData(formData.serverResponse);
+                                      processReceivedData(
+                                        formData.serverResponse
+                                      );
+                                    }
+                                  } catch (error) {
+                                    console.error(
+                                      "Error during calculation:",
+                                      error
                                     );
                                   }
-                                } catch (error) {
-                                  console.error(
-                                    "Error during calculation:",
-                                    error
-                                  );
-                                }
-                              }}
-                            />
-                          </div>
-                        </SheetContent>
-                      </Sheet>
-                    )}
+                                }}
+                              />
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      )}
                   </div>
                 </div>
               </div>
@@ -919,68 +922,113 @@ export default function DeliveryOrders() {
                     />
                     <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
                   </div>
-                  <Button
-                    onClick={() => {
-                      const exportData = prepareDataForExport(filteredData);
-                      const worksheet = XLSX.utils.json_to_sheet(exportData, {
-                        cellStyles: true,
-                      });
+                  <div className="flex items-center gap-2">
+                    {isDataFetched &&
+                      selectedReport?.id !== undefined &&
+                      [17, 30, 31, 32, 33, 34].includes(selectedReport.id) && (
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const user = await getAuthUser();
+                              const currentTimestamp = new Date().toISOString();
 
-                      // Get all columns
-                      const columns = Object.keys(exportData[0] || {});
-                      const columnWidths: { [key: string]: number } = {};
+                              const response = await fetch(
+                                "http://127.0.0.1:8000/olap/save_report",
+                                {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify({
+                                    reportId: selectedReport.id,
+                                    data: filteredData,
+                                    startDate: startDate,
+                                    endDate: endDate,
+                                    savedBy: user.name,
+                                    full_name: user.full_name,
+                                    savedAt: currentTimestamp,
+                                  }),
+                                }
+                              );
 
-                      // Calculate column widths
-                      columns.forEach((col) => {
-                        let maxLength = col.length;
+                              if (!response.ok) {
+                                throw new Error("Failed to save report");
+                              }
 
-                        interface CellValue {
-                          v?: string | number;
-                          s?: {
-                            fill?: {
-                              fgColor?: {
-                                rgb?: string;
+                              console.log("Report saved successfully");
+                            } catch (error) {
+                              console.error("Error saving report:", error);
+                            }
+                          }}
+                        >
+                          Сохранить отчет
+                        </Button>
+                      )}
+                    <Button
+                      onClick={() => {
+                        const exportData = prepareDataForExport(filteredData);
+                        const worksheet = XLSX.utils.json_to_sheet(exportData, {
+                          cellStyles: true,
+                        });
+
+                        // Get all columns
+                        const columns = Object.keys(exportData[0] || {});
+                        const columnWidths: { [key: string]: number } = {};
+
+                        // Calculate column widths
+                        columns.forEach((col) => {
+                          let maxLength = col.length;
+
+                          interface CellValue {
+                            v?: string | number;
+                            s?: {
+                              fill?: {
+                                fgColor?: {
+                                  rgb?: string;
+                                };
                               };
                             };
-                          };
-                        }
+                          }
 
-                        exportData.forEach((row) => {
-                          const cellValue = row[col] as Date | CellValue;
-                          const cellLength =
-                            cellValue instanceof Date
-                              ? String(cellValue).length
-                              : String(
-                                  (cellValue as CellValue).v || cellValue || ""
-                                ).length;
+                          exportData.forEach((row) => {
+                            const cellValue = row[col] as Date | CellValue;
+                            const cellLength =
+                              cellValue instanceof Date
+                                ? String(cellValue).length
+                                : String(
+                                    (cellValue as CellValue).v ||
+                                      cellValue ||
+                                      ""
+                                  ).length;
 
-                          maxLength = Math.max(maxLength, cellLength);
-                          columnWidths[col] = maxLength;
+                            maxLength = Math.max(maxLength, cellLength);
+                            columnWidths[col] = maxLength;
+                          });
                         });
-                      });
 
-                      worksheet["!cols"] = columns.map((col) => ({
-                        wch: columnWidths[col],
-                      }));
+                        worksheet["!cols"] = columns.map((col) => ({
+                          wch: columnWidths[col],
+                        }));
 
-                      const workbook = XLSX.utils.book_new();
-                      XLSX.utils.book_append_sheet(
-                        workbook,
-                        worksheet,
-                        "Заказы на доставку"
-                      );
-                      XLSX.writeFile(
-                        workbook,
-                        `${selectedReport?.tb_name}_${format(
-                          new Date(),
-                          "yyyy-MM-dd"
-                        )}.xlsx`
-                      );
-                    }}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Экспорт в Excel
-                  </Button>
+                        const workbook = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(
+                          workbook,
+                          worksheet,
+                          "Заказы на доставку"
+                        );
+                        XLSX.writeFile(
+                          workbook,
+                          `${selectedReport?.tb_name}_${format(
+                            new Date(),
+                            "yyyy-MM-dd"
+                          )}.xlsx`
+                        );
+                      }}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Экспорт в Excel
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="rounded-md border">

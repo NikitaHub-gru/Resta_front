@@ -4,15 +4,19 @@ import { supabase } from "@/lib/supabaseClient";
 export async function getAuthUser(): Promise<{
   email: string | undefined;
   name: any;
+  full_name: string;
   corporation: any;
   role: string;
 }> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   return {
     email: user?.email,
     name: user?.user_metadata?.name || user?.email,
+    full_name: user?.user_metadata?.first_name || "",
     corporation: user?.user_metadata?.corporation,
-    role: user?.user_metadata?.role || ""
+    role: user?.user_metadata?.role || "",
   };
 }
 
