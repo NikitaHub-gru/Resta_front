@@ -16,7 +16,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-background text-foreground">
-        <AuthWrapper>{children}</AuthWrapper>
+        {/* <AuthWrapper>{children}</AuthWrapper> */}
+        {children}
         <Toaster />
       </body>
     </html>
