@@ -7,7 +7,7 @@ import { Session } from "@supabase/supabase-js";
 import Component from "@/components/main/loading-page";
 
 // Define public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/home", "/", "/reports", "/settings"];
+const PUBLIC_ROUTES = ["/reports", "/settings"];
 
 export default function AuthWrapper({
   children,
