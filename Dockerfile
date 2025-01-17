@@ -1,22 +1,39 @@
-# Use Node.js base image
-FROM node:18-alpine
+# Указываем базовый образ
+FROM node:18 AS builder
 
-# Set working directory
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Install dependencies first (for better caching)
-COPY package.json package-lock.json* ./
-RUN npm ci
+# Копируем package.json и package-lock.json
+COPY package*.json ./
 
-# Copy project files
+# Устанавливаем зависимости
+RUN npm install --production
+
+# Копируем остальные файлы приложения
 COPY . .
 
-# Build the Next.js application
+# Собираем приложение
 RUN npm run build
 
-# Expose port (default for Next.js production server)
+# Создаем финальный образ
+FROM node:18 AS production
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем только необходимые файлы из стадии сборки
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+
+# Устанавливаем переменную окружения для режима продакшена
+ENV NODE_ENV=production
+
+# Открываем порт, на котором будет работать приложение
 EXPOSE 3000
 
-ENV HOSTNAME "0.0.0.0"
-# Start the Next.js production server
+# Запускаем приложение
 CMD ["npm", "start"]
