@@ -1,33 +1,27 @@
-# Use Node.js base image
-FROM node:18-alpine as builder
+#Dockerfile
 
-# рабочая директория
-WORKDIR /app
+FROM node:alpine
 
-# копируем указанные файлы в корень контейнера
-COPY package.json package-lock.json ./
+# Set working directory
+WORKDIR /usr/app
 
-# устанавливаем зависимости
+# Copy package.json and package-lock.json before other files
+COPY ./package*.json ./
+
+# Install dependencies and pm2
 RUN npm install
+RUN npm install --global pm2
 
-# копируем остальные файлы в корень контейнера
-COPY . .
+# Copy all files
+COPY ./ ./
 
-# выполняем сборку
+# Build app
 RUN npm run build
 
-# Если вы хотите использовать статическую сборку, добавьте:
-# RUN npm run export
+# Expose the listening port
+EXPOSE 3000
 
-FROM nginx:latest
+# Run container as non-root user
+USER node
 
-# Если вы используете серверный рендеринг, используйте .next
-# Если вы используете статическую сборку, используйте out
-COPY --from=builder /app/.next /usr/share/nginx/html/.next
-# или
-# COPY --from=builder /app/out /usr/share/nginx/html
-
-# открываем порт
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD [ "pm2-runtime", "npm", "--", "start" ]
