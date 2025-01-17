@@ -16,9 +16,16 @@ COPY . .
 # выполняем сборку
 RUN npm run build
 
+# Если вы хотите использовать статическую сборку, добавьте:
+# RUN npm run export
+
 FROM nginx:latest
 
-COPY --from=builder /app/build /usr/share/nginx/html
+# Если вы используете серверный рендеринг, используйте .next
+# Если вы используете статическую сборку, используйте out
+COPY --from=builder /app/.next /usr/share/nginx/html/.next
+# или
+# COPY --from=builder /app/out /usr/share/nginx/html
 
 # открываем порт
 EXPOSE 80
