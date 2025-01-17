@@ -12,7 +12,7 @@ RUN npm ci
 COPY . .
 
 # Expose port (typical for React/Vue development servers)
-EXPOSE 3000
+EXPOSE 80
 
 # Start development server with hot reload
 CMD ["npm", "run", "dev"]
