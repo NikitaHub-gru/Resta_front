@@ -17,5 +17,6 @@ RUN npm run build
 # Expose port (default for Next.js production server)
 EXPOSE 3000
 
+ENV HOSTNAME "0.0.0.0"
 # Start the Next.js production server
 CMD ["npm", "start"]
