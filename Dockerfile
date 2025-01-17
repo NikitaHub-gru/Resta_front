@@ -1,19 +1,29 @@
 # Use Node.js base image
 FROM node:18-alpine
 
-# Set working directory
+# рабочая директория
 WORKDIR /app
 
-# Install dependencies first (for better caching)
-COPY package.json package-lock.json* ./
+# копируем указанные файлы в корень контейнера
+COPY package.json package-lock.json ./
+
+# устанавливаем зависимости
 RUN npm ci
 
-# Copy project files
+# копируем остальные файлы в корень контейнера
 COPY . .
 
-RUN npm run build
-# Expose port (typical for React/Vue development servers)
-EXPOSE 80
+# устанавливаем переменную
+ENV NODE_ENV=production
 
-# Start development server with hot reload
-CMD ["npm", "start"]
+# выполняем сборку
+RUN npm run build
+
+# открываем порт
+EXPOSE 3000
+
+# устанавливаем переменные окружения
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# запускаем приложение
