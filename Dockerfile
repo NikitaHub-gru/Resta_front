@@ -1,4 +1,4 @@
-# Указываем базовый образ
+# Этап сборки
 FROM node:18 AS builder
 
 # Устанавливаем рабочую директорию
@@ -16,24 +16,21 @@ COPY . .
 # Собираем приложение
 RUN npm run build
 
-# Создаем финальный образ
-FROM node:18 AS production
+# Этап продакшена с Nginx
+FROM nginx:alpine
 
-# Устанавливаем рабочую директорию
-WORKDIR /app
+# Копируем конфигурацию Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Копируем только необходимые файлы из стадии сборки
+# Копируем собранные файлы из стадии сборки
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 
-# Устанавливаем переменную окружения для режима продакшена
-ENV NODE_ENV=production
+# Открываем порт, на котором будет работать Nginx
+EXPOSE 80
 
-# Открываем порт, на котором будет работать приложение
-EXPOSE 3000
-
-# Запускаем приложение
-CMD ["npm", "start"]
+# Запускаем Nginx
+CMD ["nginx", "-g", "daemon off;"]
