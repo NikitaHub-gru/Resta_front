@@ -1,5 +1,5 @@
 # Use Node.js base image
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
 # рабочая директория
 WORKDIR /app
@@ -8,22 +8,19 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # устанавливаем зависимости
-RUN npm ci
+RUN npm install
 
 # копируем остальные файлы в корень контейнера
 COPY . .
 
-# устанавливаем переменную
-ENV NODE_ENV=production
-
 # выполняем сборку
 RUN npm run build
 
+FROM nginx:latest
+
+COPY --from=builder /app/build /usr/share/nginx/html
+
 # открываем порт
-EXPOSE 3000
+EXPOSE 80
 
-# устанавливаем переменные окружения
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-# запускаем приложение
+CMD ["nginx", "-g", "daemon off;"]
