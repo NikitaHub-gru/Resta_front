@@ -1,36 +1,19 @@
-# Этап сборки
-FROM node:18 AS builder
+# образ
+FROM node:22-alpine
 
-# Устанавливаем рабочую директорию
+# рабочая директория
 WORKDIR /app
-
-# Копируем package.json и package-lock.json
-COPY package*.json ./
-
-# Устанавливаем зависимости
-RUN npm install --production
-
-# Копируем остальные файлы приложения
+# копируем указанные файлы в корень контейнера
+COPY package.json package-lock.json ./
+# устанавливаем зависимости
+RUN npm install
+# копируем остальные файлы в корень контейнера
 COPY . .
+# устанавливаем переменную
+ENV NODE_ENV=production
+# выполняем сборку приложения
 
-# Собираем приложение
-RUN npm run build
-
-# Этап продакшена с Nginx
-FROM nginx:alpine
-
-# Копируем конфигурацию Nginx
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Копируем собранные файлы из стадии сборки
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-
-# Открываем порт, на котором будет работать Nginx
-EXPOSE 80
-
-# Запускаем Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# выставляем порт
+EXPOSE 3000
+# запускаем приложение
+CMD ["npm", "start"]
