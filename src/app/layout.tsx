@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="bg-background text-foreground">
         <AuthWrapper>{children}</AuthWrapper>
-        {/* <Toaster /> */}
+        <Toaster />
       </body>
     </html>
   );
