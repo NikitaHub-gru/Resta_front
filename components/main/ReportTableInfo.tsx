@@ -661,10 +661,6 @@ export default function DeliveryOrders() {
 	// Обработчик выбора отчета
 	const handleReportSelect = (report: Report) => {
 		setSelectedReport(report)
-		// Clear all active filters when selecting a new report
-		setActiveFilters({})
-		setFilterSearchTerms({})
-		setSearchTerm('')
 	}
 
 	return (
@@ -683,75 +679,8 @@ export default function DeliveryOrders() {
 										'Описание отчета будет здесь'}
 								</p>
 							</div>
-							<div className='flex items-center gap-4'>
-								{selectedReport && (
-									<ReportInfoModal
-										title={selectedReport.tb_name}
-										description={selectedReport.descript}
-										description_info={
-											selectedReport.description_info
-										}
-									/>
-								)}
-								{/* Company select */}
-								<Select
-									value={selectedCompany || ALL_COMPANIES}
-									onValueChange={handleCompanySelect}
-								>
-									<SelectTrigger className='w-[200px] bg-[#171717]'>
-										<SelectValue placeholder='Все компании' />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value={ALL_COMPANIES}>
-											Все компании
-										</SelectItem>
-										{companies.map(company => (
-											<SelectItem
-												key={company}
-												value={company}
-											>
-												{company}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-
-								{/* Report select */}
-								<Select
-									value={selectedReport?.id?.toString() || ''}
-									onValueChange={value => {
-										const report = reports
-											.filter(
-												r =>
-													!selectedCompany ||
-													r.corporation ===
-														selectedCompany
-											)
-											.find(r => r.id === Number(value))
-										if (report) handleReportSelect(report)
-									}}
-								>
-									<SelectTrigger className='w-[300px] bg-[#171717]'>
-										<SelectValue placeholder='Выберите отчет' />
-									</SelectTrigger>
-									<SelectContent>
-										{reports
-											.filter(
-												report =>
-													!selectedCompany ||
-													report.corporation ===
-														selectedCompany
-											)
-											.map(report => (
-												<SelectItem
-													key={report.id}
-													value={report.id.toString()}
-												>
-													{report.tb_name}
-												</SelectItem>
-											))}
-									</SelectContent>
-								</Select>
+							<div className='flex items-center gap-4 px-10 text-2xl font-bold text-muted-foreground'>
+								<p>Это тестовые данные</p>
 							</div>
 						</div>
 					</div>
