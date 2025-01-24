@@ -97,10 +97,12 @@ export function DeliveryDashboard() {
 		value: string | number
 		subValue?: string | null
 	}) => (
-		<div className='rounded-lg bg-white p-3 shadow-md'>
+		<div className='rounded-lg bg-white p-3 shadow-md dark:bg-neutral-700'>
 			<div className='mb-1 flex items-center'>
-				<Icon className='mr-2 h-4 w-4 text-gray-700' />
-				<h3 className='text-sm font-medium text-gray-700'>{title}</h3>
+				<Icon className='mr-2 h-4 w-4 text-gray-700 dark:text-foreground' />
+				<h3 className='text-sm font-medium text-gray-700 dark:text-foreground'>
+					{title}
+				</h3>
 			</div>
 			<p className='text-xl font-bold'>{value}</p>
 			{subValue && (
@@ -112,7 +114,7 @@ export function DeliveryDashboard() {
 	const displayedOrders = showAll ? orders : orders.slice(0, 10)
 
 	return (
-		<div className='h-screen overflow-hidden bg-gray-50 p-4'>
+		<div className='h-screen overflow-hidden bg-gray-50 p-4 dark:bg-[#171717]'>
 			<div className='space-y-4'>
 				{/* Header */}
 				<div className='flex items-center justify-between'>
@@ -123,19 +125,19 @@ export function DeliveryDashboard() {
 				<div className='flex gap-4'>
 					{/* Left Section - Emojis */}
 					<div className='w-[500px]'>
-						<div className='rounded-xl bg-white p-6 shadow-lg'>
+						<div className='rounded-xl bg-white p-6 shadow-lg dark:bg-neutral-700'>
 							<div className='mb-4 flex items-center justify-between'>
 								<h2 className='text-lg font-semibold'>
-									Recent Deliveries
+									Текущие заказы
 								</h2>
 								<button
 									onClick={() => setShowAll(!showAll)}
-									className='rounded-full bg-blue-600 px-4 py-2 text-sm text-white transition-all hover:bg-blue-700 hover:shadow-md'
+									className='h-6 w-20 rounded-full bg-black px-2 py-1 text-xs text-white transition-all hover:bg-muted-foreground hover:shadow-md dark:bg-white dark:text-black'
 								>
 									{showAll ? 'Show Less' : 'Show More'}
 								</button>
 							</div>
-							<div className='grid grid-cols-3 gap-4'>
+							<div className='grid grid-cols-3 gap-4 pt-10'>
 								{orders
 									.slice(0, showAll ? orders.length : 10)
 									.map((order, index) => (
@@ -163,7 +165,7 @@ export function DeliveryDashboard() {
 													</Tooltip.Trigger>
 													<Tooltip.Portal>
 														<Tooltip.Content
-															className='rounded-md bg-white p-3 text-sm shadow-lg'
+															className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
 															sideOffset={5}
 														>
 															<div className='space-y-2'>
@@ -171,7 +173,7 @@ export function DeliveryDashboard() {
 																	Order #
 																	{order.id}
 																</p>
-																<p className='text-gray-600'>
+																<p className='text-gray-600 dark:text-white'>
 																	Delivery
 																	Time:{' '}
 																	{Math.round(
@@ -189,7 +191,7 @@ export function DeliveryDashboard() {
 												<p className='font-medium'>
 													#{order.id}
 												</p>
-												<p className='text-sm text-gray-600'>
+												<p className='text-sm text-gray-600 dark:text-white'>
 													{Math.round(
 														order.totalTime
 													)}
@@ -205,7 +207,7 @@ export function DeliveryDashboard() {
 					{/* Right Section - Combined Progress, Rankings, and Metrics */}
 					<div className='flex-1 space-y-4'>
 						{/* Progress Bar and Rankings */}
-						<div className='rounded-xl bg-white p-4 shadow-lg'>
+						<div className='rounded-xl bg-white p-4 shadow-lg dark:bg-neutral-700'>
 							<div className='mb-6'>
 								<motion.div
 									initial={{ opacity: 0, y: 20 }}
@@ -213,7 +215,7 @@ export function DeliveryDashboard() {
 									transition={{ delay: 0.1 }}
 								>
 									<div className='mb-4 flex items-center'>
-										<TrendingUp className='mr-2 h-6 w-6 text-gray-900' />
+										<TrendingUp className='mr-2 h-6 w-6 text-gray-900 dark:text-foreground' />
 										<h2 className='text-xl font-semibold'>
 											Заказов доставленных за 60 минут
 										</h2>

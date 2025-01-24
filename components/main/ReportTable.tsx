@@ -670,7 +670,7 @@ export default function DeliveryOrders() {
 	return (
 		<ScrollArea className='h-[calc(100vh-2rem)] w-full'>
 			<div className='container mx-auto py-10'>
-				<div className='rounded-lg border bg-[#171717] text-card-foreground shadow-sm'>
+				<div className='rounded-lg border bg-white text-card-foreground shadow-sm dark:bg-[#171717]'>
 					<div className='flex flex-col space-y-1.5 p-6'>
 						<div className='flex items-center justify-between'>
 							<div>
@@ -698,7 +698,7 @@ export default function DeliveryOrders() {
 									value={selectedCompany || ALL_COMPANIES}
 									onValueChange={handleCompanySelect}
 								>
-									<SelectTrigger className='w-[200px] bg-[#171717]'>
+									<SelectTrigger className='w-[200px] bg-white dark:bg-neutral-900'>
 										<SelectValue placeholder='Все компании' />
 									</SelectTrigger>
 									<SelectContent>
@@ -731,7 +731,7 @@ export default function DeliveryOrders() {
 										if (report) handleReportSelect(report)
 									}}
 								>
-									<SelectTrigger className='w-[300px] bg-[#171717]'>
+									<SelectTrigger className='w-[300px] bg-white dark:bg-neutral-900'>
 										<SelectValue placeholder='Выберите отчет' />
 									</SelectTrigger>
 									<SelectContent>
@@ -765,7 +765,7 @@ export default function DeliveryOrders() {
 										<PopoverTrigger asChild>
 											<Button
 												variant='outline'
-												className='min-w-[155px] max-w-[300px] items-center justify-start bg-[#171717] text-left font-normal'
+												className='min-w-[155px] max-w-[300px] items-center justify-start bg-white text-left font-normal dark:bg-neutral-900'
 											>
 												<CalendarIcon className='mr-2 h-4 w-4' />
 												{startDate && endDate
@@ -790,7 +790,7 @@ export default function DeliveryOrders() {
 											side='bottom'
 										>
 											<div
-												className='rounded-md border bg-[#171717] p-3 shadow-md'
+												className='rounded-md border bg-white p-3 shadow-md dark:bg-neutral-900'
 												style={{ minWidth: '600px' }}
 											>
 												<Calendar
@@ -807,7 +807,7 @@ export default function DeliveryOrders() {
 													}}
 													numberOfMonths={2}
 													locale={ru}
-													className='w-full bg-[#171717]'
+													className='w-full bg-white dark:bg-neutral-900'
 												/>
 											</div>
 										</PopoverContent>
@@ -994,7 +994,7 @@ export default function DeliveryOrders() {
 											onChange={e =>
 												setSearchTerm(e.target.value)
 											}
-											className='h-10 w-full bg-[#171717] pl-10'
+											className='h-10 w-full bg-white pl-10 dark:bg-neutral-900'
 										/>
 										<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground' />
 									</div>
@@ -1176,7 +1176,7 @@ export default function DeliveryOrders() {
 													{columns.map(column => (
 														<TableHead
 															key={column}
-															className='sticky top-0 bg-[#171717]'
+															className='sticky top-0 bg-white dark:bg-neutral-900'
 															style={{
 																width: `${calculateColumnWidth(column)}px`,
 																minWidth: `${calculateColumnWidth(column)}px`

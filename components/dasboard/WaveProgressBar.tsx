@@ -35,7 +35,7 @@ export function WaveProgressBar({ progress, isLoading }: WaveProgressBarProps) {
 					/>
 				)}
 			</motion.div>
-			<div className='absolute inset-0 flex items-center justify-center text-sm font-medium'>
+			<div className='absolute inset-0 flex items-center justify-center text-sm font-medium text-foreground dark:text-black'>
 				{isLoading ? 'Loading...' : `${Math.round(progress)}%`}
 			</div>
 		</div>
