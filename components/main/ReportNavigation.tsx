@@ -12,6 +12,7 @@ import {
 	Truck,
 	Users
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import {
@@ -41,15 +42,16 @@ interface ReportCategory {
 const reportCategories: ReportCategory[] = [
 	{
 		id: 'delivery-speed',
-		title: 'Скорость доставки',
-		icon: <Truck className='h-5 w-5' />,
-		description: 'Отслеживание и анализ показателей эффективности доставки',
+		title: 'Отчет по продажам',
+		icon: <DollarSign className='h-5 w-5' />,
+		description:
+			'Данный отчет предоставляет информацию о продажах в ресторане за выбранный период.',
 		metrics: [
-			'Среднее время доставки',
-			'Пройденное расстояние',
-			'Производительность в часы пик'
+			'Обзор продаж: Позволяет увидеть средний чек и ФОТ за выбранный час',
+			'Анализ эффективности: Оценивает производительность сотрудников, сравнивая показатели продаж (процент ФОТ) и скорость приготовления блюд (Ср время готовки).',
+			'Выявление проблемных зон: Позволяет определить, в какой час время приготовления увеличивается и принять меры для улучшения ситуации.'
 		],
-		timeOptions: ['Ежедневный', 'Недельный', 'Месячный', 'Квартальный']
+		timeOptions: []
 	},
 	{
 		id: 'delivery-delays',
@@ -123,6 +125,12 @@ const reportCategories: ReportCategory[] = [
 ]
 
 const ReportCard = ({ category }: { category: ReportCategory }) => {
+	const router = useRouter()
+
+	const handleViewReport = () => {
+		router.push(`/info_page/${category.id}`)
+	}
+
 	return (
 		<div className='relativ group'>
 			<div className='flex items-center space-x-4 rounded-lg border border-border bg-background/50 p-4 transition-all hover:shadow-md dark:bg-background/50'>
@@ -143,20 +151,26 @@ const ReportCard = ({ category }: { category: ReportCategory }) => {
 					</HoverCardTrigger>
 					<HoverCardContent className='w-80'>
 						<div className='space-y-2'>
-							<h4 className='font-medium'>Метрика отчетов</h4>
-							<ul className='list-inside list-disc text-sm'>
+							<h4 className='font-medium'>
+								Что считает данный отчет
+							</h4>
+							<ul className='list-inside list-disc pb-5 text-sm'>
 								{category.metrics.map(metric => (
 									<li key={metric}>{metric}</li>
 								))}
 							</ul>
-							<div className='flex items-center space-x-2 text-sm'>
+							{/* <div className='flex items-center space-x-2 text-sm'>
 								<Clock className='h-4 w-4' />
 								<span>
-									Временные периоды:{' '}
+
 									{category.timeOptions.join(', ')}
 								</span>
-							</div>
-							<Button className='w-full' size='sm'>
+							</div> */}
+							<Button
+								className='w-full'
+								size='sm'
+								onClick={handleViewReport}
+							>
 								Посмотреть примеры отчетов
 							</Button>
 						</div>

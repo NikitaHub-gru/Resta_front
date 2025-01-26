@@ -1,5 +1,6 @@
 'use client'
 
+import { FilesApiRoutesUploadFileMultiPartBodyParams$outboundSchema } from '@mistralai/mistralai/models/operations'
 import { format } from 'date-fns'
 import {
 	addDays,
@@ -13,6 +14,7 @@ import { ru } from 'date-fns/locale'
 import {
 	CalendarIcon,
 	Download,
+	FileBarChart,
 	Filter,
 	Frown,
 	Info,
@@ -28,9 +30,17 @@ import Loading_page from '../loadingP/Loading_comp'
 import Zagruzka from '../loadingP/zagruzka'
 import GrcPage from '../ui/grc-page'
 
+import DialogContentPage from '@/components/main/DialogPage'
 import { Button } from '@/components/ui/button'
 import Calculleit from '@/components/ui/calculleit'
 import { Calendar } from '@/components/ui/calendar'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger
+} from '@/components/ui/dialog'
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -118,6 +128,19 @@ interface TableData {
 	// добавьте другие поля
 }
 
+interface ReportTableInfoProps {
+	id: string
+}
+
+interface ReportData {
+	status: string
+	data: DeliveryOrder[]
+	id?: string
+	title?: string
+	name?: string
+	description?: string
+}
+
 interface ExportData {
 	[key: string]:
 		| string
@@ -134,9 +157,10 @@ interface ExportData {
 		  }
 }
 
-export default function DeliveryOrders() {
+export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 	const { toast } = useToast()
 	const [data, setData] = useState<DeliveryOrder[]>([])
+	const [reportInfo, setReportInfo] = useState<ReportData | null>(null)
 	const [columns, setColumns] = useState<string[]>([])
 	const [searchTerm, setSearchTerm] = useState('')
 	const [sortConfig, setSortConfig] = useState<SortConfig>(null)
@@ -193,7 +217,10 @@ export default function DeliveryOrders() {
 
 		try {
 			setIsLoading(true)
-			setIsDataFetched(false) // Reset when starting new fetch
+			setIsDataFetched(false)
+			// Add delay to show loading state
+			await new Promise(resolve => setTimeout(resolve, 90000)) // 1 second delay
+
 			const formattedStartDate = format(startDate, 'yyyy-MM-dd')
 			const formattedEndDate = format(endDate, 'yyyy-MM-dd')
 
@@ -204,8 +231,13 @@ export default function DeliveryOrders() {
 							.replace(/True/g, 'true')
 					: ''
 
-			// Ипользуем корпорацию из выбранного отчета
 			const reportCorporation = selectedReport.corporation
+
+			toast({
+				title: 'Загрузка',
+				description: 'Загрузка данных отчета...',
+				variant: 'default'
+			})
 
 			if (!isMoreThanOneMonth(startDate, endDate)) {
 				const response = await fetch(
@@ -609,6 +641,36 @@ export default function DeliveryOrders() {
 		setEndDate(today)
 	}
 
+	// Function to load report data
+	const loadReportData = async () => {
+		try {
+			setIsLoading(true)
+			// Add 9 second delay to show loading state
+			await new Promise(resolve => setTimeout(resolve, 9000))
+
+			const reportData = await import(`@/data/${id}.json`)
+			if (reportData && reportData.default.status === 'success') {
+				processReceivedData(reportData.default.data)
+				setReportInfo({
+					status: reportData.default.status,
+					data: reportData.default.data,
+					title: reportData.default.name,
+					description: reportData.default.description
+				})
+				setIsDataFetched(true)
+			}
+		} catch (error) {
+			console.error('Error loading report data:', error)
+			toast({
+				title: 'Ошибка',
+				description: 'Не удалось загрузить данные отчета',
+				variant: 'destructive'
+			})
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
 	// Загрузка доступных отчетов
 	useEffect(() => {
 		fetchAvailableReports()
@@ -666,27 +728,35 @@ export default function DeliveryOrders() {
 	return (
 		<ScrollArea className='h-[calc(100vh-2rem)] w-full'>
 			<div className='container mx-auto py-10'>
-				<div className='rounded-lg border bg-[#171717] text-card-foreground shadow-sm'>
+				<div className='rounded-lg border bg-white text-card-foreground shadow-sm dark:bg-[#171717]'>
 					<div className='flex flex-col space-y-1.5 p-6'>
 						<div className='flex items-center justify-between'>
 							<div>
 								<h2 className='mb-5 text-2xl font-semibold leading-none tracking-tight'>
-									{selectedReport?.tb_name ||
-										'Выберите отчет'}
+									{reportInfo?.title || 'Загрузка отчета...'}
 								</h2>
 								<p className='text-sm text-muted-foreground'>
-									{selectedReport?.descript ||
+									{reportInfo?.description ||
 										'Описание отчета будет здесь'}
 								</p>
 							</div>
-							<div className='flex items-center gap-4 px-10 text-2xl font-bold text-muted-foreground'>
-								<p>Это тестовые данные</p>
+							<div className='flex items-center gap-4'>
+								<Dialog>
+									<DialogTrigger asChild>
+										<Button>
+											<FileBarChart className='h-6 w-6' />
+											Полная информация о отчете
+										</Button>
+									</DialogTrigger>
+									<DialogContent className='max-w-4xl'>
+										<DialogContentPage />
+									</DialogContent>
+								</Dialog>
 							</div>
 						</div>
 					</div>
 
 					<div className='p-6 pt-0'>
-						{/* Добавляем выбор периода */}
 						<div className='mb-6'>
 							<div className='rounded-md border p-4'>
 								<div className='flex items-center gap-4'>
@@ -694,7 +764,7 @@ export default function DeliveryOrders() {
 										<PopoverTrigger asChild>
 											<Button
 												variant='outline'
-												className='min-w-[155px] max-w-[300px] items-center justify-start bg-[#171717] text-left font-normal'
+												className='min-w-[155px] max-w-[300px] items-center justify-start bg-white text-left font-normal dark:bg-[#171717]'
 											>
 												<CalendarIcon className='mr-2 h-4 w-4' />
 												{startDate && endDate
@@ -719,7 +789,7 @@ export default function DeliveryOrders() {
 											side='bottom'
 										>
 											<div
-												className='rounded-md border bg-[#171717] p-3 shadow-md'
+												className='rounded-md border bg-white p-3 shadow-md dark:bg-[#171717]'
 												style={{ minWidth: '600px' }}
 											>
 												<Calendar
@@ -736,7 +806,7 @@ export default function DeliveryOrders() {
 													}}
 													numberOfMonths={2}
 													locale={ru}
-													className='w-full bg-[#171717]'
+													className='w-full bg-white dark:bg-[#171717]'
 												/>
 											</div>
 										</PopoverContent>
@@ -776,14 +846,12 @@ export default function DeliveryOrders() {
 									</div>
 
 									<div className='flex items-center gap-4'>
-										<Button onClick={fetchData}>
+										<Button onClick={loadReportData}>
 											Получить данные
 										</Button>
 										{isDataFetched &&
-											selectedReport?.id !== undefined &&
-											[17, 30, 31, 32, 33, 34].includes(
-												selectedReport.id
-											) && (
+											selectedReport?.id !==
+												undefined && (
 												<Sheet>
 													<SheetTrigger asChild>
 														<Button>
@@ -923,7 +991,7 @@ export default function DeliveryOrders() {
 											onChange={e =>
 												setSearchTerm(e.target.value)
 											}
-											className='h-10 w-full bg-[#171717] pl-10'
+											className='h-10 w-full bg-white pl-10 dark:bg-[#171717]'
 										/>
 										<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground' />
 									</div>
@@ -1105,7 +1173,7 @@ export default function DeliveryOrders() {
 													{columns.map(column => (
 														<TableHead
 															key={column}
-															className='sticky top-0 bg-[#171717]'
+															className='sticky top-0 bg-white dark:bg-[#171717]'
 															style={{
 																width: `${calculateColumnWidth(column)}px`,
 																minWidth: `${calculateColumnWidth(column)}px`
@@ -1133,7 +1201,7 @@ export default function DeliveryOrders() {
 																			</DropdownMenuTrigger>
 																			<DropdownMenuContent
 																				align='end'
-																				className='w-[400px] border bg-[#171717]'
+																				className='w-[400px] border bg-white dark:bg-[#171717]'
 																			>
 																				<div className='px-2 py-2'>
 																					<Input
@@ -1158,7 +1226,7 @@ export default function DeliveryOrders() {
 																						className='h-8'
 																					/>
 																				</div>
-																				<div className='max-h-[400px] overflow-y-auto bg-[#171717]'>
+																				<div className='max-h-[400px] overflow-y-auto bg-white dark:bg-[#171717]'>
 																					{Array.from(
 																						filters[
 																							column
@@ -1207,7 +1275,7 @@ export default function DeliveryOrders() {
 																											)
 																										}
 																									}}
-																									className='bg-[#171717]'
+																									className='bg-white dark:bg-[#171717]'
 																								>
 																									<div className='flex w-full items-center justify-between gap-2'>
 																										<span className='whitespace-normal break-words'>
@@ -1232,7 +1300,7 @@ export default function DeliveryOrders() {
 																				]
 																					?.length >
 																					0 && (
-																					<div className='border-t bg-[#171717] px-2 py-2'>
+																					<div className='border-t bg-white px-2 py-2 dark:bg-[#171717]'>
 																						<Button
 																							variant='ghost'
 																							size='sm'
