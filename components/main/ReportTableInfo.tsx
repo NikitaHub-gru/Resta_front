@@ -11,6 +11,7 @@ import {
 	subDays
 } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { LineChart, PieChart, Users } from 'lucide-react'
 import {
 	CalendarIcon,
 	Download,
@@ -34,6 +35,7 @@ import DialogContentPage from '@/components/main/DialogPage'
 import { Button } from '@/components/ui/button'
 import Calculleit from '@/components/ui/calculleit'
 import { Calendar } from '@/components/ui/calendar'
+import { Card, CardContent } from '@/components/ui/card'
 import {
 	Dialog,
 	DialogContent,
@@ -139,6 +141,15 @@ interface ReportData {
 	title?: string
 	name?: string
 	description?: string
+	characteristics?: Array<{
+		title: string
+		description: string
+	}>
+	example?: string
+	users?: Array<{
+		role: string
+		description: string
+	}>
 }
 
 interface ExportData {
@@ -219,7 +230,7 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 			setIsLoading(true)
 			setIsDataFetched(false)
 			// Add delay to show loading state
-			await new Promise(resolve => setTimeout(resolve, 90000)) // 1 second delay
+			await new Promise(resolve => setTimeout(resolve, 1000)) // 1 second delay
 
 			const formattedStartDate = format(startDate, 'yyyy-MM-dd')
 			const formattedEndDate = format(endDate, 'yyyy-MM-dd')
@@ -645,8 +656,12 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 	const loadReportData = async () => {
 		try {
 			setIsLoading(true)
-			// Add 9 second delay to show loading state
-			await new Promise(resolve => setTimeout(resolve, 9000))
+			// Add 1 second delay to show loading state
+			await new Promise(resolve => setTimeout(resolve, 1000))
+
+			if (!id) {
+				throw new Error('Report ID is required')
+			}
 
 			const reportData = await import(`@/data/${id}.json`)
 			if (reportData && reportData.default.status === 'success') {
@@ -655,9 +670,14 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 					status: reportData.default.status,
 					data: reportData.default.data,
 					title: reportData.default.name,
-					description: reportData.default.description
+					description: reportData.default.description,
+					characteristics: reportData.default.characteristics,
+					example: reportData.default.example,
+					users: reportData.default.users
 				})
 				setIsDataFetched(true)
+			} else {
+				throw new Error('Invalid report data format')
 			}
 		} catch (error) {
 			console.error('Error loading report data:', error)
@@ -749,7 +769,125 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 										</Button>
 									</DialogTrigger>
 									<DialogContent className='max-w-4xl'>
-										<DialogContentPage />
+										<div className='mt-1 flex justify-center'>
+											<ScrollArea className='max-h-[80vh] overflow-y-auto px-1'>
+												<DialogHeader>
+													<DialogTitle className='flex justify-center text-2xl font-bold'>
+														{selectedReport?.tb_name ||
+															'Информация о отчете'}
+													</DialogTitle>
+												</DialogHeader>
+												<div className='space-y-6 py-4'>
+													{/* Описание отчета */}
+													<Card>
+														<CardContent className='pt-6'>
+															<h3 className='mb-2 flex items-center gap-2 text-lg font-semibold'>
+																<LineChart className='h-5 w-5 text-primary' />
+																Общее описание
+															</h3>
+															<p className='text-gray-600 dark:text-gray-300'>
+																{
+																	reportInfo?.description
+																}
+															</p>
+														</CardContent>
+													</Card>
+
+													{/* Характеристики */}
+													<Card>
+														<CardContent className='pt-6'>
+															<h3 className='mb-4 flex items-center gap-2 text-lg font-semibold'>
+																<PieChart className='h-5 w-5 text-primary' />
+																Характеристики
+																отчета
+															</h3>
+															<ul className='space-y-3 text-gray-600 dark:text-gray-300'>
+																{reportInfo?.characteristics?.map(
+																	(
+																		char,
+																		index
+																	) => (
+																		<li
+																			key={
+																				index
+																			}
+																			className='flex items-start gap-2'
+																		>
+																			<span className='min-w-[140px] font-medium'>
+																				{
+																					char.title
+																				}
+
+																				:
+																			</span>
+																			<span>
+																				{
+																					char.description
+																				}
+																			</span>
+																		</li>
+																	)
+																)}
+															</ul>
+														</CardContent>
+													</Card>
+
+													{/* Пользователи */}
+													<Card>
+														<CardContent className='pt-6'>
+															<h3 className='mb-4 flex items-center gap-2 text-lg font-semibold'>
+																<Users className='h-5 w-5 text-primary' />
+																Потенциальные
+																пользователи
+															</h3>
+															<ul className='space-y-3 text-gray-600 dark:text-gray-300'>
+																{reportInfo?.users?.map(
+																	(
+																		user,
+																		index
+																	) => (
+																		<li
+																			key={
+																				index
+																			}
+																			className='flex items-start gap-2'
+																		>
+																			<span className='font-medium'>
+																				{
+																					user.role
+																				}
+
+																				:
+																			</span>
+																			<span>
+																				{
+																					user.description
+																				}
+																			</span>
+																		</li>
+																	)
+																)}
+															</ul>
+														</CardContent>
+													</Card>
+
+													{/* Пример использования */}
+													<Card>
+														<CardContent className='pt-6'>
+															<h3 className='mb-2 text-lg font-semibold'>
+																Пример
+																использования
+															</h3>
+															<p className='text-gray-600 dark:text-gray-300'>
+																{
+																	reportInfo?.example
+																}
+															</p>
+														</CardContent>
+													</Card>
+												</div>
+											</ScrollArea>
+										</div>
 									</DialogContent>
 								</Dialog>
 							</div>
