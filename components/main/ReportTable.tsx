@@ -1204,7 +1204,7 @@ export default function DeliveryOrders() {
 																			</DropdownMenuTrigger>
 																			<DropdownMenuContent
 																				align='end'
-																				className='w-[400px] border bg-[#171717]'
+																				className='w-[400px] border bg-white dark:bg-[#171717]'
 																			>
 																				<div className='px-2 py-2'>
 																					<Input
@@ -1226,10 +1226,10 @@ export default function DeliveryOrders() {
 																								})
 																							)
 																						}
-																						className='h-8'
+																						className='h-8 bg-white dark:bg-[#171717]'
 																					/>
 																				</div>
-																				<div className='max-h-[400px] overflow-y-auto bg-[#171717]'>
+																				<div className='max-h-[400px] overflow-y-auto bg-white dark:bg-[#171717]'>
 																					{Array.from(
 																						filters[
 																							column
@@ -1278,7 +1278,7 @@ export default function DeliveryOrders() {
 																											)
 																										}
 																									}}
-																									className='bg-[#171717]'
+																									className='bg-white dark:bg-[#171717]'
 																								>
 																									<div className='flex w-full items-center justify-between gap-2'>
 																										<span className='whitespace-normal break-words'>
@@ -1303,7 +1303,7 @@ export default function DeliveryOrders() {
 																				]
 																					?.length >
 																					0 && (
-																					<div className='border-t bg-[#171717] px-2 py-2'>
+																					<div className='border-t bg-white px-2 py-2 dark:bg-[#171717]'>
 																						<Button
 																							variant='ghost'
 																							size='sm'

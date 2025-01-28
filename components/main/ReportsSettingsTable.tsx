@@ -263,11 +263,11 @@ export function ReportsSettingsTable() {
 				<h1 className='text-2xl font-bold'>Настройка отчётов</h1>
 				<AddReportDialog onSuccess={fetchReports} />
 			</div>
-			<div className='rounded-md border border-neutral-800'>
+			<div className='rounded-md border border-gray-500/30 dark:border-white/10'>
 				<ScrollArea className='h-[600px] w-full'>
 					<Table>
 						<TableHeader>
-							<TableRow className='bg-background'>
+							<TableRow className='bg-white dark:bg-[#171717]'>
 								<TableHead>ID</TableHead>
 								<TableHead>Корпорация</TableHead>
 								<TableHead>Название</TableHead>
