@@ -1,5 +1,6 @@
 'use client'
 
+import { Item } from '@radix-ui/react-dropdown-menu'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -21,6 +22,27 @@ import { DeliveryEmoji } from '@/components/dasboard/DeliveryEmoji'
 import { WaveProgressBar } from '@/components/dasboard/WaveProgressBar'
 import { DeliveryOrder } from '@/components/dasboard/types/delivery'
 
+interface DepartmentData {
+	department: string
+	all_orders: number
+	del_orders: number
+	avg_dell_t: string
+	avg_send_t: string
+	wait_t: string
+	avg_cooking_t: string
+	send_40: string
+	cooking_14: string
+	wait_7: string
+	insend_20: string
+}
+
+interface ApiResponse {
+	data: DepartmentData[]
+}
+
+interface DashboardProps {
+	id_p: string
+}
 const RESTAURANTS = [
 	{ id: 'r1', name: 'Вкусный Дракон', performance: 98 },
 	{ id: 'r2', name: 'Пицца Мастер', performance: 95 },
@@ -43,8 +65,12 @@ const MOCK_DATA: DeliveryOrder[] = Array.from({ length: 20 }, (_, i) => ({
 	status: Math.random() > 0.3 ? 'onTime' : 'delayed'
 }))
 
-export function DeliveryDashboard() {
+export function DeliveryDashboard({ id_p }: DashboardProps) {
 	const [orders, setOrders] = useState<DeliveryOrder[]>([])
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+	const [response, setResponse] = useState<DepartmentData[]>([])
+
 	const [stats, setStats] = useState({
 		totalOrders: 0,
 		delayedOrders: 0,
@@ -54,12 +80,45 @@ export function DeliveryDashboard() {
 		longShelfOrders: 0,
 		longTransitOrders: 0
 	})
+
+	const handleSubmit = async () => {
+		setLoading(true)
+		setError(null)
+
+		try {
+			const apiResponse = await fetch(
+				'http://localhost:8000/restu/dashboard/' + id_p,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}
+			)
+
+			if (!apiResponse.ok) {
+				throw new Error(`HTTP error! status: ${apiResponse.status}`)
+			}
+
+			const result: ApiResponse = await apiResponse.json()
+			setResponse(result.data)
+		} catch (error) {
+			console.error('Failed to fetch data:', error)
+			setError(
+				error instanceof Error ? error.message : 'Failed to fetch data'
+			)
+		} finally {
+			setLoading(false)
+		}
+	}
+
 	const [isLoading, setIsLoading] = useState(true)
 	const [showAll, setShowAll] = useState(false)
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setOrders(MOCK_DATA)
 			setIsLoading(false)
+			handleSubmit()
 		}, 1500)
 		return () => clearTimeout(timer)
 	}, [])
@@ -117,10 +176,18 @@ export function DeliveryDashboard() {
 		<div className='h-screen overflow-hidden bg-gray-50 p-4 dark:bg-[#171717]'>
 			<div className='space-y-4'>
 				{/* Header */}
-				<div className='flex items-center justify-between'>
-					<h1 className='text-2xl font-bold'>Delivery Dashboard</h1>
-				</div>
 
+				{loading ? (
+					<div>Loading...</div> // Индикатор загрузки
+				) : response && response.length > 0 ? (
+					<div className='flex items-center justify-between'>
+						<h1 className='text-2xl font-bold'>
+							{response[0].department}
+						</h1>
+					</div>
+				) : (
+					error && <div>No departments found</div> // Сообщение, если нет данных и нет ошибки
+				)}
 				{/* Main Content Area */}
 				<div className='flex gap-4'>
 					{/* Left Section - Emojis */}
@@ -139,7 +206,7 @@ export function DeliveryDashboard() {
 							</div>
 							<div className='grid grid-cols-3 gap-4 pt-10'>
 								{orders
-									.slice(0, showAll ? orders.length : 10)
+									.slice(0, showAll ? orders.length : 12)
 									.map((order, index) => (
 										<div
 											key={order.id}
@@ -260,42 +327,74 @@ export function DeliveryDashboard() {
 							<MetricCard
 								icon={Clock}
 								title='Время доставки'
-								value={`${Math.round(stats.averageTotal)}м`}
+								value={
+									response && response[0]
+										? `${response[0].avg_dell_t} м`
+										: '0 м'
+								}
 							/>
 							<MetricCard
 								icon={ChefHat}
 								title='Приготовление'
-								value={`${Math.round(orders[0]?.prepTime || 0)}м`}
+								value={
+									response && response[0]
+										? `${response[0].avg_cooking_t} м`
+										: '0 м'
+								}
 							/>
 							<MetricCard
 								icon={Archive}
 								title='Ожидание на полке'
-								value={`${Math.round(orders[0]?.shelfTime || 0)}м`}
+								value={
+									response && response[0]
+										? `${response[0].wait_t} м`
+										: '0 м'
+								}
 							/>
 							<MetricCard
 								icon={Truck}
 								title='Время в пути'
-								value={`${Math.round(orders[0]?.transitTime || 0)}м`}
+								value={
+									response && response[0]
+										? `${response[0].avg_send_t} м`
+										: '0 м'
+								}
 							/>
 							<MetricCard
 								icon={AlertCircle}
 								title='Доставка >40 мин'
-								value={`${stats.delayedOrders}`}
+								value={
+									response && response[0]
+										? `${response[0].send_40} %`
+										: '0 %'
+								}
 							/>
 							<MetricCard
 								icon={Timer}
 								title='Приготовление >14 мин'
-								value={`${Math.round((stats.longPrepOrders / stats.totalOrders) * 100)}%`}
+								value={
+									response && response[0]
+										? `${response[0].cooking_14} %`
+										: '0 %'
+								}
 							/>
 							<MetricCard
 								icon={Package}
 								title='На полке >7 мин'
-								value={stats.longShelfOrders}
+								value={
+									response && response[0]
+										? `${response[0].wait_7} %`
+										: '0 %'
+								}
 							/>
 							<MetricCard
 								icon={Route}
 								title='В пути >20 мин'
-								value={stats.longTransitOrders}
+								value={
+									response && response[0]
+										? `${response[0].insend_20} %`
+										: '0 %'
+								}
 							/>
 						</div>
 					</div>

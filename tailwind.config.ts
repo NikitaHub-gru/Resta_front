@@ -4,7 +4,7 @@ const {
 	default: flattenColorPalette
 } = require('tailwindcss/lib/util/flattenColorPalette')
 const config: Config = {
-	darkMode: 'class',
+	darkMode: ['class', 'class'],
 	content: [
 		'./pages/**/*.{ts,tsx}',
 		'./components/**/*.{ts,tsx}',
@@ -12,32 +12,40 @@ const config: Config = {
 		'./src/**/*.{ts,tsx}'
 	],
 	theme: {
-		extend: {
-			animation: {
-				'border-beam':
-					'border-beam calc(var(--duration)*1s) infinite linear'
-			},
-			keyframes: {
-				'border-beam': {
-					'100%': {
-						'offset-distance': '100%'
-					}
-				}
-			},
-			colors: {
-				background: 'rgb(96,92,112)',
-				foreground: 'rgb(255,255,255)',
-				primary: {
-					DEFAULT: 'rgb(255,255,255)',
-					foreground: 'rgb(15,15,15)'
-				},
-				border: 'rgb(52,52,52)' // Добавляем определение для border
-			},
-			borderColor: {
-				DEFAULT: 'rgb(52,52,52)' // Добавляем определение цвета границы по умолчанию
-			}
-		}
-	},
+    	extend: {
+    		animation: {
+    			'border-beam': 'border-beam calc(var(--duration)*1s) infinite linear',
+    			grid: 'grid 15s linear infinite'
+    		},
+    		keyframes: {
+    			'border-beam': {
+    				'100%': {
+    					'offset-distance': '100%'
+    				}
+    			},
+    			grid: {
+    				'0%': {
+    					transform: 'translateY(-50%)'
+    				},
+    				'100%': {
+    					transform: 'translateY(0)'
+    				}
+    			}
+    		},
+    		colors: {
+    			background: 'rgb(96,92,112)',
+    			foreground: 'rgb(255,255,255)',
+    			primary: {
+    				DEFAULT: 'rgb(255,255,255)',
+    				foreground: 'rgb(15,15,15)'
+    			},
+    			border: 'rgb(52,52,52)'
+    		},
+    		borderColor: {
+    			DEFAULT: 'rgb(52,52,52)'
+    		}
+    	}
+    },
 	plugins: [addVariablesForColors]
 }
 function addVariablesForColors({ addBase, theme }: any) {
