@@ -8,7 +8,7 @@ import LoadingComponent from '@/components/main/loading-page'
 import { supabase } from '@/lib/supabaseClient'
 
 // Определяем публичные маршруты, которые не требуют аутентификации
-const PUBLIC_ROUTES = ['/reportsInfo', '/', '/dashboard']
+const PUBLIC_ROUTES = ['/reportsInfo', '/']
 
 export default function AuthWrapper({
 	children
