@@ -637,7 +637,13 @@ export default function DeliveryOrders() {
 				.eq('is_active', true)
 
 			if (userCorporation !== 'RestaLabs') {
-				query = query.eq('corporation', userCorporation)
+				if (userCorporation === 'Лосось №1') {
+					query = query.or(
+						`corporation.eq.${userCorporation},corporation.eq.American Dream`
+					)
+				} else {
+					query = query.eq('corporation', userCorporation)
+				}
 			}
 
 			const { data, error } = await query
