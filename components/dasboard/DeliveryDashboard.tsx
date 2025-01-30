@@ -104,9 +104,7 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 			setResponse(result.data)
 		} catch (error) {
 			console.error('Failed to fetch data:', error)
-			setError(
-				error instanceof Error ? error.message : 'Failed to fetch data'
-			)
+			setError(error instanceof Error ? error.message : 'Failed to fetch data')
 		} finally {
 			setLoading(false)
 		}
@@ -115,12 +113,20 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 	const [isLoading, setIsLoading] = useState(true)
 	const [showAll, setShowAll] = useState(false)
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			setOrders(MOCK_DATA)
-			setIsLoading(false)
-			handleSubmit()
-		}, 1500)
-		return () => clearTimeout(timer)
+		setOrders(MOCK_DATA)
+		setIsLoading(false)
+		handleSubmit()
+
+		// Затем запускаем интервал на 15 минут
+		const interval = setInterval(
+			() => {
+				handleSubmit()
+			},
+			15 * 60 * 1000
+		) // 15 минут
+
+		// Очищаем интервал при размонтировании компонента
+		return () => clearInterval(interval)
 	}, [])
 
 	useEffect(() => {
@@ -128,19 +134,13 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 			const onTimeOrders = orders.filter(order => order.totalTime <= 60)
 			setStats({
 				totalOrders: orders.length,
-				delayedOrders: orders.filter(order => order.totalTime > 40)
-					.length,
+				delayedOrders: orders.filter(order => order.totalTime > 40).length,
 				onTimePercentage: (onTimeOrders.length / orders.length) * 100,
 				averageTotal:
-					orders.reduce((acc, curr) => acc + curr.totalTime, 0) /
-					orders.length,
-				longPrepOrders: orders.filter(order => order.prepTime > 14)
-					.length,
-				longShelfOrders: orders.filter(order => order.shelfTime > 7)
-					.length,
-				longTransitOrders: orders.filter(
-					order => order.transitTime > 20
-				).length
+					orders.reduce((acc, curr) => acc + curr.totalTime, 0) / orders.length,
+				longPrepOrders: orders.filter(order => order.prepTime > 14).length,
+				longShelfOrders: orders.filter(order => order.shelfTime > 7).length,
+				longTransitOrders: orders.filter(order => order.transitTime > 20).length
 			})
 		}
 	}, [orders])
@@ -164,9 +164,7 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 				</h3>
 			</div>
 			<p className='text-xl font-bold'>{value}</p>
-			{subValue && (
-				<p className='mt-1 text-xs text-gray-500'>{subValue}</p>
-			)}
+			{subValue && <p className='mt-1 text-xs text-gray-500'>{subValue}</p>}
 		</div>
 	)
 
@@ -177,26 +175,20 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 			<div className='space-y-4'>
 				{/* Header */}
 
-				{loading ? (
-					<div>Loading...</div> // Индикатор загрузки
-				) : response && response.length > 0 ? (
-					<div className='flex items-center justify-between'>
-						<h1 className='text-2xl font-bold'>
-							{response[0].department}
-						</h1>
-					</div>
-				) : (
-					error && <div>No departments found</div> // Сообщение, если нет данных и нет ошибки
-				)}
+				<div className='flex items-center justify-between'>
+					<h1 className='text-2xl font-bold'>
+						{response.length > 0
+							? response[0].department
+							: 'Ваше торговое предприятие'}
+					</h1>
+				</div>
 				{/* Main Content Area */}
 				<div className='flex gap-4'>
 					{/* Left Section - Emojis */}
 					<div className='w-[500px]'>
 						<div className='rounded-xl bg-white p-6 shadow-lg dark:bg-neutral-700'>
 							<div className='mb-4 flex items-center justify-between'>
-								<h2 className='text-lg font-semibold'>
-									Текущие заказы
-								</h2>
+								<h2 className='text-lg font-semibold'>Текущие заказы</h2>
 								<button
 									onClick={() => setShowAll(!showAll)}
 									className='h-6 w-20 rounded-full bg-black px-2 py-1 text-xs text-white transition-all hover:bg-muted-foreground hover:shadow-md dark:bg-white dark:text-black'
@@ -205,68 +197,44 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 								</button>
 							</div>
 							<div className='grid grid-cols-3 gap-4 pt-10'>
-								{orders
-									.slice(0, showAll ? orders.length : 12)
-									.map((order, index) => (
-										<div
-											key={order.id}
-											className='flex flex-col items-center'
-										>
-											<Tooltip.Provider>
-												<Tooltip.Root>
-													<Tooltip.Trigger asChild>
-														<div className='mb-2 transform transition-transform hover:scale-110'>
-															<DeliveryEmoji
-																size='big'
-																duration={
-																	order.totalTime
-																}
-																index={index}
-																total={
-																	showAll
-																		? orders.length
-																		: 11
-																}
-															/>
+								{orders.slice(0, showAll ? orders.length : 12).map((order, index) => (
+									<div key={order.id} className='flex flex-col items-center'>
+										<Tooltip.Provider>
+											<Tooltip.Root>
+												<Tooltip.Trigger asChild>
+													<div className='mb-2 transform transition-transform hover:scale-110'>
+														<DeliveryEmoji
+															size='big'
+															duration={order.totalTime}
+															index={index}
+															total={showAll ? orders.length : 11}
+														/>
+													</div>
+												</Tooltip.Trigger>
+												<Tooltip.Portal>
+													<Tooltip.Content
+														className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
+														sideOffset={5}
+													>
+														<div className='space-y-2'>
+															<p className='font-semibold'>Order #{order.id}</p>
+															<p className='text-gray-600 dark:text-white'>
+																Delivery Time: {Math.round(order.totalTime)}m
+															</p>
 														</div>
-													</Tooltip.Trigger>
-													<Tooltip.Portal>
-														<Tooltip.Content
-															className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
-															sideOffset={5}
-														>
-															<div className='space-y-2'>
-																<p className='font-semibold'>
-																	Order #
-																	{order.id}
-																</p>
-																<p className='text-gray-600 dark:text-white'>
-																	Delivery
-																	Time:{' '}
-																	{Math.round(
-																		order.totalTime
-																	)}
-																	m
-																</p>
-															</div>
-															<Tooltip.Arrow className='fill-white' />
-														</Tooltip.Content>
-													</Tooltip.Portal>
-												</Tooltip.Root>
-											</Tooltip.Provider>
-											<div className='text-center'>
-												<p className='font-medium'>
-													#{order.id}
-												</p>
-												<p className='text-sm text-gray-600 dark:text-white'>
-													{Math.round(
-														order.totalTime
-													)}
-													m
-												</p>
-											</div>
+														<Tooltip.Arrow className='fill-white' />
+													</Tooltip.Content>
+												</Tooltip.Portal>
+											</Tooltip.Root>
+										</Tooltip.Provider>
+										<div className='text-center'>
+											<p className='font-medium'>#{order.id}</p>
+											<p className='text-sm text-gray-600 dark:text-white'>
+												{Math.round(order.totalTime)}m
+											</p>
 										</div>
-									))}
+									</div>
+								))}
 							</div>
 						</div>
 					</div>
@@ -287,17 +255,13 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 											Заказов доставленных за 60 минут
 										</h2>
 									</div>
-									<WaveProgressBar
-										progress={stats.onTimePercentage}
-									/>
+									<WaveProgressBar progress={stats.onTimePercentage} />
 								</motion.div>
 							</div>
 							<div className='space-y-2'>
 								<div className='mb-3 flex items-center'>
 									<Trophy className='mr-2 h-5 w-5 text-yellow-500' />
-									<h2 className='text-sm font-semibold'>
-										Restaurant Rankings
-									</h2>
+									<h2 className='text-sm font-semibold'>Restaurant Rankings</h2>
 								</div>
 								{RESTAURANTS.map((restaurant, index) => (
 									<div
@@ -310,13 +274,9 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 											>
 												#{index + 1}
 											</span>
-											<span className='ml-2'>
-												{restaurant.name}
-											</span>
+											<span className='ml-2'>{restaurant.name}</span>
 										</div>
-										<span className='font-semibold'>
-											{restaurant.performance}%
-										</span>
+										<span className='font-semibold'>{restaurant.performance}%</span>
 									</div>
 								))}
 							</div>
@@ -327,74 +287,44 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 							<MetricCard
 								icon={Clock}
 								title='Время доставки'
-								value={
-									response && response[0]
-										? `${response[0].avg_dell_t} м`
-										: '0 м'
-								}
+								value={response && response[0] ? `${response[0].avg_dell_t} м` : '0 м'}
 							/>
 							<MetricCard
 								icon={ChefHat}
 								title='Приготовление'
 								value={
-									response && response[0]
-										? `${response[0].avg_cooking_t} м`
-										: '0 м'
+									response && response[0] ? `${response[0].avg_cooking_t} м` : '0 м'
 								}
 							/>
 							<MetricCard
 								icon={Archive}
 								title='Ожидание на полке'
-								value={
-									response && response[0]
-										? `${response[0].wait_t} м`
-										: '0 м'
-								}
+								value={response && response[0] ? `${response[0].wait_t} м` : '0 м'}
 							/>
 							<MetricCard
 								icon={Truck}
 								title='Время в пути'
-								value={
-									response && response[0]
-										? `${response[0].avg_send_t} м`
-										: '0 м'
-								}
+								value={response && response[0] ? `${response[0].avg_send_t} м` : '0 м'}
 							/>
 							<MetricCard
 								icon={AlertCircle}
 								title='Доставка >40 мин'
-								value={
-									response && response[0]
-										? `${response[0].send_40} %`
-										: '0 %'
-								}
+								value={response && response[0] ? `${response[0].send_40}` : '0 %'}
 							/>
 							<MetricCard
 								icon={Timer}
 								title='Приготовление >14 мин'
-								value={
-									response && response[0]
-										? `${response[0].cooking_14} %`
-										: '0 %'
-								}
+								value={response && response[0] ? `${response[0].cooking_14}` : '0 %'}
 							/>
 							<MetricCard
 								icon={Package}
 								title='На полке >7 мин'
-								value={
-									response && response[0]
-										? `${response[0].wait_7} %`
-										: '0 %'
-								}
+								value={response && response[0] ? `${response[0].wait_7}` : '0 %'}
 							/>
 							<MetricCard
 								icon={Route}
 								title='В пути >20 мин'
-								value={
-									response && response[0]
-										? `${response[0].insend_20} %`
-										: '0 %'
-								}
+								value={response && response[0] ? `${response[0].insend_20}` : '0 %'}
 							/>
 						</div>
 					</div>
