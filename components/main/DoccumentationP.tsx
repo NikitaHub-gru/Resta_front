@@ -3,7 +3,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BarChart, Building, ChevronDown, FileText } from 'lucide-react'
+import {
+	Building,
+	ChevronDown,
+	CircleDollarSign,
+	FileText,
+	Truck
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { ReportInfoModal } from '../ui/report-info-modal'
@@ -151,9 +157,7 @@ export default function Home() {
 			toast({
 				title: 'Ошибка',
 				description:
-					error instanceof Error
-						? error.message
-						: 'Не удалось загрузить отчеты',
+					error instanceof Error ? error.message : 'Не удалось загрузить отчеты',
 				variant: 'destructive'
 			})
 		} finally {
@@ -198,10 +202,10 @@ export default function Home() {
 
 	const getIcon = (type: string) => {
 		switch (type) {
-			case 'financial':
-				return <FileText className='h-5 w-5' />
-			case 'performance':
-				return <BarChart className='h-5 w-5' />
+			case 'SALES':
+				return <CircleDollarSign className='h-5 w-5' />
+			case 'DELIVERY':
+				return <Truck className='h-5 w-5' />
 			case 'analytics':
 				return <Building className='h-5 w-5' />
 			default:
@@ -227,9 +231,7 @@ export default function Home() {
 								<SelectValue placeholder='Все компании' />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value={ALL_COMPANIES}>
-									Все компании
-								</SelectItem>
+								<SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
 								{uniqueCompanies.map(company => (
 									<SelectItem key={company} value={company}>
 										{company}
@@ -240,9 +242,7 @@ export default function Home() {
 
 						<Select
 							value={selectedType || 'all'}
-							onValueChange={value =>
-								setSelectedType(value !== 'all' ? value : null)
-							}
+							onValueChange={value => setSelectedType(value !== 'all' ? value : null)}
 						>
 							<SelectTrigger className='w-[200px]'>
 								<SelectValue placeholder='Название отчета' />
@@ -255,10 +255,8 @@ export default function Home() {
 											.filter(
 												r =>
 													!selectedCompany ||
-													selectedCompany ===
-														ALL_COMPANIES ||
-													r.corporation ===
-														selectedCompany
+													selectedCompany === ALL_COMPANIES ||
+													r.corporation === selectedCompany
 											)
 											.map(r => r.tb_name)
 									)
@@ -285,9 +283,7 @@ export default function Home() {
 								<TableHead>Компания</TableHead>
 								<TableHead>Тип</TableHead>
 								<TableHead>Дата</TableHead>
-								<TableHead className='text-right'>
-									Действия
-								</TableHead>
+								<TableHead className='text-right'>Действия</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -295,44 +291,25 @@ export default function Home() {
 								<AnimatePresence key={report.id} mode='wait'>
 									<>
 										<TableRow className='group transition-colors'>
+											<TableCell>{getIcon(report.report_type)}</TableCell>
+											<TableCell className='font-medium'>{report.tb_name}</TableCell>
+											<TableCell>{report.corporation}</TableCell>
+											<TableCell>{report.report_type}</TableCell>
 											<TableCell>
-												{getIcon(report.type)}
-											</TableCell>
-											<TableCell className='font-medium'>
-												{report.tb_name}
-											</TableCell>
-											<TableCell>
-												{report.corporation}
-											</TableCell>
-											<TableCell>
-												{report.report_type}
-											</TableCell>
-											<TableCell>
-												{format(
-													new Date(report.created_at),
-													'dd.MM.yyyy HH:mm'
-												)}
+												{format(new Date(report.created_at), 'dd.MM.yyyy HH:mm')}
 											</TableCell>
 											<TableCell className='text-right'>
 												<Button
 													variant='ghost'
 													size='sm'
 													onClick={() =>
-														setExpandedId(
-															expandedId ===
-																report.id
-																? null
-																: report.id
-														)
+														setExpandedId(expandedId === report.id ? null : report.id)
 													}
 												>
 													Подробнее
 													<ChevronDown
 														className={`ml-2 h-4 w-4 transition-transform duration-200 ${
-															expandedId ===
-															report.id
-																? 'rotate-180'
-																: ''
+															expandedId === report.id ? 'rotate-180' : ''
 														}`}
 													/>
 												</Button>
@@ -340,10 +317,7 @@ export default function Home() {
 										</TableRow>
 										{expandedId === report.id && (
 											<TableRow className='hover:bg-transparent'>
-												<TableCell
-													colSpan={6}
-													className='p-0'
-												>
+												<TableCell colSpan={6} className='p-0'>
 													<motion.div
 														initial={{
 															opacity: 0,
@@ -367,26 +341,18 @@ export default function Home() {
 														}}
 														className='overflow-hidden p-4'
 													>
-														<p className='text-sm text-muted-foreground'>
-															{report.descript}
-														</p>
+														<p className='text-sm text-muted-foreground'>{report.descript}</p>
 														<div className='mt-4 flex justify-end'>
 															<Sheet>
 																<SheetTrigger>
-																	<Button>
-																		Информация
-																		об
-																		отчете
-																	</Button>
+																	<Button>Информация об отчете</Button>
 																</SheetTrigger>
 																<SheetContent side='top'>
 																	<SheetHeader>
 																		<SheetDescription>
 																			<div className='mt-1'>
 																				<h4 className='mb-4 text-center text-lg'>
-																					Информация
-																					о
-																					отчете:
+																					Информация о отчете:
 																				</h4>
 																				<div
 																					className='relative w-full'
@@ -396,26 +362,12 @@ export default function Home() {
 																				>
 																					<div className='justify-center px-8 pt-4 text-sm text-foreground'>
 																						{report.description_info
-																							.split(
-																								'\n\n'
-																							)
-																							.map(
-																								(
-																									paragraph,
-																									index
-																								) => (
-																									<p
-																										key={
-																											index
-																										}
-																										className='whitespace-pre-line'
-																									>
-																										{
-																											paragraph
-																										}
-																									</p>
-																								)
-																							)}
+																							.split('\n\n')
+																							.map((paragraph, index) => (
+																								<p key={index} className='whitespace-pre-line'>
+																									{paragraph}
+																								</p>
+																							))}
 																					</div>
 																				</div>
 																			</div>

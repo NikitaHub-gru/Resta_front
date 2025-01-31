@@ -199,9 +199,7 @@ export default function DeliveryOrders() {
 
 			const processedData =
 				typeof selectedReport.data === 'string'
-					? selectedReport.data
-							.replace(/False/g, 'false')
-							.replace(/True/g, 'true')
+					? selectedReport.data.replace(/False/g, 'false').replace(/True/g, 'true')
 					: ''
 
 			// Ипользуем корпорацию из выбранного отчета
@@ -256,11 +254,7 @@ export default function DeliveryOrders() {
 					}
 
 					const jsonData = await response.json()
-					if (
-						jsonData &&
-						jsonData.data &&
-						Array.isArray(jsonData.data)
-					) {
+					if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
 						allData = [...allData, ...jsonData.data]
 					}
 				}
@@ -290,9 +284,7 @@ export default function DeliveryOrders() {
 		const initialFilters: FilterConfig = {}
 		allColumns.forEach(column => {
 			const uniqueValues = new Set(
-				receivedData
-					.map(item => String(item[column] ?? 'Пусто'))
-					.filter(Boolean)
+				receivedData.map(item => String(item[column] ?? 'Пусто')).filter(Boolean)
 			)
 			initialFilters[column] = uniqueValues
 		})
@@ -313,10 +305,7 @@ export default function DeliveryOrders() {
 			// Сортировка по алфавиту
 			if (sortType === 'alpha-asc' || sortType === 'alpha-desc') {
 				const direction = sortType === 'alpha-asc' ? 1 : -1
-				return (
-					direction *
-					String(valueA).localeCompare(String(valueB), 'ru')
-				)
+				return direction * String(valueA).localeCompare(String(valueB), 'ru')
 			}
 
 			// Числовая сортировка
@@ -330,10 +319,8 @@ export default function DeliveryOrders() {
 				key.toLowerCase().includes('date')
 			) {
 				return sortType === 'asc'
-					? new Date(String(valueA)).getTime() -
-							new Date(String(valueB)).getTime()
-					: new Date(String(valueB)).getTime() -
-							new Date(String(valueA)).getTime()
+					? new Date(String(valueA)).getTime() - new Date(String(valueB)).getTime()
+					: new Date(String(valueB)).getTime() - new Date(String(valueA)).getTime()
 			}
 
 			// Обычная сортировка строк
@@ -431,8 +418,7 @@ export default function DeliveryOrders() {
 
 		if (
 			column.toLowerCase().includes('time') ||
-			(column.toLowerCase().includes('date') &&
-				column !== 'OrderTime.OrderLength')
+			(column.toLowerCase().includes('date') && column !== 'OrderTime.OrderLength')
 		) {
 			if (column === 'cookingTosend_time') {
 				const numericValue = parseFloat(String(value))
@@ -513,10 +499,7 @@ export default function DeliveryOrders() {
 
 				if (key === 'OrderTime.OrderLength') {
 					transformedRow[russianKey] = value ? `${value}` : '—'
-				} else if (
-					key === 'delivery_zone' &&
-					typeof value === 'string'
-				) {
+				} else if (key === 'delivery_zone' && typeof value === 'string') {
 					const zoneInfo = parseDeliveryZone(value)
 					if (zoneInfo) {
 						transformedRow[russianKey] = {
@@ -545,8 +528,7 @@ export default function DeliveryOrders() {
 					}
 				} else if (
 					key.toLowerCase().includes('time') ||
-					(key.toLowerCase().includes('date') &&
-						key !== 'OrderTime.OrderLength')
+					(key.toLowerCase().includes('date') && key !== 'OrderTime.OrderLength')
 				) {
 					transformedRow[russianKey] = formatDateValue(value)
 				} else {
@@ -559,8 +541,7 @@ export default function DeliveryOrders() {
 
 	// Добавляем функцию для подсчета количества значений
 	const getValueCount = (column: string, value: string): number => {
-		return data.filter(item => String(item[column] ?? 'Пусто') === value)
-			.length
+		return data.filter(item => String(item[column] ?? 'Пусто') === value).length
 	}
 
 	// Добавим функцию для форматирования значения в фильтре
@@ -573,8 +554,7 @@ export default function DeliveryOrders() {
 
 		if (
 			column.toLowerCase().includes('time') ||
-			(column.toLowerCase().includes('date') &&
-				column !== 'OrderTime.OrderLength')
+			(column.toLowerCase().includes('date') && column !== 'OrderTime.OrderLength')
 		) {
 			try {
 				const date = new Date(value)
@@ -631,10 +611,7 @@ export default function DeliveryOrders() {
 
 			const userCorporation = session.user.user_metadata.corporation
 
-			let query = supabase
-				.from('Reports')
-				.select('*')
-				.eq('is_active', true)
+			let query = supabase.from('Reports').select('*').eq('is_active', true)
 
 			if (userCorporation !== 'RestaLabs') {
 				if (userCorporation === 'Лосось №1') {
@@ -681,12 +658,10 @@ export default function DeliveryOrders() {
 						<div className='flex items-center justify-between'>
 							<div>
 								<h2 className='mb-5 text-2xl font-semibold leading-none tracking-tight'>
-									{selectedReport?.tb_name ||
-										'Выберите отчет'}
+									{selectedReport?.tb_name || 'Выберите отчет'}
 								</h2>
 								<p className='text-sm text-muted-foreground'>
-									{selectedReport?.descript ||
-										'Описание отчета будет здесь'}
+									{selectedReport?.descript || 'Описание отчета будет здесь'}
 								</p>
 							</div>
 							<div className='flex items-center gap-4'>
@@ -694,9 +669,7 @@ export default function DeliveryOrders() {
 									<ReportInfoModal
 										title={selectedReport.tb_name}
 										description={selectedReport.descript}
-										description_info={
-											selectedReport.description_info
-										}
+										description_info={selectedReport.description_info}
 									/>
 								)}
 								{/* Company select */}
@@ -708,14 +681,9 @@ export default function DeliveryOrders() {
 										<SelectValue placeholder='Все компании' />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value={ALL_COMPANIES}>
-											Все компании
-										</SelectItem>
+										<SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
 										{companies.map(company => (
-											<SelectItem
-												key={company}
-												value={company}
-											>
+											<SelectItem key={company} value={company}>
 												{company}
 											</SelectItem>
 										))}
@@ -727,12 +695,7 @@ export default function DeliveryOrders() {
 									value={selectedReport?.id?.toString() || ''}
 									onValueChange={value => {
 										const report = reports
-											.filter(
-												r =>
-													!selectedCompany ||
-													r.corporation ===
-														selectedCompany
-											)
+											.filter(r => !selectedCompany || r.corporation === selectedCompany)
 											.find(r => r.id === Number(value))
 										if (report) handleReportSelect(report)
 									}}
@@ -743,16 +706,10 @@ export default function DeliveryOrders() {
 									<SelectContent>
 										{reports
 											.filter(
-												report =>
-													!selectedCompany ||
-													report.corporation ===
-														selectedCompany
+												report => !selectedCompany || report.corporation === selectedCompany
 											)
 											.map(report => (
-												<SelectItem
-													key={report.id}
-													value={report.id.toString()}
-												>
+												<SelectItem key={report.id} value={report.id.toString()}>
 													{report.tb_name}
 												</SelectItem>
 											))}
@@ -775,17 +732,9 @@ export default function DeliveryOrders() {
 											>
 												<CalendarIcon className='mr-2 h-4 w-4' />
 												{startDate && endDate
-													? format(
-															startDate,
-															'd MMMM yyyy',
-															{ locale: ru }
-														) +
+													? format(startDate, 'd MMMM yyyy', { locale: ru }) +
 														' - ' +
-														format(
-															endDate,
-															'd MMMM yyyy',
-															{ locale: ru }
-														)
+														format(endDate, 'd MMMM yyyy', { locale: ru })
 													: 'Выберите период'}
 											</Button>
 										</PopoverTrigger>
@@ -806,9 +755,7 @@ export default function DeliveryOrders() {
 														to: endDate
 													}}
 													onSelect={range => {
-														setStartDate(
-															range?.from
-														)
+														setStartDate(range?.from)
 														setEndDate(range?.to)
 													}}
 													numberOfMonths={2}
@@ -853,59 +800,35 @@ export default function DeliveryOrders() {
 									</div>
 
 									<div className='flex items-center gap-4'>
-										<Button onClick={fetchData}>
-											Получить данные
-										</Button>
+										<Button onClick={fetchData}>Получить данные</Button>
 										{isDataFetched &&
 											selectedReport?.id !== undefined &&
-											[17, 30, 31, 32, 33, 34].includes(
-												selectedReport.id
-											) && (
+											[17, 30, 31, 32, 33, 34, 35].includes(selectedReport.id) && (
 												<Sheet>
 													<SheetTrigger asChild>
-														<Button>
-															Рассчитать
-														</Button>
+														<Button>Рассчитать</Button>
 													</SheetTrigger>
 													<SheetContent className='h-full'>
 														<SheetHeader>
-															<SheetTitle>
-																Ввод данных
-															</SheetTitle>
+															<SheetTitle>Ввод данных</SheetTitle>
 															<SheetDescription>
-																Введите
-																информацию о
-																курьерах
+																Введите информацию о курьерах
 															</SheetDescription>
 														</SheetHeader>
 														<div>
 															<GrcPage
-																data={
-																	filteredData
-																}
+																data={filteredData}
 																onCalculate={formData => {
 																	try {
-																		console.log(
-																			'Received form data in ReportTable:',
-																			formData
-																		)
+																		console.log('Received form data in ReportTable:', formData)
 
 																		// Если есть данные от сервера, обновляем таблицу
-																		if (
-																			formData.serverResponse
-																		) {
-																			setData(
-																				formData.serverResponse
-																			)
-																			processReceivedData(
-																				formData.serverResponse
-																			)
+																		if (formData.serverResponse) {
+																			setData(formData.serverResponse)
+																			processReceivedData(formData.serverResponse)
 																		}
 																	} catch (error) {
-																		console.error(
-																			'Error during calculation:',
-																			error
-																		)
+																		console.error('Error during calculation:', error)
 																	}
 																}}
 															/>
@@ -931,22 +854,16 @@ export default function DeliveryOrders() {
 							<div className='flex flex-col items-center justify-center space-y-4 p-8'>
 								<Frown className='h-16 w-16 text-muted-foreground' />
 								<p className='text-center text-lg text-muted-foreground'>
-									Объем анных слишком большой для отбражения в
-									таблице.
+									Объем анных слишком большой для отбражения в таблице.
 									<br />
-									Пожалуйста, воспользуйтесь экспортом в
-									Excel.
+									Пожалуйста, воспользуйтесь экспортом в Excel.
 								</p>
 								<Button
 									onClick={() => {
-										const exportData =
-											prepareDataForExport(data)
-										const worksheet =
-											XLSX.utils.json_to_sheet(exportData)
+										const exportData = prepareDataForExport(data)
+										const worksheet = XLSX.utils.json_to_sheet(exportData)
 
-										const columns = Object.keys(
-											exportData[0] || {}
-										)
+										const columns = Object.keys(exportData[0] || {})
 										const columnWidths: {
 											[key: string]: number
 										} = {}
@@ -954,22 +871,15 @@ export default function DeliveryOrders() {
 										columns.forEach(col => {
 											let maxLength = col.length
 											exportData.forEach(row => {
-												const cellLength = String(
-													row[col] || ''
-												).length
-												maxLength = Math.max(
-													maxLength,
-													cellLength
-												)
+												const cellLength = String(row[col] || '').length
+												maxLength = Math.max(maxLength, cellLength)
 											})
 											columnWidths[col] = maxLength + 2
 										})
 
-										worksheet['!cols'] = columns.map(
-											col => ({
-												wch: columnWidths[col]
-											})
-										)
+										worksheet['!cols'] = columns.map(col => ({
+											wch: columnWidths[col]
+										}))
 
 										const workbook = XLSX.utils.book_new()
 										XLSX.utils.book_append_sheet(
@@ -979,10 +889,7 @@ export default function DeliveryOrders() {
 										)
 										XLSX.writeFile(
 											workbook,
-											`${selectedReport?.tb_name}${format(
-												new Date(),
-												'yyyy-MM-dd'
-											)}.xlsx`
+											`${selectedReport?.tb_name}${format(new Date(), 'yyyy-MM-dd')}.xlsx`
 										)
 									}}
 								>
@@ -997,9 +904,7 @@ export default function DeliveryOrders() {
 										<Input
 											placeholder='Поиск по всем полям...'
 											value={searchTerm}
-											onChange={e =>
-												setSearchTerm(e.target.value)
-											}
+											onChange={e => setSearchTerm(e.target.value)}
 											className='h-10 w-full bg-white pl-10 dark:bg-neutral-900'
 										/>
 										<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground' />
@@ -1007,75 +912,50 @@ export default function DeliveryOrders() {
 									<div className='flex items-center gap-2'>
 										{isDataFetched &&
 											selectedReport?.id !== undefined &&
-											[17, 30, 31, 32, 33, 34].includes(
-												selectedReport.id
-											) && (
+											[17, 30, 31, 32, 33, 34].includes(selectedReport.id) && (
 												<Button
 													onClick={async () => {
 														try {
-															const user =
-																await getAuthUser()
-															const currentTimestamp =
-																new Date().toISOString()
+															const user = await getAuthUser()
+															const currentTimestamp = new Date().toISOString()
 
-															const response =
-																await fetch(
-																	'https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/save_report',
-																	{
-																		method: 'POST',
-																		headers:
-																			{
-																				'Content-Type':
-																					'application/json'
-																			},
-																		body: JSON.stringify(
-																			{
-																				reportId:
-																					selectedReport.id,
-																				data: filteredData,
-																				startDate:
-																					startDate,
-																				endDate:
-																					endDate,
-																				savedBy:
-																					user.name,
-																				full_name:
-																					user.full_name,
-																				savedAt:
-																					currentTimestamp
-																			}
-																		)
-																	}
-																)
+															const response = await fetch(
+																'https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/save_report',
+																{
+																	method: 'POST',
+																	headers: {
+																		'Content-Type': 'application/json'
+																	},
+																	body: JSON.stringify({
+																		reportId: selectedReport.id,
+																		data: filteredData,
+																		startDate: startDate,
+																		endDate: endDate,
+																		savedBy: user.name,
+																		full_name: user.full_name,
+																		savedAt: currentTimestamp
+																	})
+																}
+															)
 
 															if (!response.ok) {
-																throw new Error(
-																	'Failed to save report'
-																)
+																throw new Error('Failed to save report')
 															}
 
 															toast({
 																title: 'Успешно',
-																description:
-																	'Отчет успешно сохранен',
-																variant:
-																	'default'
+																description: 'Отчет успешно сохранен',
+																variant: 'default'
 															})
 
-															console.log(
-																'Report saved successfully'
-															)
+															console.log('Report saved successfully')
 														} catch (error) {
-															console.error(
-																'Error saving report:',
-																error
-															)
+															console.error('Error saving report:', error)
 															toast({
 																title: 'Ошибка',
 																description:
 																	'Не удалось сохранить отчет, вы не произвели расчет сотрудников!',
-																variant:
-																	'destructive'
+																variant: 'destructive'
 															})
 														}
 													}}
@@ -1085,22 +965,13 @@ export default function DeliveryOrders() {
 											)}
 										<Button
 											onClick={() => {
-												const exportData =
-													prepareDataForExport(
-														filteredData
-													)
-												const worksheet =
-													XLSX.utils.json_to_sheet(
-														exportData,
-														{
-															cellStyles: true
-														}
-													)
+												const exportData = prepareDataForExport(filteredData)
+												const worksheet = XLSX.utils.json_to_sheet(exportData, {
+													cellStyles: true
+												})
 
 												// Get all columns
-												const columns = Object.keys(
-													exportData[0] || {}
-												)
+												const columns = Object.keys(exportData[0] || {})
 												const columnWidths: {
 													[key: string]: number
 												} = {}
@@ -1121,39 +992,22 @@ export default function DeliveryOrders() {
 													}
 
 													exportData.forEach(row => {
-														const cellValue = row[
-															col
-														] as Date | CellValue
+														const cellValue = row[col] as Date | CellValue
 														const cellLength =
-															cellValue instanceof
-															Date
-																? String(
-																		cellValue
-																	).length
-																: String(
-																		(
-																			cellValue as CellValue
-																		).v ||
-																			cellValue ||
-																			''
-																	).length
+															cellValue instanceof Date
+																? String(cellValue).length
+																: String((cellValue as CellValue).v || cellValue || '').length
 
-														maxLength = Math.max(
-															maxLength,
-															cellLength
-														)
-														columnWidths[col] =
-															maxLength
+														maxLength = Math.max(maxLength, cellLength)
+														columnWidths[col] = maxLength
 													})
 												})
 
-												worksheet['!cols'] =
-													columns.map(col => ({
-														wch: columnWidths[col]
-													}))
+												worksheet['!cols'] = columns.map(col => ({
+													wch: columnWidths[col]
+												}))
 
-												const workbook =
-													XLSX.utils.book_new()
+												const workbook = XLSX.utils.book_new()
 												XLSX.utils.book_append_sheet(
 													workbook,
 													worksheet,
@@ -1191,20 +1045,12 @@ export default function DeliveryOrders() {
 															<div className='flex flex-col gap-1'>
 																<div className='flex items-center justify-between'>
 																	<span className='font-medium'>
-																		{getColumnDisplayName(
-																			column
-																		)}
+																		{getColumnDisplayName(column)}
 																	</span>
 																	<div className='flex items-center gap-1'>
 																		<DropdownMenu>
-																			<DropdownMenuTrigger
-																				asChild
-																			>
-																				<Button
-																					variant='ghost'
-																					size='sm'
-																					className='h-8 w-8 p-0'
-																				>
+																			<DropdownMenuTrigger asChild>
+																				<Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
 																					<Filter className='h-4 w-4' />
 																				</Button>
 																			</DropdownMenuTrigger>
@@ -1215,132 +1061,68 @@ export default function DeliveryOrders() {
 																				<div className='px-2 py-2'>
 																					<Input
 																						placeholder='Поиск...'
-																						value={
-																							filterSearchTerms[
-																								column
-																							] ||
-																							''
-																						}
+																						value={filterSearchTerms[column] || ''}
 																						onChange={e =>
-																							setFilterSearchTerms(
-																								prev => ({
-																									...prev,
-																									[column]:
-																										e
-																											.target
-																											.value
-																								})
-																							)
+																							setFilterSearchTerms(prev => ({
+																								...prev,
+																								[column]: e.target.value
+																							}))
 																						}
 																						className='h-8 bg-white dark:bg-[#171717]'
 																					/>
 																				</div>
 																				<div className='max-h-[400px] overflow-y-auto bg-white dark:bg-[#171717]'>
-																					{Array.from(
-																						filters[
-																							column
-																						] ||
-																							[]
-																					)
-																						.filter(
-																							value =>
-																								formatFilterValue(
-																									column,
-																									value
+																					{Array.from(filters[column] || [])
+																						.filter(value =>
+																							formatFilterValue(column, value)
+																								.toLowerCase()
+																								.includes(
+																									(filterSearchTerms[column] || '').toLowerCase()
 																								)
-																									.toLowerCase()
-																									.includes(
-																										(
-																											filterSearchTerms[
-																												column
-																											] ||
-																											''
-																										).toLowerCase()
-																									)
 																						)
-																						.map(
-																							value => (
-																								<DropdownMenuCheckboxItem
-																									key={
-																										value
+																						.map(value => (
+																							<DropdownMenuCheckboxItem
+																								key={value}
+																								checked={activeFilters[column]?.includes(value)}
+																								onCheckedChange={checked => {
+																									if (checked) {
+																										handleFilter(column, value)
+																									} else {
+																										removeFilter(column, value)
 																									}
-																									checked={activeFilters[
-																										column
-																									]?.includes(
-																										value
-																									)}
-																									onCheckedChange={checked => {
-																										if (
-																											checked
-																										) {
-																											handleFilter(
-																												column,
-																												value
-																											)
-																										} else {
-																											removeFilter(
-																												column,
-																												value
-																											)
-																										}
-																									}}
-																									className='bg-white dark:bg-[#171717]'
-																								>
-																									<div className='flex w-full items-center justify-between gap-2'>
-																										<span className='whitespace-normal break-words'>
-																											{formatFilterValue(
-																												column,
-																												value
-																											)}
-																										</span>
-																										<span className='ml-2 shrink-0 text-xs text-muted-foreground'>
-																											{getValueCount(
-																												column,
-																												value
-																											)}
-																										</span>
-																									</div>
-																								</DropdownMenuCheckboxItem>
-																							)
-																						)}
+																								}}
+																								className='bg-white dark:bg-[#171717]'
+																							>
+																								<div className='flex w-full items-center justify-between gap-2'>
+																									<span className='whitespace-normal break-words'>
+																										{formatFilterValue(column, value)}
+																									</span>
+																									<span className='ml-2 shrink-0 text-xs text-muted-foreground'>
+																										{getValueCount(column, value)}
+																									</span>
+																								</div>
+																							</DropdownMenuCheckboxItem>
+																						))}
 																				</div>
-																				{activeFilters[
-																					column
-																				]
-																					?.length >
-																					0 && (
+																				{activeFilters[column]?.length > 0 && (
 																					<div className='border-t bg-white px-2 py-2 dark:bg-[#171717]'>
 																						<Button
 																							variant='ghost'
 																							size='sm'
 																							className='w-full'
-																							onClick={() =>
-																								clearFilters(
-																									column
-																								)
-																							}
+																							onClick={() => clearFilters(column)}
 																						>
-																							Очистить
-																							все
+																							Очистить все
 																						</Button>
 																					</div>
 																				)}
 																			</DropdownMenuContent>
 																		</DropdownMenu>
 																		<DropdownMenu>
-																			<DropdownMenuTrigger
-																				asChild
-																			>
-																				<Button
-																					variant='ghost'
-																					size='sm'
-																					className='h-8 w-8 p-0'
-																				>
-																					{sortConfig?.key ===
-																					column ? (
-																						sortConfig.direction.includes(
-																							'asc'
-																						) ? (
+																			<DropdownMenuTrigger asChild>
+																				<Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+																					{sortConfig?.key === column ? (
+																						sortConfig.direction.includes('asc') ? (
 																							<SortAsc className='h-4 w-4' />
 																						) : (
 																							<SortDesc className='h-4 w-4' />
@@ -1351,99 +1133,46 @@ export default function DeliveryOrders() {
 																				</Button>
 																			</DropdownMenuTrigger>
 																			<DropdownMenuContent align='end'>
-																				<DropdownMenuItem
-																					onClick={() =>
-																						handleSort(
-																							column,
-																							'asc'
-																						)
-																					}
-																				>
-																					Сортировать
-																					по
-																					возрастанию
+																				<DropdownMenuItem onClick={() => handleSort(column, 'asc')}>
+																					Сортировать по возрастанию
 																				</DropdownMenuItem>
 																				<DropdownMenuItem
-																					onClick={() =>
-																						handleSort(
-																							column,
-																							'desc'
-																						)
-																					}
+																					onClick={() => handleSort(column, 'desc')}
 																				>
-																					Сортировать
-																					по
-																					убыванию
+																					Сортировать по убыванию
 																				</DropdownMenuItem>
 																				<DropdownMenuItem
-																					onClick={() =>
-																						handleSort(
-																							column,
-																							'alpha-asc'
-																						)
-																					}
+																					onClick={() => handleSort(column, 'alpha-asc')}
 																				>
-																					Сортировать
-																					по
-																					алфавиту
-																					(А-Я)
+																					Сортировать по алфавиту (А-Я)
 																				</DropdownMenuItem>
 																				<DropdownMenuItem
-																					onClick={() =>
-																						handleSort(
-																							column,
-																							'alpha-desc'
-																						)
-																					}
+																					onClick={() => handleSort(column, 'alpha-desc')}
 																				>
-																					Сортировать
-																					по
-																					алфавиту
-																					(Я-А)
+																					Сортировать по алфавиту (Я-А)
 																				</DropdownMenuItem>
 																			</DropdownMenuContent>
 																		</DropdownMenu>
 																	</div>
 																</div>
-																{activeFilters[
-																	column
-																]?.length >
-																	0 && (
+																{activeFilters[column]?.length > 0 && (
 																	<div className='flex flex-wrap gap-1'>
-																		{activeFilters[
-																			column
-																		].map(
-																			filter => (
-																				<span
-																					key={
-																						filter
-																					}
-																					className='inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs'
+																		{activeFilters[column].map(filter => (
+																			<span
+																				key={filter}
+																				className='inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs'
+																			>
+																				{formatFilterValue(column, filter)}
+																				<button
+																					onClick={() => removeFilter(column, filter)}
+																					className='text-muted-foreground hover:text-foreground'
 																				>
-																					{formatFilterValue(
-																						column,
-																						filter
-																					)}
-																					<button
-																						onClick={() =>
-																							removeFilter(
-																								column,
-																								filter
-																							)
-																						}
-																						className='text-muted-foreground hover:text-foreground'
-																					>
-																						<X className='h-3 w-3' />
-																					</button>
-																				</span>
-																			)
-																		)}
+																					<X className='h-3 w-3' />
+																				</button>
+																			</span>
+																		))}
 																		<button
-																			onClick={() =>
-																				clearFilters(
-																					column
-																				)
-																			}
+																			onClick={() => clearFilters(column)}
 																			className='text-xs text-muted-foreground hover:text-foreground'
 																		>
 																			Очистить
@@ -1456,39 +1185,26 @@ export default function DeliveryOrders() {
 												</TableRow>
 											</TableHeader>
 											<TableBody>
-												{filteredData.map(
-													(row, index) => (
-														<TableRow key={index}>
-															{columns.map(
-																column => (
-																	<TableCell
-																		key={
-																			column
-																		}
-																		className='whitespace-nowrap'
-																		style={{
-																			width: `${calculateColumnWidth(column)}px`,
-																			minWidth: `${calculateColumnWidth(column)}px`
-																		}}
-																	>
-																		{formatCellValue(
-																			row[
-																				column
-																			],
-																			column
-																		)}
-																	</TableCell>
-																)
-															)}
-														</TableRow>
-													)
-												)}
+												{filteredData.map((row, index) => (
+													<TableRow key={index}>
+														{columns.map(column => (
+															<TableCell
+																key={column}
+																className='whitespace-nowrap'
+																style={{
+																	width: `${calculateColumnWidth(column)}px`,
+																	minWidth: `${calculateColumnWidth(column)}px`
+																}}
+															>
+																{formatCellValue(row[column], column)}
+															</TableCell>
+														))}
+													</TableRow>
+												))}
 												{filteredData.length === 0 && (
 													<TableRow>
 														<TableCell
-															colSpan={
-																columns.length
-															}
+															colSpan={columns.length}
 															className='h-24 text-center'
 														></TableCell>
 													</TableRow>

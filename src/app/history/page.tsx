@@ -88,9 +88,7 @@ export default function ReportsSettingsPage() {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [reportToDelete, setReportToDelete] = useState<number | null>(null)
 	const [viewModalOpen, setViewModalOpen] = useState(false)
-	const [selectedReport, setSelectedReport] = useState<ReportData | null>(
-		null
-	)
+	const [selectedReport, setSelectedReport] = useState<ReportData | null>(null)
 
 	const getReportLocation = (reportId: number): string => {
 		const locationMap: { [key: number]: string } = {
@@ -141,9 +139,7 @@ export default function ReportsSettingsPage() {
 	const filteredData =
 		selectedReportId === 'all'
 			? rawData
-			: rawData.filter(
-					item => item.reportId.toString() === selectedReportId
-				)
+			: rawData.filter(item => item.reportId.toString() === selectedReportId)
 
 	const handleDelete = async (id: number) => {
 		try {
@@ -197,10 +193,7 @@ export default function ReportsSettingsPage() {
 
 			// Generate filename with location name and date
 			const locationName = getReportLocation(selectedReport.reportId)
-			const fileName = `${locationName}_${format(
-				new Date(),
-				'dd-MM-yyyy'
-			)}.xlsx`
+			const fileName = `${locationName}_${format(new Date(), 'dd-MM-yyyy')}.xlsx`
 
 			// Save the file
 			XLSX.writeFile(wb, fileName)
@@ -214,32 +207,16 @@ export default function ReportsSettingsPage() {
 					<div className='h-full w-full p-4'>
 						<Card className='h-full bg-white dark:bg-neutral-900'>
 							<CardHeader>
-								<CardTitle className='text-2xl font-bold'>
-									История отчетов
-								</CardTitle>
+								<CardTitle className='text-2xl font-bold'>История отчетов</CardTitle>
 								<div className='mt-4 w-[250px]'>
-									<Select
-										value={selectedReportId}
-										onValueChange={setSelectedReportId}
-									>
+									<Select value={selectedReportId} onValueChange={setSelectedReportId}>
 										<SelectTrigger>
 											<SelectValue placeholder='Выберите локацию' />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value='all'>
-												Все отчеты
-											</SelectItem>
-											{[
-												...new Set(
-													rawData.map(
-														item => item.reportId
-													)
-												)
-											].map(id => (
-												<SelectItem
-													key={id}
-													value={id.toString()}
-												>
+											<SelectItem value='all'>Все отчеты</SelectItem>
+											{[...new Set(rawData.map(item => item.reportId))].map(id => (
+												<SelectItem key={id} value={id.toString()}>
 													{getReportLocation(id)}
 												</SelectItem>
 											))}
@@ -253,53 +230,23 @@ export default function ReportsSettingsPage() {
 										<table className='w-full'>
 											<thead>
 												<tr className='border-b'>
-													<th className='p-4 text-left'>
-														ID отчета
-													</th>
-													<th className='p-4 text-left'>
-														Дата начала
-													</th>
-													<th className='p-4 text-left'>
-														Дата окончания
-													</th>
-													<th className='p-4 text-left'>
-														Дата создания
-													</th>
-													<th className='p-4 text-left'>
-														Пользователь
-													</th>
-													<th className='p-4 text-right'>
-														Действия
-													</th>
+													<th className='p-4 text-left'>ID отчета</th>
+													<th className='p-4 text-left'>Дата начала</th>
+													<th className='p-4 text-left'>Дата окончания</th>
+													<th className='p-4 text-left'>Дата создания</th>
+													<th className='p-4 text-left'>Пользователь</th>
+													<th className='p-4 text-right'>Действия</th>
 												</tr>
 											</thead>
 											<tbody>
 												{filteredData.map(item => (
-													<tr
-														key={item.reportId}
-														className='border-b hover:bg-muted/50'
-													>
-														<td className='p-4'>
-															{item.reportId}
-														</td>
-														<td className='p-4'>
-															{formatDate(
-																item.startDate
-															)}
-														</td>
-														<td className='p-4'>
-															{formatDate(
-																item.endDate
-															)}
-														</td>
-														<td className='p-4'>
-															{formatDate(
-																item.created_at
-															)}
-														</td>
+													<tr key={item.reportId} className='border-b hover:bg-muted/50'>
+														<td className='p-4'>{item.reportId}</td>
+														<td className='p-4'>{formatDate(item.startDate)}</td>
+														<td className='p-4'>{formatDate(item.endDate)}</td>
+														<td className='p-4'>{formatDate(item.created_at)}</td>
 														<td className='items-center justify-center p-4'>
-															{item.full_name ||
-																'Нет имени'}
+															{item.full_name || 'Нет имени'}
 														</td>
 														<td className='p-4 text-right'>
 															<Button
@@ -307,12 +254,8 @@ export default function ReportsSettingsPage() {
 																size='icon'
 																className='mr-2'
 																onClick={() => {
-																	setSelectedReport(
-																		item
-																	)
-																	setViewModalOpen(
-																		true
-																	)
+																	setSelectedReport(item)
+																	setViewModalOpen(true)
 																}}
 															>
 																<Eye className='h-4 w-4' />
@@ -322,12 +265,8 @@ export default function ReportsSettingsPage() {
 																size='icon'
 																className='text-red-500'
 																onClick={() => {
-																	setReportToDelete(
-																		item.id
-																	)
-																	setDeleteDialogOpen(
-																		true
-																	)
+																	setReportToDelete(item.id)
+																	setDeleteDialogOpen(true)
 																}}
 															>
 																<Trash2 className='h-4 w-4' />
@@ -345,28 +284,19 @@ export default function ReportsSettingsPage() {
 				</Dashboard>
 			</SidebarDemo>
 
-			<AlertDialog
-				open={deleteDialogOpen}
-				onOpenChange={setDeleteDialogOpen}
-			>
+			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent className='bg-white dark:bg-neutral-900'>
 					<AlertDialogHeader>
-						<AlertDialogTitle>
-							Подтверждение удаления
-						</AlertDialogTitle>
+						<AlertDialogTitle>Подтверждение удаления</AlertDialogTitle>
 						<AlertDialogDescription>
-							Вы уверены, что хотите удалить этот отчет? После
-							удаления данный отчет нельзя будет восстановить.
+							Вы уверены, что хотите удалить этот отчет? После удаления данный отчет
+							нельзя будет восстановить.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel className='bg-black/25'>
-							Отмена
-						</AlertDialogCancel>
+						<AlertDialogCancel className='bg-black/25'>Отмена</AlertDialogCancel>
 						<AlertDialogAction
-							onClick={() =>
-								reportToDelete && handleDelete(reportToDelete)
-							}
+							onClick={() => reportToDelete && handleDelete(reportToDelete)}
 							className='bg-red-500 text-white hover:bg-red-600'
 						>
 							Удалить
@@ -416,70 +346,38 @@ export default function ReportsSettingsPage() {
 									<table className='w-full min-w-max border-collapse'>
 										<thead>
 											<tr className='border-b border-gray-700'>
-												{COLUMN_ORDER.map(
-													columnName => (
-														<th
-															key={columnName}
-															className='sticky top-0 whitespace-nowrap bg-white p-4 text-left text-sm font-semibold dark:bg-neutral-900'
-														>
-															{columnName}
-														</th>
-													)
-												)}
+												{COLUMN_ORDER.map(columnName => (
+													<th
+														key={columnName}
+														className='sticky top-0 whitespace-nowrap bg-white p-4 text-left text-sm font-semibold dark:bg-neutral-900'
+													>
+														{columnName}
+													</th>
+												))}
 											</tr>
 										</thead>
 										<tbody>
-											{selectedReport.data.data.map(
-												(row, index) => (
-													<tr
-														key={index}
-														className='border-b border-gray-700 hover:bg-[#1f1f1f]/50'
-													>
-														{COLUMN_ORDER.map(
-															columnName => {
-																let value =
-																	row[
-																		columnName
-																	]
-																if (
-																	columnName ===
-																		'Дата' &&
-																	value
-																) {
-																	value =
-																		formatDate(
-																			value
-																		)
-																}
-																if (
-																	typeof value ===
-																	'number'
-																) {
-																	value =
-																		value.toFixed(
-																			2
-																		)
-																}
-																return (
-																	<td
-																		key={
-																			columnName
-																		}
-																		className='whitespace-nowrap p-4 text-sm'
-																	>
-																		{value ===
-																			null ||
-																		value ===
-																			undefined
-																			? '—'
-																			: value}
-																	</td>
-																)
-															}
-														)}
-													</tr>
-												)
-											)}
+											{selectedReport.data.data.map((row, index) => (
+												<tr
+													key={index}
+													className='border-b border-gray-700 hover:bg-[#1f1f1f]/50'
+												>
+													{COLUMN_ORDER.map(columnName => {
+														let value = row[columnName]
+														if (columnName === 'Дата' && value) {
+															value = formatDate(value)
+														}
+														if (typeof value === 'number') {
+															value = value.toFixed(2)
+														}
+														return (
+															<td key={columnName} className='whitespace-nowrap p-4 text-sm'>
+																{value === null || value === undefined ? '—' : value}
+															</td>
+														)
+													})}
+												</tr>
+											))}
 										</tbody>
 									</table>
 								</div>

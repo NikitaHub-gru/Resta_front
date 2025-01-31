@@ -159,7 +159,7 @@ export default function CardDashboard() {
 
 		try {
 			const apiResponse = await fetch(
-				'http://localhost:8000/restu/dashboard/poins',
+				'https://nikitahub-gru-resta-back-f1fb.twc1.net/restu/dashboard/poins',
 				{
 					method: 'GET',
 					headers: {
