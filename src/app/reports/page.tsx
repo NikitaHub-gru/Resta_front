@@ -1,17 +1,19 @@
-"use client"
+'use client'
 
-import { SidebarDemo } from "@/components/main/mailbar";
-import { Dashboard } from "@/components/main/rightbar";
-import  ReportTable  from "@/components/main/ReportTable";
+import ReportTable from '@/components/main/ReportTable'
+import { SidebarDemo } from '@/components/main/mailbar'
+import { Dashboard } from '@/components/main/rightbar'
+import ReportsCard from '@/components/reports/ReportsCard'
 
 export default function ReportsPage() {
-  return (
-    <div className="h-screen w-screen bg-neutral-950">
-      <SidebarDemo>
-        <Dashboard>
-          <ReportTable />
-        </Dashboard>
-      </SidebarDemo>
-    </div>
-  )
+	return (
+		<div className='h-screen w-screen bg-neutral-950'>
+			<SidebarDemo>
+				<Dashboard>
+					{/* <ReportTable /> */}
+					<ReportsCard />
+				</Dashboard>
+			</SidebarDemo>
+		</div>
+	)
 }
