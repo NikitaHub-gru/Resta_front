@@ -912,7 +912,7 @@ export default function DeliveryOrders() {
 									<div className='flex items-center gap-2'>
 										{isDataFetched &&
 											selectedReport?.id !== undefined &&
-											[17, 30, 31, 32, 33, 34].includes(selectedReport.id) && (
+											[17, 30, 31, 32, 33, 34, 35, 44].includes(selectedReport.id) && (
 												<Button
 													onClick={async () => {
 														try {
