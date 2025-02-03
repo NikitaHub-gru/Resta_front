@@ -97,7 +97,8 @@ export default function ReportsSettingsPage() {
 			31: 'КРСН Мира',
 			32: 'КРСН Металлургов',
 			33: 'КРСН Кутузова',
-			34: 'КРСН Вильского'
+			34: 'КРСН Вильского',
+			44: 'КРСН Мартынова'
 		}
 		return locationMap[reportId] || `Точка #${reportId}`
 	}
