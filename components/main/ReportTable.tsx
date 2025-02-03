@@ -803,7 +803,7 @@ export default function DeliveryOrders() {
 										<Button onClick={fetchData}>Получить данные</Button>
 										{isDataFetched &&
 											selectedReport?.id !== undefined &&
-											[17, 30, 31, 32, 33, 34, 35].includes(selectedReport.id) && (
+											[17, 30, 31, 32, 33, 34, 35, 44].includes(selectedReport.id) && (
 												<Sheet>
 													<SheetTrigger asChild>
 														<Button>Рассчитать</Button>

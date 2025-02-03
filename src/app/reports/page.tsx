@@ -10,8 +10,8 @@ export default function ReportsPage() {
 		<div className='h-screen w-screen bg-neutral-950'>
 			<SidebarDemo>
 				<Dashboard>
-					{/* <ReportTable /> */}
-					<ReportsCard />
+					<ReportTable />
+					{/* <ReportsCard /> */}
 				</Dashboard>
 			</SidebarDemo>
 		</div>
