@@ -5,8 +5,12 @@ import {
 	IconCalendarStar,
 	IconFileTypeDoc,
 	IconGitPullRequestDraft,
+	IconGlobe,
 	IconHome,
+	IconKey,
+	IconLanguage,
 	IconLayoutDashboardFilled,
+	IconLogout,
 	IconReportAnalytics,
 	IconSettings,
 	IconShoppingCartSearch,
@@ -19,7 +23,9 @@ import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
+import { Tooltip } from 'react-tooltip'
 
+import { Button } from '../ui/button'
 import { Sidebar, SidebarBody, useSidebar } from '../ui/sidebar'
 
 import { getAuthUser } from '@/hooks/getauthuser'
@@ -40,16 +46,19 @@ interface UserData {
 	email: string
 	corporation: string
 	role: string
+	first_name: string
 }
 
 export function SidebarDemo({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
 	const [open, setOpen] = useState(false)
+	const [isProfileOpen, setIsProfileOpen] = useState(false)
 	const [userData, setUserData] = useState<UserData>({
 		name: '',
 		email: '',
 		corporation: '',
-		role: ''
+		role: '',
+		first_name: ''
 	})
 	const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -58,6 +67,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 			const user = (await getAuthUser()) as {
 				email: string | undefined
 				name: any
+				full_name: string
 				corporation: any
 				role: string
 			}
@@ -65,7 +75,8 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 				name: user?.name || '',
 				email: user?.email || '',
 				corporation: user?.corporation || 'RestaLabs',
-				role: user?.role || ''
+				role: user?.role || '',
+				first_name: user?.full_name || '' // Map full_name to first_name
 			})
 		}
 		fetchUser()
@@ -92,6 +103,10 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 				/>
 			)
 		}
+	}
+
+	const handleProfileClick = () => {
+		setIsProfileOpen(true)
 	}
 
 	const handleLogout = async () => {
@@ -247,8 +262,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 								))}
 							</div>
 						)}
-						{(userData.role === 'Engineer' ||
-							userData.role === 'Admin') && (
+						{(userData.role === 'Engineer' || userData.role === 'Admin') && (
 							<div className='mt-8 flex flex-col justify-start gap-2'>
 								{Engineerlinks.map((link, idx) => (
 									<SidebarLink key={idx} link={link} />
@@ -258,35 +272,121 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 					</div>
 
 					<div>
-						<div className='ml-[12.4px] flex flex-col justify-start gap-2 pb-4'>
-							{renderThemeChanger()}
-						</div>
+						<div className='ml-[12.4px] flex flex-col justify-start gap-2 pb-4'></div>
 						<SidebarLink
 							link={{
 								label: userData.name,
 								href: '#',
 								icon: (
 									<IconUserBolt className='h-6 w-6 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-								)
-							}}
-						/>
-					</div>
-
-					<div className='flex flex-col justify-end gap-2'>
-						<SidebarLink
-							link={{
-								label: 'Logout',
-								href: '#',
-								icon: (
-									<IconArrowLeft className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 								),
-								onClick: handleLogout
+								onClick: handleProfileClick
 							}}
 						/>
 					</div>
 				</SidebarBody>
 			</Sidebar>
 			{children}
+			{isProfileOpen && (
+				<motion.div
+					className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.3, ease: 'easeInOut' }}
+				>
+					<motion.div
+						className='w-96 rounded-2xl border border-black/20 bg-white p-6 shadow-2xl dark:border-white/15 dark:bg-neutral-900'
+						initial={{ scale: 0.8, opacity: 0 }}
+						animate={{ scale: 1, opacity: 1 }}
+						exit={{ scale: 0.8, opacity: 0 }}
+						transition={{ duration: 0.3, ease: 'easeInOut' }}
+					>
+						<h2 className='mb-6 text-center text-2xl font-bold text-neutral-800 dark:text-neutral-100'>
+							Настройки профиля
+						</h2>
+						<div className='mb-6 space-y-4'>
+							<div className='rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800'>
+								<p className='text-neutral-700 dark:text-neutral-200'>
+									<strong className='font-semibold'>Имя:</strong>{' '}
+									{`${userData.first_name} ${userData.name}`}
+								</p>
+							</div>
+							<div className='rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800'>
+								<p className='text-neutral-700 dark:text-neutral-200'>
+									<strong className='font-semibold'>Email:</strong> {userData.email}
+								</p>
+							</div>
+							<div className='rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800'>
+								<p className='text-neutral-700 dark:text-neutral-200'>
+									<strong className='font-semibold'>Подразделение:</strong>{' '}
+									{userData.corporation}
+								</p>
+							</div>
+							<div className='rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800'>
+								<p className='text-neutral-700 dark:text-neutral-200'>
+									<strong className='font-semibold'>Роль:</strong> {userData.role}
+								</p>
+							</div>
+							<div className='rounded-lg bg-neutral-50 p-4 dark:bg-neutral-800'>
+								<p className='flex items-center justify-center font-bold text-neutral-700 dark:text-neutral-200'>
+									Действия с профилем
+								</p>
+							</div>
+							<div className='flex justify-center gap-4'>
+								{/* Кнопка выхода */}
+								<button
+									className='flex items-center justify-between rounded-lg bg-neutral-100 px-4 dark:bg-neutral-800'
+									data-tooltip-id='tooltip'
+									data-tooltip-content='Завершение текущей сессии'
+									onClick={handleLogout}
+								>
+									<IconLogout className='my-3 h-5 w-5' />
+								</button>
+
+								{/* Кнопка смены пароля */}
+								<button
+									className='flex items-center justify-between rounded-lg bg-neutral-100 px-4 dark:bg-neutral-800'
+									data-tooltip-id='tooltip'
+									data-tooltip-content='Обновление пароля аккаунта'
+								>
+									<IconKey className='h-5 w-5' />
+								</button>
+
+								{/* Кнопка смены языка */}
+								<button
+									className='flex items-center justify-between rounded-lg bg-neutral-100 px-4 dark:bg-neutral-800'
+									data-tooltip-id='tooltip'
+									data-tooltip-content='Изменение языка интерфейса'
+								>
+									<IconLanguage className='h-5 w-5' />
+								</button>
+
+								{/* Кнопка смены темы */}
+								<div
+									className='flex items-center justify-between rounded-lg bg-neutral-100 px-4 dark:bg-neutral-800'
+									data-tooltip-id='tooltip'
+									data-tooltip-content='Изменение темы интерфейса'
+								>
+									{renderThemeChanger()}
+								</div>
+
+								<Tooltip
+									id='tooltip'
+									className='!bg-neutral-800 !text-neutral-100 !opacity-95'
+									place='top'
+								/>
+							</div>
+						</div>
+						<Button
+							onClick={() => setIsProfileOpen(false)}
+							className='w-full rounded-lg'
+						>
+							Закрыть
+						</Button>
+					</motion.div>
+				</motion.div>
+			)}
 		</div>
 	)
 }
