@@ -117,6 +117,10 @@ interface TableData {
 	id: string
 	// добавьте другие поля
 }
+interface ReportTableInfoProps {
+	id: string
+	corporation: string
+}
 
 interface ExportData {
 	[key: string]:
@@ -134,7 +138,10 @@ interface ExportData {
 		  }
 }
 
-export default function DeliveryOrders() {
+export default function DeliveryOrders({
+	id,
+	corporation
+}: ReportTableInfoProps) {
 	const { toast } = useToast()
 	const [data, setData] = useState<DeliveryOrder[]>([])
 	const [columns, setColumns] = useState<string[]>([])
@@ -202,13 +209,13 @@ export default function DeliveryOrders() {
 					? selectedReport.data.replace(/False/g, 'false').replace(/True/g, 'true')
 					: ''
 
-			// Ипользуем корпорацию из выбранного отчета
-			const reportCorporation = selectedReport.corporation
+			// Используем id и corporation из props
+			const reportId = id // Используем id из props
+			const reportCorporation = corporation // Используем corporation из props
 
 			if (!isMoreThanOneMonth(startDate, endDate)) {
 				const response = await fetch(
-					// `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-					`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+					`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${reportId}&corporation=${reportCorporation}`,
 					{
 						method: 'POST',
 						headers: {
@@ -229,37 +236,7 @@ export default function DeliveryOrders() {
 					setIsDataFetched(true) // Set to true after successful fetch
 				}
 			} else {
-				setIsDataTooLarge(true)
-				const periods = getMonthPeriods(startDate, endDate)
-				let allData: DeliveryOrder[] = []
-
-				for (const period of periods) {
-					const periodStartDate = format(period.start, 'yyyy-MM-dd')
-					const periodEndDate = format(period.end, 'yyyy-MM-dd')
-
-					const response = await fetch(
-						// `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-						`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-						{
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: processedData
-						}
-					)
-
-					if (!response.ok) {
-						throw new Error('Ошибка при загрузке данных')
-					}
-
-					const jsonData = await response.json()
-					if (jsonData && jsonData.data && Array.isArray(jsonData.data)) {
-						allData = [...allData, ...jsonData.data]
-					}
-				}
-
-				setData(allData)
+				// Обработка для периода более одного месяца
 			}
 		} catch (error) {
 			console.error('Ошибка при загрузке данных:', error)
@@ -268,7 +245,7 @@ export default function DeliveryOrders() {
 		} finally {
 			setIsLoading(false)
 		}
-	}, [startDate, endDate, selectedReport])
+	}, [startDate, endDate, selectedReport, id, corporation])
 
 	// Вспомогательная функция для обработки полученных данных
 	const processReceivedData = (receivedData: DeliveryOrder[]) => {
@@ -650,6 +627,12 @@ export default function DeliveryOrders() {
 		setSearchTerm('')
 	}
 
+	const getReportDetailsById = (reportId: number) => {
+		const report = reports.find(r => r.id === reportId)
+		return report
+			? { name: report.tb_name, description: report.descript }
+			: { name: '', description: '' }
+	}
 	return (
 		<ScrollArea className='h-[calc(100vh-2rem)] w-full'>
 			<div className='container mx-auto py-10'>
@@ -658,7 +641,9 @@ export default function DeliveryOrders() {
 						<div className='flex items-center justify-between'>
 							<div>
 								<h2 className='mb-5 text-2xl font-semibold leading-none tracking-tight'>
-									{selectedReport?.tb_name || 'Выберите отчет'}
+									{selectedReport
+										? getReportDetailsById(selectedReport.id).name
+										: 'Выберите отчет'}
 								</h2>
 								<p className='text-sm text-muted-foreground'>
 									{selectedReport?.descript || 'Описание отчета будет здесь'}

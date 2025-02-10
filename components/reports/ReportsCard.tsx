@@ -10,6 +10,7 @@ import {
 	FileText,
 	Truck
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { Card, CardContent, CardHeader } from '../ui/card'
@@ -83,6 +84,11 @@ export default function Home() {
 	const handleCompanySelect = (company: string) => {
 		setSelectedCompany(company === ALL_COMPANIES ? null : company)
 		setSelectedType(null) // Сбрасываем фильтр по названию отчёта при смене компании
+	}
+	const router = useRouter()
+
+	const handleViewReport = (id: string, corporation: string) => {
+		router.push(`/report/${id}/${corporation}`)
 	}
 
 	// Обработчик выбора отчета
@@ -188,6 +194,7 @@ export default function Home() {
 		}
 		return true
 	})
+
 	const handleExpand = (id: string) => {
 		setExpandedId(id === expandedId ? null : id)
 	}
@@ -195,13 +202,13 @@ export default function Home() {
 	const getIcon = (type: string) => {
 		switch (type) {
 			case 'SALES':
-				return <CircleDollarSign className='h-5 w-5' />
+				return <CircleDollarSign className='h-6 w-6' />
 			case 'DELIVERY':
-				return <Truck className='h-5 w-5' />
+				return <Truck className='h-6 w-6' />
 			case 'analytics':
-				return <Building className='h-5 w-5' />
+				return <Building className='h-6 w-6' />
 			default:
-				return <FileText className='h-5 w-5' />
+				return <FileText className='h-6 w-6' />
 		}
 	}
 
@@ -215,76 +222,86 @@ export default function Home() {
 				>
 					<h1 className='text-3xl font-bold'>Панель отчетов</h1>
 					<div className='flex flex-col gap-4 sm:flex-row'>{/* ... */}</div>
+					<div className='flex flex-col gap-4 sm:flex-row'>
+						<Select
+							value={selectedCompany || ALL_COMPANIES}
+							onValueChange={handleCompanySelect}
+						>
+							<SelectTrigger className='w-[200px] bg-white dark:bg-neutral-900'>
+								<SelectValue placeholder='Все компании' />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
+								{uniqueCompanies.map(company => (
+									<SelectItem key={company} value={company}>
+										{company}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+
+						<Select
+							value={selectedType || 'all'}
+							onValueChange={value => setSelectedType(value !== 'all' ? value : null)}
+						>
+							<SelectTrigger className='w-[200px]'>
+								<SelectValue placeholder='Название отчета' />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value='all'>Все отчёты</SelectItem>
+								{[
+									...new Set(
+										report
+											.filter(
+												r =>
+													!selectedCompany ||
+													selectedCompany === ALL_COMPANIES ||
+													r.corporation === selectedCompany
+											)
+											.map(r => r.tb_name)
+									)
+								].map(tbName => (
+									<SelectItem key={tbName} value={tbName}>
+										{tbName}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 				</motion.div>
 
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
-					className='rounded-lg border bg-card'
+					className='rounded-lg bg-card dark:bg-transparent'
 				>
 					<div className='grid grid-cols-4 gap-4'>
 						{filteredReports.map(report => (
 							<AnimatePresence key={report.id} mode='wait'>
-								<Card className='group transition-colors'>
+								<Card className='group flex flex-col transition-colors dark:bg-black/20'>
 									<CardHeader>
+										<div className='flex justify-between'>
+											<span className='text-muted-foreground'>{report.corporation} </span>
+											{getIcon(report.report_type)}
+										</div>
 										<div className='flex items-center justify-between'>
 											<div className='flex items-center'>
-												{getIcon(report.report_type)}
-												<span className='ml-2 font-medium'>{report.tb_name}</span>
+												<span className='ml-2 text-lg font-medium'>{report.tb_name}</span>
 											</div>
-											<Button
-												variant='ghost'
-												size='sm'
-												onClick={() => handleExpand(report.id)}
-											>
-												Подробнее
-												<ChevronDown
-													className={`ml-2 h-4 w-4 transition-transform duration-200 ${
-														expandedId === report.id ? 'rotate-180' : ''
-													}`}
-												/>
-											</Button>
 										</div>
 									</CardHeader>
-									<CardContent>
-										{expandedId === report.id ? (
-											<p className='text-sm text-muted-foreground'>{report.descript}</p>
-										) : null}
-										<div className='mt-4 flex justify-end'>
-											<Sheet>
-												<SheetTrigger>
-													<Button>Информация об отчете</Button>
-												</SheetTrigger>
-												<SheetContent side='top'>
-													<SheetHeader>
-														<SheetDescription>
-															<div className='mt-1'>
-																<h4 className='mb-4 text-center text-lg'>
-																	Информация о отчете:
-																</h4>
-																<div
-																	className='relative w-full'
-																	style={{
-																		height: 'calc(70vh - 100px)'
-																	}}
-																>
-																	<div className='justify-center px-8 pt-4 text-sm text-foreground'>
-																		{report.description_info
-																			.split('\n\n')
-																			.map((paragraph, index) => (
-																				<p key={index} className='whitespace-pre-line'>
-																					{paragraph}
-																				</p>
-																			))}
-																	</div>
-																</div>
-															</div>
-														</SheetDescription>
-													</SheetHeader>
-												</SheetContent>
-											</Sheet>
-										</div>
+									<CardContent className='flex-grow'>
+										<p className='text-sm text-muted-foreground'>{report.descript}</p>
 									</CardContent>
+									<div className='flex items-center justify-center'>
+										<CardContent>
+											<Button
+												onClick={() => handleViewReport(report.id, report.corporation)}
+											>
+												Открыть отчет
+											</Button>
+										</CardContent>
+									</div>
 								</Card>
 							</AnimatePresence>
 						))}

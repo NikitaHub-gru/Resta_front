@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabaseClient'
 
 // Определяем публичные маршруты, которые не требуют аутентификации
 const PUBLIC_ROUTES = ['/reportsInfo', '/']
-
 export default function AuthWrapper({
 	children
 }: {
