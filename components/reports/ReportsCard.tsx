@@ -43,6 +43,7 @@ import {
 	TableHeader,
 	TableRow
 } from '@/components/ui/table'
+import { UserData, loadUserReport } from '@/hooks/getuserdata'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -115,41 +116,47 @@ export default function Home() {
 				throw new Error('Необходима авторизация')
 			}
 
-			const userCorporation = session.user.user_metadata.corporation
+			// Вызываем getUserReports, чтобы получить role и reports_id
+			const userData = await loadUserReport()
 
-			let query = supabase
-				.from('Reports')
-				.select(
-					`
-          id,
-          corporation,
-          tb_name,
-          descript,
-          data,
-          created_at,
-          report_type,
-          is_active,
-          description_info
-        `
-				)
-				.order('created_at', { ascending: false })
-				.eq('is_active', true)
+			let userReports = []
+			if (userData?.role === 'User') {
+				// Преобразуем reports_id в массив
+				const reportIds = userData.reports_id.split(',').map(id => id.trim())
 
-			// Если пользователь не из RestaLabs, фильтруем по его корпорации
-			if (userCorporation !== 'RestaLabs') {
-				query = query.eq('corporation', userCorporation)
+				// Фильтруем отчеты, оставляя только те, которые есть в reports_id
+				const { data, error } = await supabase
+					.from('Reports')
+					.select('*')
+					.in('id', reportIds)
+					.eq('is_active', true)
+					.order('created_at', { ascending: false })
+
+				if (error) {
+					console.error('Supabase error:', error)
+					throw new Error(error.message)
+				}
+
+				userReports = data || []
+			} else {
+				// Если не User, загружаем все отчеты
+				const { data, error } = await supabase
+					.from('Reports')
+					.select('*')
+					.eq('is_active', true)
+					.order('created_at', { ascending: false })
+
+				if (error) {
+					console.error('Supabase error:', error)
+					throw new Error(error.message)
+				}
+
+				userReports = data || []
 			}
 
-			const { data, error } = await query
-
-			if (error) {
-				console.error('Supabase error:', error)
-				throw new Error(error.message)
-			}
-
-			setReports(data || [])
+			setReports(userReports)
 		} catch (error) {
-			console.error('Ошибка при загрузке очетов:', error)
+			console.error('Ошибка при загрузке отчетов:', error)
 			toast({
 				title: 'Ошибка',
 				description:
