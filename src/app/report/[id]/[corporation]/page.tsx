@@ -8,7 +8,7 @@ import { Dashboard } from '@/components/main/rightbar'
 export default function ReportPage({
 	params
 }: {
-	params: { id: string; corporation: string }
+	params: { id: number; corporation: string }
 }) {
 	return (
 		<div className='h-screen w-screen bg-neutral-950'>

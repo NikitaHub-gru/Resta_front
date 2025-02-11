@@ -118,7 +118,7 @@ interface TableData {
 	// добавьте другие поля
 }
 interface ReportTableInfoProps {
-	id: string
+	id: number
 	corporation: string
 }
 
@@ -568,8 +568,19 @@ export default function DeliveryOrders({
 
 	// Загрузка доступных отчетов
 	useEffect(() => {
-		fetchAvailableReports()
-	}, [])
+		const loadReport = async () => {
+			if (id) {
+				const report = await fetchReportById(id)
+				if (report) {
+					setSelectedReport(report)
+				} else {
+					console.warn('Отчет не найден или неактивен')
+				}
+			}
+		}
+
+		loadReport()
+	}, [id])
 
 	// Add function to extract unique companies from reports
 	const extractCompanies = (reports: Report[]) => {
@@ -579,36 +590,25 @@ export default function DeliveryOrders({
 		setCompanies(uniqueCompanies)
 	}
 
-	const fetchAvailableReports = async () => {
+	const fetchReportById = async (reportId: number): Promise<Report | null> => {
 		try {
-			const {
-				data: { session }
-			} = await supabase.auth.getSession()
-			if (!session) throw new Error('Необходима авторизация')
+			const { data, error } = await supabase
+				.from('Reports')
+				.select('*')
+				.eq('id', reportId)
+				.eq('is_active', true)
 
-			const userCorporation = session.user.user_metadata.corporation
-
-			let query = supabase.from('Reports').select('*').eq('is_active', true)
-
-			if (userCorporation !== 'RestaLabs') {
-				if (userCorporation === 'Лосось №1') {
-					query = query.or(
-						`corporation.eq.${userCorporation},corporation.eq.American Dream`
-					)
-				} else {
-					query = query.eq('corporation', userCorporation)
-				}
-			}
-
-			const { data, error } = await query
 			if (error) throw error
 
-			setReports(data)
-			extractCompanies(data)
+			if (data && data.length > 0) {
+				return data[0] as Report
+			} else {
+				console.warn('Отчет не найден или неактивен')
+				return null
+			}
 		} catch (error) {
-			console.error('Ошибка загрузки отчетов:', error)
-		} finally {
-			setIsLoading(false)
+			console.error('Ошибка при получении отчета:', error)
+			return null
 		}
 	}
 
@@ -641,65 +641,11 @@ export default function DeliveryOrders({
 						<div className='flex items-center justify-between'>
 							<div>
 								<h2 className='mb-5 text-2xl font-semibold leading-none tracking-tight'>
-									{selectedReport
-										? getReportDetailsById(selectedReport.id).name
-										: 'Выберите отчет'}
+									{selectedReport?.tb_name || 'Название отчета'}
 								</h2>
 								<p className='text-sm text-muted-foreground'>
 									{selectedReport?.descript || 'Описание отчета будет здесь'}
 								</p>
-							</div>
-							<div className='flex items-center gap-4'>
-								{selectedReport && (
-									<ReportInfoModal
-										title={selectedReport.tb_name}
-										description={selectedReport.descript}
-										description_info={selectedReport.description_info}
-									/>
-								)}
-								{/* Company select */}
-								<Select
-									value={selectedCompany || ALL_COMPANIES}
-									onValueChange={handleCompanySelect}
-								>
-									<SelectTrigger className='w-[200px] bg-white dark:bg-neutral-900'>
-										<SelectValue placeholder='Все компании' />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value={ALL_COMPANIES}>Все компании</SelectItem>
-										{companies.map(company => (
-											<SelectItem key={company} value={company}>
-												{company}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-
-								{/* Report select */}
-								<Select
-									value={selectedReport?.id?.toString() || ''}
-									onValueChange={value => {
-										const report = reports
-											.filter(r => !selectedCompany || r.corporation === selectedCompany)
-											.find(r => r.id === Number(value))
-										if (report) handleReportSelect(report)
-									}}
-								>
-									<SelectTrigger className='w-[300px] bg-white dark:bg-neutral-900'>
-										<SelectValue placeholder='Выберите отчет' />
-									</SelectTrigger>
-									<SelectContent>
-										{reports
-											.filter(
-												report => !selectedCompany || report.corporation === selectedCompany
-											)
-											.map(report => (
-												<SelectItem key={report.id} value={report.id.toString()}>
-													{report.tb_name}
-												</SelectItem>
-											))}
-									</SelectContent>
-								</Select>
 							</div>
 						</div>
 					</div>

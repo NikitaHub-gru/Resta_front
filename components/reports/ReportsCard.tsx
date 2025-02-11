@@ -133,6 +133,7 @@ export default function Home() {
         `
 				)
 				.order('created_at', { ascending: false })
+				.eq('is_active', true)
 
 			// Если пользователь не из RestaLabs, фильтруем по его корпорации
 			if (userCorporation !== 'RestaLabs') {
