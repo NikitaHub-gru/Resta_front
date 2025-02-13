@@ -125,7 +125,7 @@ export default function Home() {
 			const userData = await loadUserReport()
 
 			let userReports = []
-			if (userData?.role === 'User ') {
+			if (userData?.role === 'User') {
 				// Преобразуем reports_id в массив
 				const reportIds = userData.reports_id.split(',').map(id => id.trim())
 				// Фильтруем отчеты, оставляя только те, которые есть в reports_id
