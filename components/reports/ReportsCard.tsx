@@ -43,6 +43,7 @@ import {
 	TableHeader,
 	TableRow
 } from '@/components/ui/table'
+import { getAuthUser } from '@/hooks/getauthuser'
 import { UserData, loadUserReport } from '@/hooks/getuserdata'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabaseClient'
@@ -100,6 +101,10 @@ export default function Home() {
 		setFilterSearchTerms({})
 		setSearchTerm('')
 	}
+	const fetchUser = async () => {
+		const authdata = await getAuthUser()
+		return authdata
+	}
 
 	const fetchReports = async () => {
 		try {
@@ -107,7 +112,7 @@ export default function Home() {
 				data: { session },
 				error: sessionError
 			} = await supabase.auth.getSession()
-
+			const authdata = await fetchUser()
 			if (sessionError) {
 				throw new Error('Ошибка авторизации')
 			}
@@ -129,6 +134,7 @@ export default function Home() {
 					.from('Reports')
 					.select('*')
 					.in('id', reportIds)
+					.eq('corporation', authdata.corporation)
 					.eq('is_active', true)
 					.order('created_at', { ascending: false })
 
@@ -144,6 +150,7 @@ export default function Home() {
 					.from('Reports')
 					.select('*')
 					.eq('is_active', true)
+					.eq('corporation', authdata.corporation)
 					.order('created_at', { ascending: false })
 
 				if (error) {
