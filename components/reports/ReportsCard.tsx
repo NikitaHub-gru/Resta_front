@@ -125,10 +125,9 @@ export default function Home() {
 			const userData = await loadUserReport()
 
 			let userReports = []
-			if (userData?.role === 'User') {
+			if (userData?.role === 'User ') {
 				// Преобразуем reports_id в массив
 				const reportIds = userData.reports_id.split(',').map(id => id.trim())
-
 				// Фильтруем отчеты, оставляя только те, которые есть в reports_id
 				const { data, error } = await supabase
 					.from('Reports')
@@ -145,13 +144,26 @@ export default function Home() {
 
 				userReports = data || []
 			} else {
-				// Если не User, загружаем все отчеты
-				const { data, error } = await supabase
-					.from('Reports')
-					.select('*')
-					.eq('is_active', true)
-					.eq('corporation', authdata.corporation)
-					.order('created_at', { ascending: false })
+				// Если не User, проверяем corporation
+				let query
+				if (authdata.corporation === 'RestaLabs') {
+					// Запрос для RestaLabs
+					query = supabase
+						.from('Reports')
+						.select('*')
+						.eq('is_active', true)
+						.order('created_at', { ascending: false })
+				} else {
+					// Запрос для других корпораций
+					query = supabase
+						.from('Reports')
+						.select('*')
+						.eq('is_active', true)
+						.eq('corporation', authdata.corporation)
+						.order('created_at', { ascending: false })
+				}
+
+				const { data, error } = await query
 
 				if (error) {
 					console.error('Supabase error:', error)
