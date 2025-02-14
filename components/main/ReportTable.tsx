@@ -28,6 +28,7 @@ import Loading_page from '../loadingP/Loading_comp'
 import Zagruzka from '../loadingP/zagruzka'
 import GrcPage from '../ui/grc-page'
 
+import SheetTable from '@/components/dy_table/SheetTable'
 import { Button } from '@/components/ui/button'
 import Calculleit from '@/components/ui/calculleit'
 import { Calendar } from '@/components/ui/calendar'
@@ -164,6 +165,7 @@ export default function DeliveryOrders({
 	const [companies, setCompanies] = useState<string[]>([])
 	const [selectedCompany, setSelectedCompany] = useState<string>('')
 	const [isDataFetched, setIsDataFetched] = useState(false)
+	const [user, setUser] = useState<any>(null)
 
 	// Добавим функцию для разбиения периода на месяцы
 	const getMonthPeriods = (
@@ -523,7 +525,7 @@ export default function DeliveryOrders({
 
 	// Добавим функцию для форматирования значения в фильтре
 	const formatFilterValue = (column: string, value: string): string => {
-		if (value === 'Пуо') return value
+		if (value === 'Пусто') return value
 
 		if (column === 'OrderTime.OrderLength') {
 			return `${value}`
@@ -633,6 +635,16 @@ export default function DeliveryOrders({
 			? { name: report.tb_name, description: report.descript }
 			: { name: '', description: '' }
 	}
+
+	// После других useEffect
+	useEffect(() => {
+		const loadUser = async () => {
+			const userData = await getAuthUser()
+			setUser(userData)
+		}
+		loadUser()
+	}, [])
+
 	return (
 		<ScrollArea className='h-[calc(100vh-2rem)] w-full'>
 			<div className='container mx-auto py-10'>
@@ -958,7 +970,7 @@ export default function DeliveryOrders({
 										</Button>
 									</div>
 								</div>
-
+								{/* {user?.corporation !== 'DimmiYammi' && ( */}
 								<div className='rounded-md border'>
 									<ScrollArea className='h-[500px] w-full'>
 										<Table>
@@ -1145,6 +1157,7 @@ export default function DeliveryOrders({
 										<ScrollBar orientation='horizontal' />
 									</ScrollArea>
 								</div>
+								{/* {user?.corporation === 'DimmiYammi' && <SheetTable />} */}
 							</>
 						)}
 					</div>

@@ -21,6 +21,7 @@ import { useEffect, useState } from 'react'
 import { DeliveryEmoji } from '@/components/dasboard/DeliveryEmoji'
 import { WaveProgressBar } from '@/components/dasboard/WaveProgressBar'
 import { DeliveryOrder } from '@/components/dasboard/types/delivery'
+import { useOlapData } from '@/hooks/useOlapData'
 
 interface DepartmentData {
 	department: string
@@ -34,6 +35,7 @@ interface DepartmentData {
 	cooking_14: string
 	wait_7: string
 	insend_20: string
+	insend_60: number
 }
 
 interface ApiResponse {
@@ -43,16 +45,12 @@ interface ApiResponse {
 interface DashboardProps {
 	id_p: string
 }
-const RESTAURANTS = [
-	{ id: 'r1', name: 'Вкусный Дракон', performance: 98 },
-	{ id: 'r2', name: 'Пицца Мастер', performance: 95 },
-	{ id: 'r3', name: 'Суши & Роллы', performance: 92 },
-	{ id: 'r4', name: 'Бургер Хаус', performance: 88 },
-	{ id: 'r5', name: 'Pasta Bella', performance: 85 },
-	{ id: 'r6', name: 'Шашлычный Двор', performance: 82 },
-	{ id: 'r7', name: 'Тако Лако', performance: 78 },
-	{ id: 'r8', name: 'Вок Стрит', performance: 75 }
-].sort((a, b) => b.performance - a.performance)
+
+interface Restaurant {
+	id: string
+	name: string
+	performance: number
+}
 
 const MOCK_DATA: DeliveryOrder[] = Array.from({ length: 20 }, (_, i) => ({
 	id: `order-${i + 1}`,
@@ -129,22 +127,6 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 		return () => clearInterval(interval)
 	}, [])
 
-	useEffect(() => {
-		if (orders.length > 0) {
-			const onTimeOrders = orders.filter(order => order.totalTime <= 60)
-			setStats({
-				totalOrders: orders.length,
-				delayedOrders: orders.filter(order => order.totalTime > 40).length,
-				onTimePercentage: (onTimeOrders.length / orders.length) * 100,
-				averageTotal:
-					orders.reduce((acc, curr) => acc + curr.totalTime, 0) / orders.length,
-				longPrepOrders: orders.filter(order => order.prepTime > 14).length,
-				longShelfOrders: orders.filter(order => order.shelfTime > 7).length,
-				longTransitOrders: orders.filter(order => order.transitTime > 20).length
-			})
-		}
-	}, [orders])
-
 	const MetricCard = ({
 		icon: Icon,
 		title,
@@ -170,166 +152,187 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 
 	const displayedOrders = showAll ? orders : orders.slice(0, 10)
 
+	const { data: olapData } = useOlapData('Лосось №1')
+
+	// Преобразуем данные OLAP в нужный формат для отображения
+	const restaurants =
+		olapData?.data
+			?.map((item: any, index: number) => ({
+				id: `r${index + 1}`,
+				name: item.Department,
+				performance: item['Доля заказов доставленных за 60 мин']
+			}))
+			.sort((a: Restaurant, b: Restaurant) => b.performance - a.performance) || []
+
 	return (
 		<div className='h-screen overflow-hidden bg-gray-50 p-4 dark:bg-[#171717]'>
-			<div className='space-y-4'>
-				{/* Header */}
-
-				<div className='flex items-center justify-between'>
-					<h1 className='text-2xl font-bold'>
-						{response.length > 0
-							? response[0].department
-							: 'Ваше торговое предприятие'}
-					</h1>
+			{loading ? (
+				<div className='flex h-full items-center justify-center'>
+					<p>Загрузка данных...</p>
 				</div>
-				{/* Main Content Area */}
-				<div className='flex gap-4'>
-					{/* Left Section - Emojis */}
-					<div className='w-[500px]'>
-						<div className='rounded-xl bg-white p-6 shadow-lg dark:bg-neutral-700'>
-							<div className='mb-4 flex items-center justify-between'>
-								<h2 className='text-lg font-semibold'>Текущие заказы</h2>
-								<button
-									onClick={() => setShowAll(!showAll)}
-									className='h-6 w-20 rounded-full bg-black px-2 py-1 text-xs text-white transition-all hover:bg-muted-foreground hover:shadow-md dark:bg-white dark:text-black'
-								>
-									{showAll ? 'Show Less' : 'Show More'}
-								</button>
-							</div>
-							<div className='grid grid-cols-3 gap-4 pt-10'>
-								{orders.slice(0, showAll ? orders.length : 12).map((order, index) => (
-									<div key={order.id} className='flex flex-col items-center'>
-										<Tooltip.Provider>
-											<Tooltip.Root>
-												<Tooltip.Trigger asChild>
-													<div className='mb-2 transform transition-transform hover:scale-110'>
-														<DeliveryEmoji
-															size='big'
-															duration={order.totalTime}
-															index={index}
-															total={showAll ? orders.length : 11}
-														/>
-													</div>
-												</Tooltip.Trigger>
-												<Tooltip.Portal>
-													<Tooltip.Content
-														className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
-														sideOffset={5}
-													>
-														<div className='space-y-2'>
-															<p className='font-semibold'>Order #{order.id}</p>
-															<p className='text-gray-600 dark:text-white'>
-																Delivery Time: {Math.round(order.totalTime)}m
-															</p>
-														</div>
-														<Tooltip.Arrow className='fill-white' />
-													</Tooltip.Content>
-												</Tooltip.Portal>
-											</Tooltip.Root>
-										</Tooltip.Provider>
-										<div className='text-center'>
-											<p className='font-medium'>#{order.id}</p>
-											<p className='text-sm text-gray-600 dark:text-white'>
-												{Math.round(order.totalTime)}m
-											</p>
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
+			) : error ? (
+				<div className='flex h-full items-center justify-center text-red-500'>
+					<p>{error}</p>
+				</div>
+			) : (
+				<div className='space-y-4'>
+					{/* Header */}
+					<div className='flex items-center justify-between'>
+						<h1 className='text-2xl font-bold'>
+							{response.length > 0
+								? response[0].department
+								: 'Ваше торговое предприятие'}
+						</h1>
 					</div>
-
-					{/* Right Section - Combined Progress, Rankings, and Metrics */}
-					<div className='flex-1 space-y-4'>
-						{/* Progress Bar and Rankings */}
-						<div className='rounded-xl bg-white p-4 shadow-lg dark:bg-neutral-700'>
-							<div className='mb-6'>
-								<motion.div
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ delay: 0.1 }}
-								>
-									<div className='mb-4 flex items-center'>
-										<TrendingUp className='mr-2 h-6 w-6 text-gray-900 dark:text-foreground' />
-										<h2 className='text-xl font-semibold'>
-											Заказов доставленных за 60 минут
-										</h2>
-									</div>
-									<WaveProgressBar progress={stats.onTimePercentage} />
-								</motion.div>
-							</div>
-							<div className='space-y-2'>
-								<div className='mb-3 flex items-center'>
-									<Trophy className='mr-2 h-5 w-5 text-yellow-500' />
-									<h2 className='text-sm font-semibold'>Restaurant Rankings</h2>
-								</div>
-								{RESTAURANTS.map((restaurant, index) => (
-									<div
-										key={restaurant.id}
-										className='flex items-center justify-between text-sm'
+					{/* Main Content Area */}
+					<div className='flex gap-4'>
+						{/* Left Section - Emojis */}
+						<div className='w-[500px]'>
+							<div className='rounded-xl bg-white p-6 shadow-lg dark:bg-neutral-700'>
+								<div className='mb-4 flex items-center justify-between'>
+									<h2 className='text-lg font-semibold'>Текущие заказы</h2>
+									<button
+										onClick={() => setShowAll(!showAll)}
+										className='h-6 w-20 rounded-full bg-black px-2 py-1 text-xs text-white transition-all hover:bg-muted-foreground hover:shadow-md dark:bg-white dark:text-black'
 									>
-										<div className='flex items-center'>
-											<span
-												className={`w-6 text-${index < 3 ? 'yellow' : 'gray'}-500 font-bold`}
-											>
-												#{index + 1}
-											</span>
-											<span className='ml-2'>{restaurant.name}</span>
+										{showAll ? 'Show Less' : 'Show More'}
+									</button>
+								</div>
+								<div className='grid grid-cols-3 gap-4 pt-10'>
+									{orders.slice(0, showAll ? orders.length : 12).map((order, index) => (
+										<div key={order.id} className='flex flex-col items-center'>
+											<Tooltip.Provider>
+												<Tooltip.Root>
+													<Tooltip.Trigger asChild>
+														<div className='mb-2 transform transition-transform hover:scale-110'>
+															<DeliveryEmoji
+																size='big'
+																duration={order.totalTime}
+																index={index}
+																total={showAll ? orders.length : 11}
+															/>
+														</div>
+													</Tooltip.Trigger>
+													<Tooltip.Portal>
+														<Tooltip.Content
+															className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
+															sideOffset={5}
+														>
+															<div className='space-y-2'>
+																<p className='font-semibold'>Order #{order.id}</p>
+																<p className='text-gray-600 dark:text-white'>
+																	Delivery Time: {Math.round(order.totalTime)}m
+																</p>
+															</div>
+															<Tooltip.Arrow className='fill-white' />
+														</Tooltip.Content>
+													</Tooltip.Portal>
+												</Tooltip.Root>
+											</Tooltip.Provider>
+											<div className='text-center'>
+												<p className='font-medium'>#{order.id}</p>
+												<p className='text-sm text-gray-600 dark:text-white'>
+													{Math.round(order.totalTime)}m
+												</p>
+											</div>
 										</div>
-										<span className='font-semibold'>{restaurant.performance}%</span>
-									</div>
-								))}
+									))}
+								</div>
 							</div>
 						</div>
 
-						{/* Metrics Grid */}
-						<div className='grid grid-cols-4 gap-3'>
-							<MetricCard
-								icon={Clock}
-								title='Время доставки'
-								value={response && response[0] ? `${response[0].avg_dell_t} м` : '0 м'}
-							/>
-							<MetricCard
-								icon={ChefHat}
-								title='Приготовление'
-								value={
-									response && response[0] ? `${response[0].avg_cooking_t} м` : '0 м'
-								}
-							/>
-							<MetricCard
-								icon={Archive}
-								title='Ожидание на полке'
-								value={response && response[0] ? `${response[0].wait_t} м` : '0 м'}
-							/>
-							<MetricCard
-								icon={Truck}
-								title='Время в пути'
-								value={response && response[0] ? `${response[0].avg_send_t} м` : '0 м'}
-							/>
-							<MetricCard
-								icon={AlertCircle}
-								title='Доставка >40 мин'
-								value={response && response[0] ? `${response[0].send_40}` : '0 %'}
-							/>
-							<MetricCard
-								icon={Timer}
-								title='Приготовление >14 мин'
-								value={response && response[0] ? `${response[0].cooking_14}` : '0 %'}
-							/>
-							<MetricCard
-								icon={Package}
-								title='На полке >7 мин'
-								value={response && response[0] ? `${response[0].wait_7}` : '0 %'}
-							/>
-							<MetricCard
-								icon={Route}
-								title='В пути >20 мин'
-								value={response && response[0] ? `${response[0].insend_20}` : '0 %'}
-							/>
+						{/* Right Section - Combined Progress, Rankings, and Metrics */}
+						<div className='flex-1 space-y-4'>
+							{/* Progress Bar and Rankings */}
+							<div className='rounded-xl bg-white p-4 shadow-lg dark:bg-neutral-700'>
+								<div className='mb-6'>
+									<motion.div
+										initial={{ opacity: 0, y: 20 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: 0.1 }}
+									>
+										<div className='mb-4 flex items-center'>
+											<TrendingUp className='mr-2 h-6 w-6 text-gray-900 dark:text-foreground' />
+											<h2 className='text-xl font-semibold'>
+												Заказов доставленных за 60 минут
+											</h2>
+										</div>
+										{response.length > 0 && (
+											<WaveProgressBar progress={response[0].insend_60} />
+										)}
+									</motion.div>
+								</div>
+								<div className='space-y-2'>
+									<div className='mb-3 flex items-center'>
+										<Trophy className='mr-2 h-5 w-5 text-yellow-500' />
+										<h2 className='text-sm font-semibold'>Рейтинг ресторанов</h2>
+									</div>
+									{restaurants.map((restaurant: Restaurant, index: number) => (
+										<div
+											key={restaurant.id}
+											className='flex items-center justify-between text-sm'
+										>
+											<div className='flex items-center'>
+												<span
+													className={`w-6 text-${index < 3 ? 'yellow' : 'gray'}-500 font-bold`}
+												>
+													#{index + 1}
+												</span>
+												<span className='ml-2'>{restaurant.name}</span>
+											</div>
+											<span className='font-semibold'>{restaurant.performance}%</span>
+										</div>
+									))}
+								</div>
+							</div>
+
+							{/* Metrics Grid */}
+							<div className='grid grid-cols-4 gap-3'>
+								<MetricCard
+									icon={Clock}
+									title='Время доставки'
+									value={response.length > 0 ? `${response[0].avg_dell_t} м` : '0 м'}
+								/>
+								<MetricCard
+									icon={ChefHat}
+									title='Приготовление'
+									value={response.length > 0 ? `${response[0].avg_cooking_t} м` : '0 м'}
+								/>
+								<MetricCard
+									icon={Archive}
+									title='Ожидание на полке'
+									value={response.length > 0 ? `${response[0].wait_t} м` : '0 м'}
+								/>
+								<MetricCard
+									icon={Truck}
+									title='Время в пути'
+									value={response.length > 0 ? `${response[0].avg_send_t} м` : '0 м'}
+								/>
+								<MetricCard
+									icon={AlertCircle}
+									title='Доставка >40 мин'
+									value={response.length > 0 ? `${response[0].send_40}` : '0 %'}
+								/>
+								<MetricCard
+									icon={Timer}
+									title='Приготовление >14 мин'
+									value={response.length > 0 ? `${response[0].cooking_14}` : '0 %'}
+								/>
+								<MetricCard
+									icon={Package}
+									title='На полке >7 мин'
+									value={response.length > 0 ? `${response[0].wait_7}` : '0 %'}
+								/>
+								<MetricCard
+									icon={Route}
+									title='В пути >20 мин'
+									value={response.length > 0 ? `${response[0].insend_20}` : '0 %'}
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	)
 }
