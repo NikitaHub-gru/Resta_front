@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import {
 	ChevronDown,
 	ChevronRight,
@@ -8,23 +9,12 @@ import {
 	X,
 	XCircle
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as XLSX from 'xlsx'
-
-import jsonData from '../../data/pr.json'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-
-interface GroupedData {
-	'ТОРГОВОЕ ПРЕДПРИЯТИЕ': string
-	ГРУППА: string
-	подгруппа?: string
-	ОПИСАНИЕ: string
-	Значение: number
-	level: number
-}
 
 interface JsonRowItem {
 	[category: string]: {
@@ -32,22 +22,9 @@ interface JsonRowItem {
 	}
 }
 
-interface JsonDataItem {
-	'Торговое предприятие': string
-	row: JsonRowItem[]
-}
-
 interface JsonData {
 	columns: TableColumn[]
 	data: TableData[]
-}
-
-const typedJsonData = jsonData as unknown as JsonData
-
-interface ColumnFilter {
-	'ТОРГОВОЕ ПРЕДПРИЯТИЕ': string
-	ГРУППА: string
-	ОПИСАНИЕ: string
 }
 
 interface TableData {
@@ -76,6 +53,10 @@ const SheetTable = () => {
 	const [filters, setFilters] = useState<Record<string, string>>({})
 	const [activeFilter, setActiveFilter] = useState<string | null>(null)
 	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+	const [startDate, setStartDate] = useState(new Date())
+	const [endDate, setEndDate] = useState(new Date())
+	const [isLoading, setIsLoading] = useState(false)
+	const [error, setError] = useState<string | null>(null)
 
 	const uniqueValues = useMemo(() => {
 		return columns.reduce(
@@ -193,16 +174,35 @@ const SheetTable = () => {
 		return result
 	}, [filteredData, collapsedGroups])
 
-	useEffect(() => {
-		const loadData = () => {
-			setColumns(typedJsonData.columns)
+	const fetchData = useCallback(async () => {
+		try {
+			setIsLoading(true)
+			setError(null)
+
+			const formattedStartDate = format(startDate, 'yyyy-MM-dd')
+			const formattedEndDate = format(endDate, 'yyyy-MM-dd')
+
+			const response = await fetch(
+				`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}`,
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}
+			)
+
+			if (!response.ok) {
+				throw new Error('Ошибка при загрузке данных')
+			}
+
+			const jsonData = await response.json()
+
+			setColumns(jsonData.columns)
 
 			const groupedData: TableData[] = []
-
-			// Рекурсивная функция для обработки данных
 			const processItems = (items: TableData[], parentItem?: TableData) => {
 				items.forEach(item => {
-					// Создаем новый элемент с наследованием родительских свойств
 					const newItem: TableData = {
 						...item,
 						'ТОРГОВОЕ ПРЕДПРИЯТИЕ': parentItem
@@ -211,31 +211,37 @@ const SheetTable = () => {
 						ГРУППА: item.ГРУППА || parentItem?.ГРУППА || ''
 					}
 
-					// Добавляем элемент в массив
 					const { items: _, ...itemWithoutNested } = newItem
 					groupedData.push(itemWithoutNested)
 
-					// Обрабатываем вложенные элементы
 					if (item.items && item.items.length > 0) {
 						processItems(item.items, newItem)
 					}
 				})
 			}
 
-			processItems(typedJsonData.data)
+			processItems(jsonData.data)
 			setTableData(groupedData)
 
 			setFilters(
 				Object.fromEntries(
-					typedJsonData.columns
-						.filter(col => col.filterable)
-						.map(col => [col.key, ''])
+					jsonData.columns
+						.filter((col: TableColumn) => col.filterable)
+						.map((col: TableColumn) => [col.key, ''])
 				)
 			)
+		} catch (error) {
+			console.error('Ошибка при загрузке данных:', error)
+			setError(error instanceof Error ? error.message : 'Произошла ошибка')
+			setTableData([])
+		} finally {
+			setIsLoading(false)
 		}
+	}, [startDate, endDate])
 
-		loadData()
-	}, [])
+	useEffect(() => {
+		fetchData()
+	}, [fetchData])
 
 	const exportToExcel = () => {
 		const ws = XLSX.utils.json_to_sheet(tableData)
@@ -260,7 +266,6 @@ const SheetTable = () => {
 
 	const toggleFullScreen = () => {
 		setIsFullScreen(!isFullScreen)
-		// Блокируем скролл body при открытии на весь экран
 		document.body.style.overflow = !isFullScreen ? 'hidden' : 'auto'
 	}
 
@@ -329,6 +334,21 @@ const SheetTable = () => {
 								<X className='ml-2 h-3 w-3' />
 							</Button>
 						)}
+						<input
+							type='date'
+							className='rounded-md border p-2'
+							value={format(startDate, 'yyyy-MM-dd')}
+							onChange={e => setStartDate(new Date(e.target.value))}
+						/>
+						<input
+							type='date'
+							className='rounded-md border p-2'
+							value={format(endDate, 'yyyy-MM-dd')}
+							onChange={e => setEndDate(new Date(e.target.value))}
+						/>
+						<Button onClick={fetchData} variant='outline'>
+							Обновить
+						</Button>
 					</div>
 					<div className='flex items-center gap-4'>
 						<div className='relative'>
@@ -356,6 +376,10 @@ const SheetTable = () => {
 						</select>
 					</div>
 				</div>
+
+				{isLoading && <div className='flex justify-center p-4'>Загрузка...</div>}
+
+				{error && <div className='p-4 text-red-500'>{error}</div>}
 
 				<ScrollArea className='h-[600px] rounded-md border' type='scroll'>
 					<div className='min-w-max'>

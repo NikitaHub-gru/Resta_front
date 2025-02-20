@@ -18,7 +18,8 @@ import {
 	IconUsers
 } from '@tabler/icons-react'
 import { motion } from 'framer-motion'
-import { MoonIcon, SunIcon } from 'lucide-react'
+import { MoonIcon, Settings2, SunIcon } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -28,6 +29,11 @@ import { Tooltip } from 'react-tooltip'
 import { Button } from '../ui/button'
 import { Sidebar, SidebarBody, useSidebar } from '../ui/sidebar'
 
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger
+} from '@/components/ui/collapsible'
 import { getAuthUser } from '@/hooks/getauthuser'
 import { supabase } from '@/lib/supabaseClient'
 import { cn } from '@/lib/utils'
@@ -125,32 +131,13 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 			icon: (
 				<IconHome className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 			)
-		},
-		...(userData.corporation === 'RestaLabs'
-			? [
-					{
-						label: 'Поиск заказов',
-						href: '/orders',
-						icon: (
-							<IconShoppingCartSearch className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-						)
-					},
-					{
-						label: 'Отчеты',
-						href: '/reports',
-						icon: (
-							<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-						)
-					},
-					{
-						label: 'История',
-						href: '/history',
-						icon: (
-							<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-						)
-					}
-				]
-			: userData.corporation === 'Grill№1'
+		}
+	]
+
+	const mainSection = {
+		title: 'Основное',
+		items: [
+			...(userData.corporation === 'RestaLabs'
 				? [
 						{
 							label: 'Поиск заказов',
@@ -158,43 +145,82 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 							icon: (
 								<IconShoppingCartSearch className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 							)
+						},
+						{
+							label: 'Отчеты',
+							href: '/reports',
+							icon: (
+								<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+							)
+						},
+						{
+							label: 'История',
+							href: '/history',
+							icon: (
+								<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+							)
+						},
+						{
+							label: 'Настройка отчетов',
+							href: '/setDataReports',
+							icon: (
+								<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+							)
 						}
 					]
-				: userData.corporation === 'Грильница'
+				: userData.corporation === 'Grill№1'
 					? [
 							{
-								label: 'Отчеты',
-								href: '/reports',
+								label: 'Поиск заказов',
+								href: '/orders',
 								icon: (
-									<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-								)
-							},
-							{
-								label: 'История',
-								href: '/history',
-								icon: (
-									<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+									<IconShoppingCartSearch className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 								)
 							}
 						]
-					: [
-							{
-								label: 'Отчеты',
-								href: '/reports',
-								icon: (
-									<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-								)
-							}
-						]),
+					: userData.corporation === 'Грильница'
+						? [
+								{
+									label: 'Отчеты',
+									href: '/reports',
+									icon: (
+										<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+									)
+								},
+								{
+									label: 'История',
+									href: '/history',
+									icon: (
+										<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+									)
+								},
+								{
+									label: 'Настройка отчетов',
+									href: '/setDataReports',
+									icon: (
+										<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+									)
+								}
+							]
+						: [
+								{
+									label: 'Отчеты',
+									href: '/reports',
+									icon: (
+										<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+									)
+								}
+							]),
 
-		{
-			label: 'Dashboard',
-			href: '/dashboard',
-			icon: (
-				<IconReportAnalytics className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-			)
-		}
-	]
+			{
+				label: 'Dashboard',
+				href: '/dashboard',
+				icon: (
+					<IconReportAnalytics className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+				)
+			}
+		]
+	}
 
 	const adminLinks = [
 		{
@@ -254,21 +280,64 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 							{links.map((link, idx) => (
 								<SidebarLink key={idx} link={link} />
 							))}
+
+							<Collapsible>
+								<CollapsibleTrigger className='flex w-full items-center justify-between rounded-lg px-3 py-2 text-neutral-700 transition-all duration-150 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-700'>
+									<div className='flex items-center gap-2'>
+										<IconLayoutDashboardFilled className='h-5 w-5' />
+										{open && (
+											<span className='text-sm font-medium'>{mainSection.title}</span>
+										)}
+									</div>
+									{open && <ChevronDown className='h-4 w-4' />}
+								</CollapsibleTrigger>
+								<CollapsibleContent>
+									<div className='ml-2 flex flex-col gap-1'>
+										{mainSection.items.map((item, idx) => (
+											<SidebarLink key={idx} link={item} />
+										))}
+									</div>
+								</CollapsibleContent>
+							</Collapsible>
+
+							{userData.role === 'Admin' && (
+								<Collapsible>
+									<CollapsibleTrigger className='flex w-full items-center justify-between rounded-lg px-3 py-2 text-neutral-700 transition-all duration-150 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-700'>
+										<div className='flex items-center gap-2'>
+											<IconSettings className='h-5 w-5' />
+											{open && <span className='text-sm font-medium'>Админка</span>}
+										</div>
+										{open && <ChevronDown className='h-4 w-4' />}
+									</CollapsibleTrigger>
+									<CollapsibleContent>
+										<div className='ml-2 flex flex-col gap-1'>
+											{adminLinks.slice(1).map((link, idx) => (
+												<SidebarLink key={idx} link={link} />
+											))}
+										</div>
+									</CollapsibleContent>
+								</Collapsible>
+							)}
+
+							{(userData.role === 'Engineer' || userData.role === 'Admin') && (
+								<Collapsible>
+									<CollapsibleTrigger className='flex w-full items-center justify-between rounded-lg px-3 py-2 text-neutral-700 transition-all duration-150 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-700'>
+										<div className='flex items-center gap-2'>
+											<IconGitPullRequestDraft className='h-5 w-5' />
+											{open && <span className='text-sm font-medium'>Инженеры</span>}
+										</div>
+										{open && <ChevronDown className='h-4 w-4' />}
+									</CollapsibleTrigger>
+									<CollapsibleContent>
+										<div className='ml-2 flex flex-col gap-1'>
+											{Engineerlinks.slice(1).map((link, idx) => (
+												<SidebarLink key={idx} link={link} />
+											))}
+										</div>
+									</CollapsibleContent>
+								</Collapsible>
+							)}
 						</div>
-						{userData.role === 'Admin' && (
-							<div className='mt-8 flex flex-col justify-start gap-2'>
-								{adminLinks.map((link, idx) => (
-									<SidebarLink key={idx} link={link} />
-								))}
-							</div>
-						)}
-						{(userData.role === 'Engineer' || userData.role === 'Admin') && (
-							<div className='mt-8 flex flex-col justify-start gap-2'>
-								{Engineerlinks.map((link, idx) => (
-									<SidebarLink key={idx} link={link} />
-								))}
-							</div>
-						)}
 					</div>
 
 					<div>

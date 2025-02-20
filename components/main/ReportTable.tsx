@@ -139,6 +139,17 @@ interface ExportData {
 		  }
 }
 
+interface CellValue {
+	v?: string | number
+	s?: {
+		fill?: {
+			fgColor?: {
+				rgb?: string
+			}
+		}
+	}
+}
+
 export default function DeliveryOrders({
 	id,
 	corporation
@@ -166,6 +177,8 @@ export default function DeliveryOrders({
 	const [selectedCompany, setSelectedCompany] = useState<string>('')
 	const [isDataFetched, setIsDataFetched] = useState(false)
 	const [user, setUser] = useState<any>(null)
+	// Добавим новый state для отслеживания полноэкранного режима
+	const [isFullScreen, setIsFullScreen] = useState(false)
 
 	// Добавим функцию для разбиения периода на месяцы
 	const getMonthPeriods = (
@@ -437,19 +450,15 @@ export default function DeliveryOrders({
 	// Добавим функцию для расчета ширины колонки
 	const calculateColumnWidth = (columnName: string): number => {
 		const displayName = getColumnDisplayName(columnName)
-		// Базовая ширина для короткого текста
-		const baseWidth = 120
-		// Примерная ширина одного символа (в пикселях)
-		const charWidth = 8
-		// Минимальная ширина колонки
-		const minWidth = 120
-		// Максимальная ширина колонки
-		const maxWidth = 400
+		// Уменьшаем базовую ширину
+		const baseWidth = 100
+		// Уменьшаем ширину символа
+		const charWidth = 6
+		// Уменьшаем минимальную ширину
+		const minWidth = 80
+		const maxWidth = 300
 
-		// Расчет ширины на основе длины текста
 		const calculatedWidth = baseWidth + displayName.length * charWidth
-
-		// Возвращаем значение в пределах min и max
 		return Math.min(Math.max(calculatedWidth, minWidth), maxWidth)
 	}
 
@@ -646,8 +655,8 @@ export default function DeliveryOrders({
 	}, [])
 
 	return (
-		<ScrollArea className='h-[calc(100vh-2rem)] w-full'>
-			<div className='container mx-auto py-10'>
+		<ScrollArea className='h-[calc(100vh-2rem)]'>
+			<div className='mx-16 w-auto py-10'>
 				<div className='rounded-lg border bg-white text-card-foreground shadow-sm dark:bg-[#171717]'>
 					<div className='flex flex-col space-y-1.5 p-6'>
 						<div className='flex items-center justify-between'>
@@ -761,6 +770,7 @@ export default function DeliveryOrders({
 														<div>
 															<GrcPage
 																data={filteredData}
+																report_id={id.toString()}
 																onCalculate={formData => {
 																	try {
 																		console.log('Received form data in ReportTable:', formData)
@@ -848,11 +858,19 @@ export default function DeliveryOrders({
 											placeholder='Поиск по всем полям...'
 											value={searchTerm}
 											onChange={e => setSearchTerm(e.target.value)}
-											className='h-10 w-full bg-white pl-10 dark:bg-neutral-900'
+											className='h-8 w-full bg-white pl-10 text-xs dark:bg-neutral-900'
 										/>
-										<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground' />
+										<Search className='absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 transform text-muted-foreground' />
 									</div>
 									<div className='flex items-center gap-2'>
+										<Button
+											variant='outline'
+											size='sm'
+											onClick={() => setIsFullScreen(!isFullScreen)}
+											className='text-xs'
+										>
+											{isFullScreen ? 'Свернуть' : 'На весь экран'}
+										</Button>
 										{isDataFetched &&
 											selectedReport?.id !== undefined &&
 											[17, 30, 31, 32, 33, 34, 35, 44].includes(selectedReport.id) && (
@@ -923,17 +941,6 @@ export default function DeliveryOrders({
 												columns.forEach(col => {
 													let maxLength = col.length
 
-													interface CellValue {
-														v?: string | number
-														s?: {
-															fill?: {
-																fgColor?: {
-																	rgb?: string
-																}
-															}
-														}
-													}
-
 													exportData.forEach(row => {
 														const cellValue = row[col] as Date | CellValue
 														const cellLength =
@@ -970,194 +977,237 @@ export default function DeliveryOrders({
 										</Button>
 									</div>
 								</div>
-								{/* {user?.corporation !== 'DimmiYammi' && ( */}
-								<div className='rounded-md border'>
-									<ScrollArea className='h-[500px] w-full'>
-										<Table>
-											<TableHeader>
-												<TableRow>
-													{columns.map(column => (
-														<TableHead
-															key={column}
-															className='sticky top-0 bg-white dark:bg-neutral-900'
+								<div
+									className={`rounded-md border ${
+										isFullScreen
+											? 'fixed inset-0 z-50 m-4 bg-white dark:bg-neutral-900'
+											: 'relative'
+									}`}
+								>
+									{isFullScreen && (
+										<div className='absolute right-4 top-4 z-50'>
+											<Button
+												variant='outline'
+												size='sm'
+												onClick={() => setIsFullScreen(false)}
+												className='h-8 w-8 p-0'
+											>
+												<X className='h-4 w-4' />
+											</Button>
+										</div>
+									)}
+									<div className='relative overflow-hidden'>
+										<div>
+											<ScrollArea
+												className={`${
+													isFullScreen ? 'h-[calc(100vh-8rem)]' : 'h-[500px]'
+												} w-full`}
+											>
+												<div className='min-w-max'>
+													<Table>
+														<TableHeader
+															className='sticky top-0 z-30 bg-white dark:bg-neutral-900'
 															style={{
-																width: `${calculateColumnWidth(column)}px`,
-																minWidth: `${calculateColumnWidth(column)}px`
+																position: 'sticky',
+																top: 0,
+																zIndex: 30
 															}}
 														>
-															<div className='flex flex-col gap-1'>
-																<div className='flex items-center justify-between'>
-																	<span className='font-medium'>
-																		{getColumnDisplayName(column)}
-																	</span>
-																	<div className='flex items-center gap-1'>
-																		<DropdownMenu>
-																			<DropdownMenuTrigger asChild>
-																				<Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
-																					<Filter className='h-4 w-4' />
-																				</Button>
-																			</DropdownMenuTrigger>
-																			<DropdownMenuContent
-																				align='end'
-																				className='w-[400px] border bg-white dark:bg-[#171717]'
-																			>
-																				<div className='px-2 py-2'>
-																					<Input
-																						placeholder='Поиск...'
-																						value={filterSearchTerms[column] || ''}
-																						onChange={e =>
-																							setFilterSearchTerms(prev => ({
-																								...prev,
-																								[column]: e.target.value
-																							}))
-																						}
-																						className='h-8 bg-white dark:bg-[#171717]'
-																					/>
-																				</div>
-																				<div className='max-h-[400px] overflow-y-auto bg-white dark:bg-[#171717]'>
-																					{Array.from(filters[column] || [])
-																						.filter(value =>
-																							formatFilterValue(column, value)
-																								.toLowerCase()
-																								.includes(
-																									(filterSearchTerms[column] || '').toLowerCase()
-																								)
-																						)
-																						.map(value => (
-																							<DropdownMenuCheckboxItem
-																								key={value}
-																								checked={activeFilters[column]?.includes(value)}
-																								onCheckedChange={checked => {
-																									if (checked) {
-																										handleFilter(column, value)
-																									} else {
-																										removeFilter(column, value)
-																									}
-																								}}
-																								className='bg-white dark:bg-[#171717]'
+															<TableRow>
+																{columns.map(column => (
+																	<TableHead
+																		key={column}
+																		className='z-20 bg-white p-1.5 shadow-[0_1px_0_0_rgba(0,0,0,0.1)] dark:bg-neutral-900'
+																		style={{
+																			width: `${calculateColumnWidth(column)}px`,
+																			minWidth: `${calculateColumnWidth(column)}px`
+																		}}
+																	>
+																		<div className='flex flex-col gap-0.5'>
+																			<div className='flex items-center justify-between'>
+																				<span className='text-xs font-medium'>
+																					{getColumnDisplayName(column)}
+																				</span>
+																				<div className='flex items-center gap-0'>
+																					<DropdownMenu>
+																						<DropdownMenuTrigger asChild>
+																							<Button
+																								variant='ghost'
+																								size='sm'
+																								className='h-6 w-6 p-0'
 																							>
-																								<div className='flex w-full items-center justify-between gap-2'>
-																									<span className='whitespace-normal break-words'>
-																										{formatFilterValue(column, value)}
-																									</span>
-																									<span className='ml-2 shrink-0 text-xs text-muted-foreground'>
-																										{getValueCount(column, value)}
-																									</span>
-																								</div>
-																							</DropdownMenuCheckboxItem>
-																						))}
-																				</div>
-																				{activeFilters[column]?.length > 0 && (
-																					<div className='border-t bg-white px-2 py-2 dark:bg-[#171717]'>
-																						<Button
-																							variant='ghost'
-																							size='sm'
-																							className='w-full'
-																							onClick={() => clearFilters(column)}
+																								<Filter className='h-3 w-3' />
+																							</Button>
+																						</DropdownMenuTrigger>
+																						<DropdownMenuContent
+																							align='end'
+																							className='w-[400px] border bg-white dark:bg-[#171717]'
 																						>
-																							Очистить все
-																						</Button>
-																					</div>
-																				)}
-																			</DropdownMenuContent>
-																		</DropdownMenu>
-																		<DropdownMenu>
-																			<DropdownMenuTrigger asChild>
-																				<Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
-																					{sortConfig?.key === column ? (
-																						sortConfig.direction.includes('asc') ? (
-																							<SortAsc className='h-4 w-4' />
-																						) : (
-																							<SortDesc className='h-4 w-4' />
-																						)
-																					) : (
-																						<SortAsc className='h-4 w-4' />
-																					)}
-																				</Button>
-																			</DropdownMenuTrigger>
-																			<DropdownMenuContent align='end'>
-																				<DropdownMenuItem onClick={() => handleSort(column, 'asc')}>
-																					Сортировать по возрастанию
-																				</DropdownMenuItem>
-																				<DropdownMenuItem
-																					onClick={() => handleSort(column, 'desc')}
-																				>
-																					Сортировать по убыванию
-																				</DropdownMenuItem>
-																				<DropdownMenuItem
-																					onClick={() => handleSort(column, 'alpha-asc')}
-																				>
-																					Сортировать по алфавиту (А-Я)
-																				</DropdownMenuItem>
-																				<DropdownMenuItem
-																					onClick={() => handleSort(column, 'alpha-desc')}
-																				>
-																					Сортировать по алфавиту (Я-А)
-																				</DropdownMenuItem>
-																			</DropdownMenuContent>
-																		</DropdownMenu>
-																	</div>
-																</div>
-																{activeFilters[column]?.length > 0 && (
-																	<div className='flex flex-wrap gap-1'>
-																		{activeFilters[column].map(filter => (
-																			<span
-																				key={filter}
-																				className='inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs'
-																			>
-																				{formatFilterValue(column, filter)}
+																							<div className='px-2 py-2'>
+																								<Input
+																									placeholder='Поиск...'
+																									value={filterSearchTerms[column] || ''}
+																									onChange={e =>
+																										setFilterSearchTerms(prev => ({
+																											...prev,
+																											[column]: e.target.value
+																										}))
+																									}
+																									className='h-8 bg-white dark:bg-[#171717]'
+																								/>
+																							</div>
+																							<div className='max-h-[400px] overflow-y-auto bg-white dark:bg-[#171717]'>
+																								{Array.from(filters[column] || [])
+																									.filter(value =>
+																										formatFilterValue(column, value)
+																											.toLowerCase()
+																											.includes(
+																												(filterSearchTerms[column] || '').toLowerCase()
+																											)
+																									)
+																									.map(value => (
+																										<DropdownMenuCheckboxItem
+																											key={value}
+																											checked={activeFilters[column]?.includes(value)}
+																											onCheckedChange={checked => {
+																												if (checked) {
+																													handleFilter(column, value)
+																												} else {
+																													removeFilter(column, value)
+																												}
+																											}}
+																											className='bg-white dark:bg-[#171717]'
+																										>
+																											<div className='flex w-full items-center justify-between gap-2'>
+																												<span className='whitespace-normal break-words'>
+																													{formatFilterValue(column, value)}
+																												</span>
+																												<span className='ml-2 shrink-0 text-xs text-muted-foreground'>
+																													{getValueCount(column, value)}
+																												</span>
+																											</div>
+																										</DropdownMenuCheckboxItem>
+																									))}
+																							</div>
+																							{activeFilters[column]?.length > 0 && (
+																								<div className='border-t bg-white px-2 py-2 dark:bg-[#171717]'>
+																									<Button
+																										variant='ghost'
+																										size='sm'
+																										className='w-full'
+																										onClick={() => clearFilters(column)}
+																									>
+																										Очистить все
+																									</Button>
+																								</div>
+																							)}
+																						</DropdownMenuContent>
+																					</DropdownMenu>
+																					<DropdownMenu>
+																						<DropdownMenuTrigger asChild>
+																							<Button
+																								variant='ghost'
+																								size='sm'
+																								className='h-6 w-6 p-0'
+																							>
+																								{sortConfig?.key === column ? (
+																									sortConfig.direction.includes('asc') ? (
+																										<SortAsc className='h-3 w-3' />
+																									) : (
+																										<SortDesc className='h-3 w-3' />
+																									)
+																								) : (
+																									<SortAsc className='h-3 w-3' />
+																								)}
+																							</Button>
+																						</DropdownMenuTrigger>
+																						<DropdownMenuContent align='end'>
+																							<DropdownMenuItem
+																								onClick={() => handleSort(column, 'asc')}
+																							>
+																								Сортировать по возрастанию
+																							</DropdownMenuItem>
+																							<DropdownMenuItem
+																								onClick={() => handleSort(column, 'desc')}
+																							>
+																								Сортировать по убыванию
+																							</DropdownMenuItem>
+																							<DropdownMenuItem
+																								onClick={() => handleSort(column, 'alpha-asc')}
+																							>
+																								Сортировать по алфавиту (А-Я)
+																							</DropdownMenuItem>
+																							<DropdownMenuItem
+																								onClick={() => handleSort(column, 'alpha-desc')}
+																							>
+																								Сортировать по алфавиту (Я-А)
+																							</DropdownMenuItem>
+																						</DropdownMenuContent>
+																					</DropdownMenu>
+																				</div>
+																			</div>
+																		</div>
+																		{activeFilters[column]?.length > 0 && (
+																			<div className='flex flex-wrap gap-0.5'>
+																				{activeFilters[column].map(filter => (
+																					<span
+																						key={filter}
+																						className='inline-flex items-center gap-0.5 rounded-full bg-muted px-1 py-0.5 text-[10px]'
+																					>
+																						{formatFilterValue(column, filter)}
+																						<button
+																							onClick={() => removeFilter(column, filter)}
+																							className='text-muted-foreground hover:text-foreground'
+																						>
+																							<X className='h-2 w-2' />
+																						</button>
+																					</span>
+																				))}
 																				<button
-																					onClick={() => removeFilter(column, filter)}
-																					className='text-muted-foreground hover:text-foreground'
+																					onClick={() => clearFilters(column)}
+																					className='text-[10px] text-muted-foreground hover:text-foreground'
 																				>
-																					<X className='h-3 w-3' />
+																					Очистить
 																				</button>
-																			</span>
-																		))}
-																		<button
-																			onClick={() => clearFilters(column)}
-																			className='text-xs text-muted-foreground hover:text-foreground'
+																			</div>
+																		)}
+																	</TableHead>
+																))}
+															</TableRow>
+														</TableHeader>
+														<TableBody>
+															{filteredData.map((row, index) => (
+																<TableRow key={index}>
+																	{columns.map(column => (
+																		<TableCell
+																			key={column}
+																			className='whitespace-nowrap p-1.5 text-xs'
+																			style={{
+																				width: `${calculateColumnWidth(column)}px`,
+																				minWidth: `${calculateColumnWidth(column)}px`
+																			}}
 																		>
-																			Очистить
-																		</button>
-																	</div>
-																)}
-															</div>
-														</TableHead>
-													))}
-												</TableRow>
-											</TableHeader>
-											<TableBody>
-												{filteredData.map((row, index) => (
-													<TableRow key={index}>
-														{columns.map(column => (
-															<TableCell
-																key={column}
-																className='whitespace-nowrap'
-																style={{
-																	width: `${calculateColumnWidth(column)}px`,
-																	minWidth: `${calculateColumnWidth(column)}px`
-																}}
-															>
-																{formatCellValue(row[column], column)}
-															</TableCell>
-														))}
-													</TableRow>
-												))}
-												{filteredData.length === 0 && (
-													<TableRow>
-														<TableCell
-															colSpan={columns.length}
-															className='h-24 text-center'
-														></TableCell>
-													</TableRow>
-												)}
-											</TableBody>
-										</Table>
-										<ScrollBar orientation='horizontal' />
-									</ScrollArea>
+																			{formatCellValue(row[column], column)}
+																		</TableCell>
+																	))}
+																</TableRow>
+															))}
+															{filteredData.length === 0 && (
+																<TableRow>
+																	<TableCell
+																		colSpan={columns.length}
+																		className='h-24 text-center'
+																	></TableCell>
+																</TableRow>
+															)}
+														</TableBody>
+													</Table>
+												</div>
+												<ScrollBar orientation='horizontal' />
+											</ScrollArea>
+										</div>
+									</div>
 								</div>
-								{/* {user?.corporation === 'DimmiYammi' && <SheetTable />} */}
 							</>
 						)}
 					</div>

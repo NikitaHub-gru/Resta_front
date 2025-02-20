@@ -1,8 +1,15 @@
 'use client'
 
 import { format } from 'date-fns'
+import {
+	endOfMonth,
+	isSameMonth,
+	isWithinInterval,
+	startOfMonth
+} from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { Eye, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, Trash2, X } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx'
 
@@ -21,6 +28,7 @@ import {
 	AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
 	Dialog,
@@ -28,6 +36,11 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '@/components/ui/dialog'
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger
+} from '@/components/ui/popover'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import {
 	Select,
@@ -82,6 +95,53 @@ interface ReportData {
 	}
 }
 
+function MonthPicker({
+	selected,
+	onSelect
+}: {
+	selected: Date | undefined
+	onSelect: (date: Date | undefined) => void
+}) {
+	const [year, setYear] = useState(
+		selected?.getFullYear() || new Date().getFullYear()
+	)
+	const months = Array.from({ length: 12 }, (_, i) => {
+		const date = new Date(year, i)
+		return format(date, 'LLLL', { locale: ru })
+	})
+
+	return (
+		<div className='p-3'>
+			<div className='mb-4 flex items-center justify-between'>
+				<Button variant='ghost' size='icon' onClick={() => setYear(year - 1)}>
+					<ChevronLeft className='h-4 w-4' />
+				</Button>
+				<div className='font-semibold'>{year}</div>
+				<Button variant='ghost' size='icon' onClick={() => setYear(year + 1)}>
+					<ChevronRight className='h-4 w-4' />
+				</Button>
+			</div>
+			<div className='grid grid-cols-3 gap-2'>
+				{months.map((month, index) => {
+					const date = new Date(year, index)
+					const isSelected = selected && isSameMonth(selected, date)
+
+					return (
+						<Button
+							key={month}
+							variant={isSelected ? 'default' : 'ghost'}
+							className='capitalize'
+							onClick={() => onSelect(date)}
+						>
+							{month}
+						</Button>
+					)
+				})}
+			</div>
+		</div>
+	)
+}
+
 export default function ReportsSettingsPage() {
 	const [rawData, setRawData] = useState<ReportData[]>([])
 	const [selectedReportId, setSelectedReportId] = useState<string>('all')
@@ -89,6 +149,7 @@ export default function ReportsSettingsPage() {
 	const [reportToDelete, setReportToDelete] = useState<number | null>(null)
 	const [viewModalOpen, setViewModalOpen] = useState(false)
 	const [selectedReport, setSelectedReport] = useState<ReportData | null>(null)
+	const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(undefined)
 
 	const getReportLocation = (reportId: number): string => {
 		const locationMap: { [key: number]: string } = {
@@ -137,10 +198,28 @@ export default function ReportsSettingsPage() {
 		}
 	}
 
-	const filteredData =
+	const filterByMonth = (data: ReportData[]) => {
+		return data.filter(item => {
+			if (!selectedMonth) return true
+
+			const itemStart = new Date(item.startDate)
+			const itemEnd = new Date(item.endDate)
+			const filterStart = startOfMonth(selectedMonth)
+			const filterEnd = endOfMonth(selectedMonth)
+
+			return (
+				isWithinInterval(itemStart, { start: filterStart, end: filterEnd }) ||
+				isWithinInterval(itemEnd, { start: filterStart, end: filterEnd }) ||
+				(itemStart <= filterStart && itemEnd >= filterEnd)
+			)
+		})
+	}
+
+	const filteredData = filterByMonth(
 		selectedReportId === 'all'
 			? rawData
 			: rawData.filter(item => item.reportId.toString() === selectedReportId)
+	)
 
 	const handleDelete = async (id: number) => {
 		try {
@@ -209,20 +288,53 @@ export default function ReportsSettingsPage() {
 						<Card className='h-full bg-white dark:bg-neutral-900'>
 							<CardHeader>
 								<CardTitle className='text-2xl font-bold'>История отчетов</CardTitle>
-								<div className='mt-4 w-[250px]'>
-									<Select value={selectedReportId} onValueChange={setSelectedReportId}>
-										<SelectTrigger>
-											<SelectValue placeholder='Выберите локацию' />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value='all'>Все отчеты</SelectItem>
-											{[...new Set(rawData.map(item => item.reportId))].map(id => (
-												<SelectItem key={id} value={id.toString()}>
-													{getReportLocation(id)}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+								<div className='flex flex-col gap-4 sm:flex-row'>
+									<div className='w-[250px]'>
+										<Select value={selectedReportId} onValueChange={setSelectedReportId}>
+											<SelectTrigger>
+												<SelectValue placeholder='Выберите локацию' />
+											</SelectTrigger>
+											<SelectContent className='dark:bg-[#171717]'>
+												<SelectItem value='all'>Все отчеты</SelectItem>
+												{[...new Set(rawData.map(item => item.reportId))].map(id => (
+													<SelectItem key={id} value={id.toString()}>
+														{getReportLocation(id)}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+									<div className='flex items-center gap-2'>
+										<Popover>
+											<PopoverTrigger asChild>
+												<Button
+													variant='outline'
+													className='w-[280px] justify-center bg-transparent text-left font-normal'
+												>
+													<CalendarIcon className='mr-2 h-4 w-4' />
+													{selectedMonth
+														? format(selectedMonth, 'LLLL yyyy', { locale: ru })
+														: 'Выберите месяц'}
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent
+												className='w-auto p-0 dark:bg-[#171717]'
+												align='start'
+											>
+												<MonthPicker selected={selectedMonth} onSelect={setSelectedMonth} />
+											</PopoverContent>
+										</Popover>
+										<Button
+											variant='ghost'
+											size='icon'
+											onClick={() => {
+												setSelectedMonth(undefined)
+											}}
+											className='hover:bg-red-100 hover:text-red-500'
+										>
+											<X className='h-4 w-4' />
+										</Button>
+									</div>
 								</div>
 							</CardHeader>
 							<CardContent className='flex-1'>

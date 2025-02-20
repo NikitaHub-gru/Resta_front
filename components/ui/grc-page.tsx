@@ -1,13 +1,20 @@
-import { ClockAlert, RussianRuble, Waypoints } from 'lucide-react'
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
+import { CalendarIcon, ClockAlert, RussianRuble, Waypoints } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
 import { Button } from './button'
 import { SheetClose, SheetFooter } from './sheet'
-import { Card, CardContent } from '@/components/ui/card'
+import { Calendar } from '@/components/ui/calendar'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { collectAndProcessGrcData } from '@/hooks/calcul-grc'
+import { supabase } from '@/lib/supabase'
 
 interface CourierEntry {
 	kmPerDay: string
@@ -21,6 +28,7 @@ interface GlobalSettings {
 	checkWage: string
 	fuelExpense: string
 	speedBonus: string
+	date: string
 }
 
 interface ProcessedGrcData {
@@ -37,24 +45,27 @@ interface ProcessedGrcData {
 
 interface GrcPageProps {
 	data: any[]
+	report_id: string
 	onCalculate?: (processedData: ProcessedGrcData) => void
 }
 
-export default function GrcPage({ data, onCalculate }: GrcPageProps) {
+export default function GrcPage({
+	data,
+	report_id,
+	onCalculate
+}: GrcPageProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false)
-	const courierNames = Array.from(
-		new Set(data.map(item => item['ФИО Курьера']))
-	)
+	const courierNames = Array.from(new Set(data.map(item => item['ФИО Курьера'])))
 		.filter(name => name)
 		.sort()
 
 	// State for global settings
-
 	const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({
 		hourlyWage: '',
 		checkWage: '',
 		fuelExpense: '',
-		speedBonus: ''
+		speedBonus: '',
+		date: ''
 	})
 
 	// State for courier-specific data
@@ -77,10 +88,21 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
 		return initialData
 	})
 
+	// State for checking if settings are expired
+	const [isSettingsExpired, setIsSettingsExpired] = useState(false)
+
+	// Добавим новые состояния
+	const [showCalendar, setShowCalendar] = useState(false)
+	const [newDate, setNewDate] = useState<Date | undefined>(undefined)
+
+	// Добавим состояние для Dialog
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+	const router = useRouter()
+
 	// Handle global settings changes
 	const handleGlobalChange =
-		(field: keyof GlobalSettings) =>
-		(e: React.ChangeEvent<HTMLInputElement>) => {
+		(field: keyof GlobalSettings) => (e: React.ChangeEvent<HTMLInputElement>) => {
 			setGlobalSettings(prev => ({
 				...prev,
 				[field]: e.target.value
@@ -133,11 +155,7 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
 			console.log('Success:', responseData)
 
 			// Если есть данные от сервера и они в правильном формате
-			if (
-				responseData &&
-				responseData.data &&
-				Array.isArray(responseData.data)
-			) {
+			if (responseData && responseData.data && Array.isArray(responseData.data)) {
 				// Вызываем onCalculate с полученными данными
 				if (onCalculate) {
 					onCalculate({
@@ -163,178 +181,299 @@ export default function GrcPage({ data, onCalculate }: GrcPageProps) {
 		}
 	}, [globalSettings, courierData, onCalculate, data, isSubmitting])
 
+	// Модифицируем useEffect для проверки даты
+	useEffect(() => {
+		const fetchSettings = async () => {
+			try {
+				const { data: settings, error } = await supabase
+					.from('static')
+					.select('*')
+					.eq('report_id', report_id)
+					.single()
+
+				if (error) throw error
+
+				if (settings) {
+					const settingsDate = new Date(settings.mouth)
+					const currentDate = new Date()
+					setIsSettingsExpired(currentDate > settingsDate)
+
+					setGlobalSettings({
+						hourlyWage: settings.zp_hours?.toString() || '',
+						checkWage: settings.zp_orders?.toString() || '',
+						fuelExpense: settings.zp_gsm?.toString() || '',
+						speedBonus: settings.speed_bonus?.toString() || '',
+						date: settings.mouth
+							? format(new Date(settings.mouth), 'dd MMMM yyyy', { locale: ru })
+							: ''
+					})
+				}
+			} catch (error) {
+				console.error('Error fetching settings:', error)
+			}
+		}
+
+		if (report_id) {
+			fetchSettings()
+		}
+	}, [report_id])
+
+	// Добавим функцию обновления даты
+	const handleUpdateDate = async () => {
+		if (!newDate) return
+
+		try {
+			const { error } = await supabase
+				.from('static')
+				.update({ mouth: format(newDate, 'yyyy-MM-dd') })
+				.eq('report_id', report_id)
+
+			if (error) throw error
+
+			// Обновляем состояние и скрываем сообщение об истечении
+			setGlobalSettings(prev => ({
+				...prev,
+				date: format(newDate, 'dd MMMM yyyy', { locale: ru })
+			}))
+			setShowCalendar(false)
+			setIsSettingsExpired(false)
+		} catch (error) {
+			console.error('Error updating date:', error)
+		}
+	}
+
+	// Добавляем функцию проверки заполненности данных
+	const isDataEmpty = useCallback(() => {
+		return (
+			!globalSettings.hourlyWage ||
+			!globalSettings.checkWage ||
+			!globalSettings.fuelExpense ||
+			!globalSettings.speedBonus ||
+			Object.values(courierData).some(entries =>
+				entries.some(
+					entry =>
+						!entry.kmPerDay ||
+						!entry.deductions ||
+						!entry.personnelDelivery ||
+						!entry.minutsDel
+				)
+			)
+		)
+	}, [globalSettings, courierData])
+
 	return (
 		<ScrollArea className='h-[650px] overflow-y-auto'>
 			<div className='space-y-6 p-4'>
-				<h1 className='flex justify-center text-2xl font-semibold'>
-					Курьеры
-				</h1>
-				<p className='flex items-center justify-center'>
-					Для всех курьеров
-				</p>
-				<Card>
-					<CardContent className='p-4'>
-						<div className='flex items-center gap-4'>
-							<Label className='min-w-[90px]'>З/П Часовая</Label>
-							<Input
-								className='min-w-[130px] flex-1'
-								placeholder='Введите данные'
-								value={globalSettings.hourlyWage}
-								onChange={handleGlobalChange('hourlyWage')}
-							/>
-							<RussianRuble color='green' size={20} />
-						</div>
-						<div className='mt-2 flex items-center gap-4'>
-							<Label className='min-w-[90px]'>З/П по чекам</Label>
-							<Input
-								className='min-w-[130px] flex-1'
-								placeholder='Введите данные'
-								value={globalSettings.checkWage}
-								onChange={handleGlobalChange('checkWage')}
-							/>
-							<RussianRuble color='green' size={20} />
-						</div>
-						<div className='mt-2 flex items-center gap-4'>
-							<Label className='min-w-[90px]'>ГСМ</Label>
-							<Input
-								className='min-w-[130px] flex-1'
-								placeholder='Введите данные'
-								value={globalSettings.fuelExpense}
-								onChange={handleGlobalChange('fuelExpense')}
-							/>
-							<RussianRuble color='green' size={20} />
-						</div>
-						<div className='mt-2 flex items-center gap-4'>
-							<Label className='min-w-[90px]'>
-								Бонус за скорость
-							</Label>
-							<Input
-								className='min-w-[130px] flex-1'
-								placeholder='Введите данные'
-								value={globalSettings.speedBonus}
-								onChange={handleGlobalChange('speedBonus')}
-							/>
-							<RussianRuble color='green' size={20} />
-						</div>
-					</CardContent>
-				</Card>
+				<h1 className='flex justify-center text-2xl font-semibold'>Курьеры</h1>
+				<p className='flex items-center justify-center'>Для всех курьеров</p>
 
-				<p className='flex items-center justify-center'>
-					Для каждого курьера
-				</p>
+				{isSettingsExpired ? (
+					<Card>
+						<CardContent className='p-4'>
+							<CardTitle className='mb-4 text-center text-sm'>
+								Настройки устарели (действовали до {globalSettings.date})
+							</CardTitle>
+							<div className='flex justify-center gap-4'>
+								{!showCalendar ? (
+									<>
+										<Button variant='outline' onClick={() => setShowCalendar(true)}>
+											Перезаписать
+										</Button>
+										<Button onClick={() => router.push(`/report-settings/${report_id}`)}>
+											Изменить
+										</Button>
+									</>
+								) : (
+									<div className='space-y-4'>
+										<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+											<DialogTrigger asChild>
+												<Button variant='outline' className='w-full'>
+													<CalendarIcon className='mr-2 h-4 w-4' />
+													{newDate ? format(newDate, 'dd.MM.yyyy') : 'Выберите дату'}
+												</Button>
+											</DialogTrigger>
+											<DialogContent className='flex w-auto flex-col items-center justify-center p-0'>
+												<div className='w-full border-b p-4 text-center'>
+													<h2 className='font-medium'>Выберите новую дату</h2>
+												</div>
+												<div className='p-4'>
+													<Calendar
+														mode='single'
+														selected={newDate}
+														onSelect={date => {
+															setNewDate(date)
+															setIsDialogOpen(false) // Закрываем Dialog после выбора даты
+														}}
+														locale={ru}
+													/>
+												</div>
+											</DialogContent>
+										</Dialog>
+										{newDate && (
+											<div className='flex justify-center gap-2'>
+												<Button variant='outline' onClick={() => setShowCalendar(false)}>
+													Отмена
+												</Button>
+												<Button onClick={handleUpdateDate}>Обновить данные</Button>
+											</div>
+										)}
+									</div>
+								)}
+							</div>
+						</CardContent>
+					</Card>
+				) : globalSettings.hourlyWage ? (
+					<Card>
+						<CardContent className='p-4'>
+							<CardTitle className='text-center text-sm'>
+								Данные актуальные до {globalSettings.date}
+							</CardTitle>
+							<Table>
+								<TableBody>
+									<TableRow>
+										<TableCell className='font-medium'>З/П Часовая</TableCell>
+										<TableCell>{globalSettings.hourlyWage}</TableCell>
+										<TableCell className='w-[40px]'>
+											<RussianRuble color='green' size={20} />
+										</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell className='font-medium'>З/П по чекам</TableCell>
+										<TableCell>{globalSettings.checkWage}</TableCell>
+										<TableCell className='w-[40px]'>
+											<RussianRuble color='green' size={20} />
+										</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell className='font-medium'>ГСМ</TableCell>
+										<TableCell>{globalSettings.fuelExpense}</TableCell>
+										<TableCell className='w-[40px]'>
+											<RussianRuble color='green' size={20} />
+										</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell className='font-medium'>Бонус за скорость</TableCell>
+										<TableCell>{globalSettings.speedBonus}</TableCell>
+										<TableCell className='w-[40px]'>
+											<RussianRuble color='green' size={20} />
+										</TableCell>
+									</TableRow>
+								</TableBody>
+							</Table>
+						</CardContent>
+					</Card>
+				) : (
+					<Card>
+						<CardContent className='p-6'>
+							<div className='flex flex-col items-center gap-4'>
+								<CardTitle className='text-center'>
+									Необходимо заполнить данные
+								</CardTitle>
+								<Button
+									onClick={() => router.push(`/report-settings/${report_id}`)}
+									className='w-full max-w-[200px]'
+								>
+									Заполнить данные
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+				)}
+
+				<p className='flex items-center justify-center'>Для каждого курьера</p>
 				<div className='grid gap-6'>
 					{courierNames.map((courierName, index) => (
 						<Card key={index}>
 							<CardContent className='p-4'>
-								<div className='mb-4 text-lg font-medium'>
-									{courierName}
-								</div>
+								<div className='mb-4 text-lg font-medium'>{courierName}</div>
 								<div className='space-y-4'>
-									{courierData[courierName]?.map(
-										(entry, entryIndex) => (
-											<div
-												key={entryIndex}
-												className='flex flex-col gap-4'
-											>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>
-														КМ за день
-													</Label>
-													<Input
-														className='min-w-[140px] flex-1'
-														placeholder='Введите данные'
-														value={entry.kmPerDay}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'kmPerDay'
-														)}
-													/>
-													<Waypoints
-														color='green'
-														size={20}
-													/>
-												</div>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>
-														Удержания
-													</Label>
-													<Input
-														className='min-w-[140px] flex-1'
-														placeholder='Введите данные'
-														value={entry.deductions}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'deductions'
-														)}
-													/>
-													<RussianRuble
-														color='green'
-														size={20}
-													/>
-												</div>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>
-														Доставка персонала
-													</Label>
-													<Input
-														className='min-w-[140px] flex-1'
-														placeholder='Введите данные'
-														value={
-															entry.personnelDelivery
-														}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'personnelDelivery'
-														)}
-													/>
-													<RussianRuble
-														color='green'
-														size={20}
-													/>
-												</div>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>
-														Доставленно за 30 мин
-													</Label>
-													<Input
-														className='min-w-[140px] flex-1 gap-4'
-														placeholder='Введите данные'
-														value={entry.minutsDel}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'minutsDel'
-														)}
-													/>
-													<ClockAlert
-														color='green'
-														size={20}
-													/>
-												</div>
+									{courierData[courierName]?.map((entry, entryIndex) => (
+										<div key={entryIndex} className='flex flex-col gap-4'>
+											<div className='flex items-center gap-4'>
+												<Label className='min-w-[90px]'>КМ за день</Label>
+												<Input
+													className='min-w-[140px] flex-1'
+													placeholder='Введите данные'
+													value={entry.kmPerDay}
+													onChange={handleCourierChange(courierName, entryIndex, 'kmPerDay')}
+												/>
+												<Waypoints color='green' size={20} />
 											</div>
-										)
-									)}
+											<div className='flex items-center gap-4'>
+												<Label className='min-w-[90px]'>Удержания</Label>
+												<Input
+													className='min-w-[140px] flex-1'
+													placeholder='Введите данные'
+													value={entry.deductions}
+													onChange={handleCourierChange(
+														courierName,
+														entryIndex,
+														'deductions'
+													)}
+												/>
+												<RussianRuble color='green' size={20} />
+											</div>
+											<div className='flex items-center gap-4'>
+												<Label className='min-w-[90px]'>Доставка персонала</Label>
+												<Input
+													className='min-w-[140px] flex-1'
+													placeholder='Введите данные'
+													value={entry.personnelDelivery}
+													onChange={handleCourierChange(
+														courierName,
+														entryIndex,
+														'personnelDelivery'
+													)}
+												/>
+												<RussianRuble color='green' size={20} />
+											</div>
+											<div className='flex items-center gap-4'>
+												<Label className='min-w-[90px]'>Доставленно за 30 мин</Label>
+												<Input
+													className='min-w-[140px] flex-1 gap-4'
+													placeholder='Введите данные'
+													value={entry.minutsDel}
+													onChange={handleCourierChange(
+														courierName,
+														entryIndex,
+														'minutsDel'
+													)}
+												/>
+												<ClockAlert color='green' size={20} />
+											</div>
+										</div>
+									))}
 								</div>
 							</CardContent>
 						</Card>
 					))}
 				</div>
 			</div>
-			<SheetFooter className='pt-5'>
-				<Button
-					type='submit'
-					onClick={handleCalculate}
-					disabled={isSubmitting}
-					className='h-[50px] w-full'
-				>
-					{isSubmitting ? 'Отправка...' : 'Рассчитать'}
-				</Button>
-				{/* Добавляем скрытую кнопку для закрытия */}
-				<SheetClose className='sheet-close-button hidden' />
-			</SheetFooter>
+
+			{isSettingsExpired ? (
+				<SheetFooter className='flex flex-col items-center justify-center pt-5'>
+					<Button disabled={true} type='submit' className='h-[50px] w-full'>
+						<p className='text-center text-sm'>Необходимо обновить настройки</p>
+					</Button>
+					<SheetClose className='sheet-close-button hidden' />
+				</SheetFooter>
+			) : (
+				<SheetFooter className='pt-5'>
+					<Button
+						type='submit'
+						onClick={handleCalculate}
+						disabled={isSubmitting || isDataEmpty()}
+						className='h-[50px] w-full'
+					>
+						{isSubmitting
+							? 'Отправка...'
+							: isDataEmpty()
+								? 'Необходимо заполнить все данные'
+								: 'Рассчитать'}
+					</Button>
+					<SheetClose className='sheet-close-button hidden' />
+				</SheetFooter>
+			)}
 		</ScrollArea>
 	)
 }

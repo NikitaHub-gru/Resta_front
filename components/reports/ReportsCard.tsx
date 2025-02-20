@@ -13,7 +13,6 @@ import {
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-import WebDataRocksTable from '../dy_table/WebDataRocksTable'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { ReportInfoModal } from '../ui/report-info-modal'
 import { ScrollArea } from '../ui/scroll-area'
@@ -147,11 +146,7 @@ export default function Home() {
 			} else {
 				// Если не User, проверяем corporation
 				let query
-				if (
-					authdata.corporation === 'RestaLabs' ||
-					authdata.corporation === 'DimmiYammi'
-				) {
-					// Запрос для RestaLabs и DimmiYammi
+				if (authdata.corporation === 'RestaLabs') {
 					query = supabase
 						.from('Reports')
 						.select('*')

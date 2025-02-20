@@ -29,8 +29,7 @@ function Calendar({
 				month: 'gap-y-4 overflow-x-hidden w-full px-4 bg-white dark:bg-neutral-900',
 				caption:
 					'flex justify-center pt-1 relative items-center bg-white dark:bg-neutral-900',
-				caption_label:
-					'text-sm font-medium truncate bg-white dark:bg-neutral-900',
+				caption_label: 'text-sm font-medium truncate bg-white dark:bg-neutral-900',
 				button_next: cn(
 					buttonVariants({
 						variant: 'outline',
@@ -68,10 +67,7 @@ function Calendar({
 			}}
 			components={{
 				Chevron: ({ orientation }) => {
-					const Icon =
-						orientation === 'left'
-							? ChevronLeftIcon
-							: ChevronRightIcon
+					const Icon = orientation === 'left' ? ChevronLeftIcon : ChevronRightIcon
 					return <Icon className='h-4 w-4' />
 				}
 			}}

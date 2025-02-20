@@ -13,9 +13,9 @@ export default function ReportPage({
 	return (
 		<div className='h-screen w-screen bg-neutral-950'>
 			<SidebarDemo>
-				<Dashboard>
+				<div className='h-full w-full rounded-tl-2xl border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-[#171717]'>
 					<ReportTable id={params.id} corporation={params.corporation} />
-				</Dashboard>
+				</div>
 			</SidebarDemo>
 		</div>
 	)
