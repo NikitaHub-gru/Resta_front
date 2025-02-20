@@ -19,6 +19,41 @@ export async function POST(request: Request) {
 		// Получаем данные от внешнего бэкенда
 		const orderData = await request.json()
 
+		// Проверяем существование заказа
+		const { data: existingOrder } = await supabase
+			.from('Orders')
+			.select('ord_id')
+			.eq('ord_id', orderData.order_id)
+			.single()
+
+		if (!existingOrder) {
+			// Создаем новую запись, если заказ не найден
+			const { error: insertError } = await supabase.from('Orders').insert({
+				ord_id: orderData.order_id,
+				status: orderData.status,
+				whenDelivered: orderData.whenDelivered,
+				whenSended: orderData.whenSended,
+				org_id: orderData.org_id,
+				externalNumber: orderData.externalNumber,
+				completeBefore: orderData.completeBefore,
+				created_at: new Date().toISOString()
+			})
+
+			if (insertError) throw insertError
+		} else {
+			// Обновляем существующую запись
+			const { error: updateError } = await supabase
+				.from('Orders')
+				.update({
+					status: orderData.status,
+					whenDelivered: orderData.whenDelivered,
+					whenSended: orderData.whenSended
+				})
+				.eq('ord_id', orderData.order_id)
+
+			if (updateError) throw updateError
+		}
+
 		// Отправляем событие через broadcast канал
 		await supabase.channel('order-' + orderData.order_id).send({
 			type: 'broadcast',
@@ -33,7 +68,7 @@ export async function POST(request: Request) {
 		})
 
 		return NextResponse.json(
-			{ success: true, message: 'Уведомление отправлено' },
+			{ success: true, message: 'Статус заказа обновлен' },
 			{ status: 200 }
 		)
 	} catch (error) {
