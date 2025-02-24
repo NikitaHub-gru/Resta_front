@@ -2,15 +2,20 @@
 
 import { Item } from '@radix-ui/react-dropdown-menu'
 import * as Tooltip from '@radix-ui/react-tooltip'
+import { differenceInMinutes, format, parseISO } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
 	AlertCircle,
 	Archive,
 	ChefHat,
 	Clock,
+	FrownIcon,
 	LucideIcon,
+	MehIcon,
 	Package,
 	Route,
+	SmileIcon,
 	Timer,
 	TrendingUp,
 	Trophy,
@@ -22,6 +27,8 @@ import { DeliveryEmoji } from '@/components/dasboard/DeliveryEmoji'
 import { WaveProgressBar } from '@/components/dasboard/WaveProgressBar'
 import { DeliveryOrder } from '@/components/dasboard/types/delivery'
 import { useOlapData } from '@/hooks/useOlapData'
+import { supabase } from '@/lib/supabase'
+import { useOrders } from '@/src/hooks/useOrders'
 
 interface DepartmentData {
 	department: string
@@ -62,6 +69,14 @@ const MOCK_DATA: DeliveryOrder[] = Array.from({ length: 20 }, (_, i) => ({
 	transitTime: Math.random() * 25,
 	status: Math.random() > 0.3 ? 'onTime' : 'delayed'
 }))
+
+interface DeliveryStatus {
+	id: number
+	remainingTime: number
+	color: string
+	mood: 'happy' | 'neutral' | 'sad'
+	isClosed?: boolean
+}
 
 export function DeliveryDashboard({ id_p }: DashboardProps) {
 	const [orders, setOrders] = useState<DeliveryOrder[]>([])
@@ -110,6 +125,12 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 
 	const [isLoading, setIsLoading] = useState(true)
 	const [showAll, setShowAll] = useState(false)
+	const { orders_db, isLoadings, errors } = useOrders()
+
+	const [deliveryStatuses, setDeliveryStatuses] = useState<
+		Record<string, DeliveryStatus>
+	>({})
+
 	useEffect(() => {
 		setOrders(MOCK_DATA)
 		setIsLoading(false)
@@ -126,6 +147,82 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 		// Очищаем интервал при размонтировании компонента
 		return () => clearInterval(interval)
 	}, [])
+
+	useEffect(() => {
+		const savedStatuses = localStorage.getItem('deliveryStatuses')
+		if (savedStatuses) {
+			setDeliveryStatuses(JSON.parse(savedStatuses))
+		}
+	}, [])
+
+	useEffect(() => {
+		if (!orders_db) return
+
+		const interval = setInterval(async () => {
+			const newStatuses = { ...deliveryStatuses }
+
+			for (const order of orders_db) {
+				if (!order.whenCreated) {
+					console.error('Нет времени создания для заказа:', order.id)
+					continue
+				}
+
+				const startTime = parseISO(order.whenCreated)
+				const now = new Date()
+
+				const elapsedMinutes = Math.round(
+					(now.getTime() - startTime.getTime()) / (1000 * 60)
+				)
+				console.log('Order whenCreated:', startTime)
+				console.log('Current time:', now)
+				if (elapsedMinutes < 0) {
+					console.error('Invalid elapsed time for order:', order.id)
+					console.log('Order whenCreated:', startTime)
+					console.log('Current time:', now)
+					continue
+				}
+
+				// Для закрытых заказов сохраняем время в базу
+				if (order.status === 'Closed' && !order.time) {
+					try {
+						await supabase
+							.from('Orders')
+							.update({ time: elapsedMinutes.toString() })
+							.eq('id', order.id)
+					} catch (error) {
+						console.error('Error saving delivery time:', error)
+					}
+				}
+
+				newStatuses[order.id] = {
+					id: order.id,
+					remainingTime: elapsedMinutes,
+					color: getColorByTime(elapsedMinutes),
+					mood: getMoodByTime(elapsedMinutes),
+					isClosed: order.status === 'Closed'
+				}
+			}
+
+			setDeliveryStatuses(newStatuses)
+			localStorage.setItem('deliveryStatuses', JSON.stringify(newStatuses))
+		}, 1000)
+
+		return () => clearInterval(interval)
+	}, [orders_db, deliveryStatuses])
+
+	// Обновленные функции для определения цвета и настроения
+	const getColorByTime = (time: number) => {
+		if (time >= 40) return '#FF0000' // Красный
+		if (time >= 30) return '#FFA500' // Темно-оранжевый
+		if (time >= 25) return '#eab308' // Оранжевый ffff00
+		return '#4CAF50' // Зеленый
+	}
+
+	const getMoodByTime = (time: number): 'happy' | 'neutral' | 'sad' => {
+		if (time >= 40) return 'sad'
+		if (time >= 30) return 'neutral'
+		return 'happy'
+	}
 
 	const MetricCard = ({
 		icon: Icon,
@@ -149,8 +246,6 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 			{subValue && <p className='mt-1 text-xs text-gray-500'>{subValue}</p>}
 		</div>
 	)
-
-	const displayedOrders = showAll ? orders : orders.slice(0, 10)
 
 	const { data: olapData } = useOlapData('Лосось №1')
 
@@ -198,45 +293,67 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 										{showAll ? 'Show Less' : 'Show More'}
 									</button>
 								</div>
+
 								<div className='grid grid-cols-3 gap-4 pt-10'>
-									{orders.slice(0, showAll ? orders.length : 12).map((order, index) => (
-										<div key={order.id} className='flex flex-col items-center'>
-											<Tooltip.Provider>
-												<Tooltip.Root>
-													<Tooltip.Trigger asChild>
-														<div className='mb-2 transform transition-transform hover:scale-110'>
-															<DeliveryEmoji
-																size='big'
-																duration={order.totalTime}
-																index={index}
-																total={showAll ? orders.length : 11}
-															/>
-														</div>
-													</Tooltip.Trigger>
-													<Tooltip.Portal>
-														<Tooltip.Content
-															className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
-															sideOffset={5}
-														>
-															<div className='space-y-2'>
-																<p className='font-semibold'>Order #{order.id}</p>
-																<p className='text-gray-600 dark:text-white'>
-																	Delivery Time: {Math.round(order.totalTime)}m
-																</p>
+									{orders_db?.slice(0, showAll ? orders_db.length : 12).map(order => {
+										const status = deliveryStatuses[order.id]
+										return (
+											<div key={order.id} className='flex flex-col items-center'>
+												<Tooltip.Provider>
+													<Tooltip.Root>
+														<Tooltip.Trigger asChild>
+															<div className='mb-2 transform cursor-pointer transition-transform hover:scale-110'>
+																<DeliveryEmoji
+																	size='big'
+																	duration={status?.remainingTime || 0}
+																	mood={status?.mood}
+																	color={status?.color}
+																/>
 															</div>
-															<Tooltip.Arrow className='fill-white' />
-														</Tooltip.Content>
-													</Tooltip.Portal>
-												</Tooltip.Root>
-											</Tooltip.Provider>
-											<div className='text-center'>
-												<p className='font-medium'>#{order.id}</p>
-												<p className='text-sm text-gray-600 dark:text-white'>
-													{Math.round(order.totalTime)}m
-												</p>
+														</Tooltip.Trigger>
+														<Tooltip.Portal>
+															<Tooltip.Content
+																className='rounded-md bg-white p-3 text-sm shadow-lg dark:bg-neutral-900'
+																sideOffset={5}
+															>
+																<div className='space-y-2'>
+																	<p className='font-semibold'>Заказ #{order.id}</p>
+																	<p className='text-gray-600 dark:text-white'>
+																		Статус: {order.status}
+																	</p>
+																	{status?.remainingTime && (
+																		<p className='text-gray-600 dark:text-white'>
+																			Осталось: {status.remainingTime}м
+																		</p>
+																	)}
+																	{order.completeBefore && (
+																		<p className='text-gray-600 dark:text-white'>
+																			До:{' '}
+																			{format(parseISO(order.completeBefore), 'HH:mm', {
+																				locale: ru
+																			})}
+																		</p>
+																	)}
+																</div>
+																<Tooltip.Arrow className='fill-white' />
+															</Tooltip.Content>
+														</Tooltip.Portal>
+													</Tooltip.Root>
+												</Tooltip.Provider>
+												<div className='text-center'>
+													<p className='font-medium'>#{order.id}</p>
+													<p className='text-sm font-bold' style={{ color: status?.color }}>
+														{status?.isClosed ? 'Завершен' : `${status?.remainingTime || 0}м`}
+													</p>
+													<p className='text-xs text-gray-500 dark:text-gray-400'>
+														{status?.isClosed
+															? `Время доставки: ${status.remainingTime}м`
+															: `В работе: ${status?.remainingTime || 0}м`}
+													</p>
+												</div>
 											</div>
-										</div>
-									))}
+										)
+									})}
 								</div>
 							</div>
 						</div>

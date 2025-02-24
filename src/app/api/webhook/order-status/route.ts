@@ -30,6 +30,8 @@ export async function POST(request: Request) {
 			// Создаем новую запись, если заказ не найден
 			const { error: insertError } = await supabase.from('Orders').insert({
 				ord_id: orderData.order_id,
+				whenClosed: orderData?.whenClosed,
+				whenCreated: orderData.whenCreated,
 				status: orderData.status,
 				whenDelivered: orderData.whenDelivered,
 				whenSended: orderData.whenSended,
@@ -47,7 +49,9 @@ export async function POST(request: Request) {
 				.update({
 					status: orderData.status,
 					whenDelivered: orderData.whenDelivered,
-					whenSended: orderData.whenSended
+					whenSended: orderData.whenSended,
+					whenClosed: orderData?.whenClosed,
+					whenCreated: orderData.whenCreated
 				})
 				.eq('ord_id', orderData.order_id)
 
@@ -60,6 +64,8 @@ export async function POST(request: Request) {
 			event: 'status_update',
 			payload: {
 				order_id: orderData.order_id,
+				whenClosed: orderData?.whenClosed,
+				whenCreated: orderData.whenCreated,
 				status: orderData.status,
 				courier_name: orderData.courier_name,
 				comment: orderData.comment,

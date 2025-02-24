@@ -7,9 +7,9 @@ import { useOrderStatusWebhook } from '@/hooks/useOrderStatusWebhook'
 import { Order, useOrders } from '@/src/hooks/useOrders'
 
 export default function TestOrderPage() {
-	const { orders, isLoading, error } = useOrders()
+	const { orders_db, isLoadings, errors } = useOrders()
 
-	if (isLoading) {
+	if (isLoadings) {
 		return (
 			<div className='flex h-[50vh] items-center justify-center'>
 				<Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
@@ -17,11 +17,11 @@ export default function TestOrderPage() {
 		)
 	}
 
-	if (error) {
+	if (errors) {
 		return (
 			<div className='container mx-auto p-4'>
 				<p className='text-center text-red-500'>
-					Ошибка загрузки заказов: {error.message}
+					Ошибка загрузки заказов: {errors.message}
 				</p>
 			</div>
 		)
@@ -31,7 +31,7 @@ export default function TestOrderPage() {
 		<div className='container mx-auto p-4'>
 			<h1 className='mb-6 text-2xl font-bold'>Тестовые заказы</h1>
 			<div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-				{orders?.map(order => <OrderCard key={order.ord_id} order={order} />)}
+				{orders_db?.map(order => <OrderCard key={order.ord_id} order={order} />)}
 			</div>
 		</div>
 	)

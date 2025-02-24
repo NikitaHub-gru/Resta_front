@@ -13,20 +13,23 @@ export interface Order {
 	completeBefore: string
 	whenSended: string
 	whenDelivered: string
+	whenClosed?: string
+	whenCreated: string
 	externalNumber: string
+	time: string
 }
 
 export function useOrders() {
-	const [orders, setOrders] = useState<Order[]>()
-	const [isLoading, setIsLoading] = useState(true)
-	const [error, setError] = useState<Error | null>(null)
+	const [orders_db, setOrders] = useState<Order[]>()
+	const [isLoadings, setIsLoadings] = useState(true)
+	const [errors, setError] = useState<Error | null>(null)
 
 	async function fetchOrders() {
 		try {
 			const { data, error } = await supabase
 				.from('Orders')
 				.select(
-					'id, created_at, org_id, ord_id, status, completeBefore, whenSended, whenDelivered, externalNumber'
+					'id, created_at, org_id, ord_id, status, completeBefore, whenSended, whenDelivered, whenClosed, whenCreated, externalNumber, time'
 				)
 				.order('created_at', { ascending: false })
 
@@ -35,7 +38,7 @@ export function useOrders() {
 		} catch (e) {
 			setError(e as Error)
 		} finally {
-			setIsLoading(false)
+			setIsLoadings(false)
 		}
 	}
 
@@ -59,5 +62,5 @@ export function useOrders() {
 		}
 	}, [])
 
-	return { orders, isLoading, error }
+	return { orders_db, isLoadings, errors }
 }
