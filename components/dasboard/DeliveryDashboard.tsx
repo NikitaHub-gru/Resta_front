@@ -100,7 +100,7 @@ export function DeliveryDashboard({ id_p }: DashboardProps) {
 
 		try {
 			const apiResponse = await fetch(
-				'https://nikitahub-gru-resta-back-f1fb.twc1.net/restu/dashboard/' + id_p,
+				'nikitahub-gru-resta-back-c88a.twc1.net/restu/dashboard/' + id_p,
 				{
 					method: 'POST',
 					headers: {

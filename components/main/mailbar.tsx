@@ -18,7 +18,7 @@ import {
 	IconUsers
 } from '@tabler/icons-react'
 import { motion } from 'framer-motion'
-import { MoonIcon, Settings2, SunIcon } from 'lucide-react'
+import { MoonIcon, Settings2, SquareChartGantt, SunIcon } from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
@@ -166,6 +166,13 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 							icon: (
 								<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 							)
+						},
+						{
+							label: 'Мини дашбоард',
+							href: '/mini_dashboard',
+							icon: (
+								<SquareChartGantt className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+							)
 						}
 					]
 				: userData.corporation === 'Grill№1'
@@ -178,39 +185,49 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 								)
 							}
 						]
-					: userData.corporation === 'Грильница'
+					: userData.corporation === 'DimmiYammi'
 						? [
 								{
-									label: 'Отчеты',
-									href: '/reports',
+									label: 'Мини дашбоард',
+									href: '/mini_dashboard',
 									icon: (
-										<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-									)
-								},
-								{
-									label: 'История',
-									href: '/history',
-									icon: (
-										<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-									)
-								},
-								{
-									label: 'Настройка отчетов',
-									href: '/setDataReports',
-									icon: (
-										<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+										<SquareChartGantt className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 									)
 								}
 							]
-						: [
-								{
-									label: 'Отчеты',
-									href: '/reports',
-									icon: (
-										<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-									)
-								}
-							]),
+						: userData.corporation === 'Грильница'
+							? [
+									{
+										label: 'Отчеты',
+										href: '/reports',
+										icon: (
+											<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+										)
+									},
+									{
+										label: 'История',
+										href: '/history',
+										icon: (
+											<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+										)
+									},
+									{
+										label: 'Настройка отчетов',
+										href: '/setDataReports',
+										icon: (
+											<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+										)
+									}
+								]
+							: [
+									{
+										label: 'Отчеты',
+										href: '/reports',
+										icon: (
+											<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+										)
+									}
+								]),
 
 			{
 				label: 'Dashboard',

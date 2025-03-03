@@ -17,7 +17,7 @@ export const useOlapData = (corporation: string) => {
 		try {
 			const today = new Date()
 			const formattedDate = format(today, 'yyyy-MM-dd')
-			const url = `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_olap_sec?start_date=${formattedDate}&end_date=${formattedDate}&report_id=12&corporation=${encodeURIComponent(corporation)}`
+			const url = `nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedDate}&end_date=${formattedDate}&report_id=12&corporation=${encodeURIComponent(corporation)}`
 
 			const response = await fetch(url, { method: 'POST' })
 

@@ -40,7 +40,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 			try {
 				console.log('Fetching corporations...')
 				const response = await fetch(
-					'https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/get_corporations',
+					'nikitahub-gru-resta-back-c88a.twc1.net/olap/get_corporations',
 					{
 						method: 'GET',
 						headers: {
@@ -50,9 +50,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 				)
 
 				if (!response.ok) {
-					throw new Error(
-						`Failed to fetch corporations: ${response.status}`
-					)
+					throw new Error(`Failed to fetch corporations: ${response.status}`)
 				}
 
 				const { data } = await response.json()
@@ -60,11 +58,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 
 				const formattedData = Object.entries(data).reduce(
 					(acc, [id, value]) => {
-						if (
-							value &&
-							typeof value === 'object' &&
-							'name' in value
-						) {
+						if (value && typeof value === 'object' && 'name' in value) {
 							acc[id] = (value as { name: string }).name
 						} else {
 							acc[id] = String(value) || id
@@ -135,10 +129,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className='mt-4 space-y-4'>
 					<div className='space-y-2'>
-						<label
-							htmlFor='tb_name'
-							className='text-sm font-medium'
-						>
+						<label htmlFor='tb_name' className='text-sm font-medium'>
 							Название
 						</label>
 						<input
@@ -156,20 +147,14 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 					</div>
 
 					<div className='space-y-2'>
-						<label
-							htmlFor='corporation'
-							className='text-sm font-medium'
-						>
+						<label htmlFor='corporation' className='text-sm font-medium'>
 							Корпорация
 						</label>
 						<select
 							id='corporation'
 							value={formData.corporation}
 							onChange={e => {
-								console.log(
-									'Selected corporation:',
-									e.target.value
-								)
+								console.log('Selected corporation:', e.target.value)
 								setFormData({
 									...formData,
 									corporation: e.target.value
@@ -180,22 +165,11 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 						>
 							<option value=''>Выберите корпорацию</option>
 							{Object.entries(corporations).length > 0 ? (
-								Object.entries(corporations).map(
-									([id, name]) => (
-										<option
-											key={id}
-											value={
-												typeof name === 'string'
-													? name
-													: ''
-											}
-										>
-											{typeof name === 'string'
-												? name
-												: ''}
-										</option>
-									)
-								)
+								Object.entries(corporations).map(([id, name]) => (
+									<option key={id} value={typeof name === 'string' ? name : ''}>
+										{typeof name === 'string' ? name : ''}
+									</option>
+								))
 							) : (
 								<option value='' disabled>
 									Загрузка корпораций...
@@ -205,10 +179,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 					</div>
 
 					<div className='space-y-2'>
-						<label
-							htmlFor='descript'
-							className='text-sm font-medium'
-						>
+						<label htmlFor='descript' className='text-sm font-medium'>
 							Описание
 						</label>
 						<textarea
@@ -244,10 +215,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 					</div>
 
 					<div className='space-y-2'>
-						<label
-							htmlFor='report_type'
-							className='text-sm font-medium'
-						>
+						<label htmlFor='report_type' className='text-sm font-medium'>
 							Тип отчета
 						</label>
 						<select
@@ -281,20 +249,13 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 							}
 							className='h-4 w-4 rounded border-neutral-600 bg-neutral-900 text-primary'
 						/>
-						<label
-							htmlFor='is_active'
-							className='text-sm font-medium'
-						>
+						<label htmlFor='is_active' className='text-sm font-medium'>
 							Активен
 						</label>
 					</div>
 
 					<div className='flex justify-end space-x-2 pt-4'>
-						<Button
-							type='button'
-							variant='outline'
-							onClick={() => setOpen(false)}
-						>
+						<Button type='button' variant='outline' onClick={() => setOpen(false)}>
 							Отмена
 						</Button>
 						<Button type='submit'>Создать</Button>

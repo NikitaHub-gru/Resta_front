@@ -57,13 +57,9 @@ export function UserTable() {
 
 	const fetchUsers = async () => {
 		try {
-			let url =
-				'https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/users'
+			let url = 'nikitahub-gru-resta-back-c88a.twc1.net/olap/users'
 
-			if (
-				currentUserCorporation &&
-				currentUserCorporation !== 'RestaLabs'
-			) {
+			if (currentUserCorporation && currentUserCorporation !== 'RestaLabs') {
 				url += `?corporation=${currentUserCorporation}`
 			}
 
@@ -108,13 +104,11 @@ export function UserTable() {
 				currentUserCorporation !== 'RestaLabs' &&
 				user.corporation !== currentUserCorporation
 			) {
-				throw new Error(
-					'У вас нет прав для удаления этого пользователя'
-				)
+				throw new Error('У вас нет прав для удаления этого пользователя')
 			}
 
 			const response = await fetch(
-				`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/delete_users/${user.id}`,
+				`nikitahub-gru-resta-back-c88a.twc1.net/olap/delete_users/${user.id}`,
 				{
 					method: 'POST'
 				}
@@ -131,9 +125,7 @@ export function UserTable() {
 							<Alert className='border-0 bg-transparent'>
 								<div className='flex items-center'>
 									<CheckCircle2 className='ml-1 h-4 w-4 text-green-500' />
-									<AlertTitle className='ml-2 text-green-500'>
-										Успешно
-									</AlertTitle>
+									<AlertTitle className='ml-2 text-green-500'>Успешно</AlertTitle>
 								</div>
 								<AlertDescription className='ml-2 text-muted-foreground'>
 									Пользователь {user.email} был успешно удален
@@ -178,9 +170,7 @@ export function UserTable() {
 					<Alert className='border-0 bg-transparent'>
 						<div className='flex items-center'>
 							<CircleX className='ml-1 h-4 w-4 text-red-600' />
-							<AlertTitle className='ml-2 text-red-600'>
-								Ошибка
-							</AlertTitle>
+							<AlertTitle className='ml-2 text-red-600'>Ошибка</AlertTitle>
 						</div>
 						<AlertDescription className='ml-2 text-muted-foreground'>
 							{error instanceof Error
@@ -204,9 +194,7 @@ export function UserTable() {
 				currentUserCorporation !== 'RestaLabs' &&
 				editingUser.corporation !== currentUserCorporation
 			) {
-				throw new Error(
-					'У вас нет прав для редактирвания этого пользователя'
-				)
+				throw new Error('У вас нет прав для редактирвания этого пользователя')
 			}
 
 			if (currentUserCorporation !== 'RestaLabs') {
@@ -217,17 +205,15 @@ export function UserTable() {
 
 			const queryParams = new URLSearchParams()
 			if (userData.email) queryParams.set('email', userData.email)
-			if (userData.first_name)
-				queryParams.set('first_name', userData.first_name)
+			if (userData.first_name) queryParams.set('first_name', userData.first_name)
 			if (userData.name) queryParams.set('name', userData.name)
 			if (userData.corporation)
 				queryParams.set('corporation', userData.corporation)
 			if (userData.role) queryParams.set('role', userData.role)
-			if (userData.password)
-				queryParams.set('password', userData.password)
+			if (userData.password) queryParams.set('password', userData.password)
 
 			const response = await fetch(
-				`https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/edit_user/${numericId}?${queryParams}`,
+				`nikitahub-gru-resta-back-c88a.twc1.net/olap/edit_user/${numericId}?${queryParams}`,
 				{ method: 'PUT' }
 			)
 
@@ -242,9 +228,7 @@ export function UserTable() {
 					<Alert className='border-0 bg-transparent'>
 						<div className='flex items-center'>
 							<CheckCircle2 className='ml-1 h-4 w-4 text-green-500' />
-							<AlertTitle className='ml-2 text-green-500'>
-								Успешно
-							</AlertTitle>
+							<AlertTitle className='ml-2 text-green-500'>Успешно</AlertTitle>
 						</div>
 						<AlertDescription className='ml-2 text-muted-foreground'>
 							Пользователь {userData.email} успешно обновлен
@@ -263,9 +247,7 @@ export function UserTable() {
 					<Alert className='border-0 bg-transparent'>
 						<div className='flex items-center'>
 							<CircleX className='ml-1 h-4 w-4 text-red-600' />
-							<AlertTitle className='ml-2 text-red-600'>
-								Ошибка
-							</AlertTitle>
+							<AlertTitle className='ml-2 text-red-600'>Ошибка</AlertTitle>
 						</div>
 						<AlertDescription className='ml-2 text-muted-foreground'>
 							{error instanceof Error
@@ -286,7 +268,7 @@ export function UserTable() {
 			console.log('Creating user with data:', userData)
 
 			// Формируем URL в правильном формате
-			const url = `https://nikitahub-gru-resta-back-f1fb.twc1.net/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`
+			const url = `nikitahub-gru-resta-back-c88a.twc1.net/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`
 
 			console.log('Request URL:', url)
 
@@ -299,9 +281,7 @@ export function UserTable() {
 
 			if (!response.ok) {
 				const errorData = await response.json()
-				throw new Error(
-					errorData.detail || 'Не удалось создать пользователя'
-				)
+				throw new Error(errorData.detail || 'Не удалось создать пользователя')
 			}
 
 			toast({
@@ -310,9 +290,7 @@ export function UserTable() {
 					<Alert className='border-0 bg-transparent'>
 						<div className='flex items-center'>
 							<CheckCircle2 className='ml-1 h-4 w-4 text-green-500' />
-							<AlertTitle className='ml-2 text-green-500'>
-								Успешно
-							</AlertTitle>
+							<AlertTitle className='ml-2 text-green-500'>Успешно</AlertTitle>
 						</div>
 						<AlertDescription className='ml-2 text-muted-foreground'>
 							Пользователь {userData.email} успешно создан
@@ -334,9 +312,7 @@ export function UserTable() {
 					<Alert className='border-0 bg-transparent'>
 						<div className='flex items-center'>
 							<CircleX className='ml-1 h-4 w-4 text-red-600' />
-							<AlertTitle className='ml-2 text-red-600'>
-								Ошибка
-							</AlertTitle>
+							<AlertTitle className='ml-2 text-red-600'>Ошибка</AlertTitle>
 						</div>
 						<AlertDescription className='ml-2 text-muted-foreground'>
 							{error instanceof Error
@@ -382,9 +358,7 @@ export function UserTable() {
 									<TableHead>Корпорация</TableHead>
 									<TableHead>Роль</TableHead>
 									<TableHead>Дата создания</TableHead>
-									<TableHead className='w-[100px]'>
-										Действия
-									</TableHead>
+									<TableHead className='w-[100px]'>Действия</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -414,43 +388,24 @@ export function UserTable() {
 									: filteredUsers.map(user => (
 											<TableRow key={user.id}>
 												<TableCell className='font-medium'>
-													{[
-														user.first_name,
-														user.name
-													]
-														.filter(Boolean)
-														.join(' ') ||
+													{[user.first_name, user.name].filter(Boolean).join(' ') ||
 														'Не указано'}
 												</TableCell>
-												<TableCell>
-													{user.email || 'Не указано'}
-												</TableCell>
-												<TableCell>
-													{user.corporation ||
-														'Не указан'}
-												</TableCell>
+												<TableCell>{user.email || 'Не указано'}</TableCell>
+												<TableCell>{user.corporation || 'Не указан'}</TableCell>
 												<TableCell>
 													<span className='inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium'>
-														{user.role ||
-															'Пользователь'}
+														{user.role || 'Пользователь'}
 													</span>
 												</TableCell>
-												<TableCell>
-													{formatDate(
-														user.created_at
-													)}
-												</TableCell>
+												<TableCell>{formatDate(user.created_at)}</TableCell>
 												<TableCell>
 													<div className='flex items-center gap-2'>
 														<Button
 															variant='ghost'
 															size='icon'
 															className='h-8 w-8 p-0'
-															onClick={() =>
-																setEditingUser(
-																	user
-																)
-															}
+															onClick={() => setEditingUser(user)}
 														>
 															<Pencil className='h-4 w-4' />
 														</Button>
@@ -458,11 +413,7 @@ export function UserTable() {
 															variant='ghost'
 															size='icon'
 															className='h-8 w-8 p-0 text-destructive hover:text-destructive/90'
-															onClick={() =>
-																setUserToDelete(
-																	user
-																)
-															}
+															onClick={() => setUserToDelete(user)}
 														>
 															<Trash2 className='h-4 w-4' />
 														</Button>
@@ -472,10 +423,7 @@ export function UserTable() {
 										))}
 								{!loading && filteredUsers.length === 0 && (
 									<TableRow>
-										<TableCell
-											colSpan={5}
-											className='py-4 text-center'
-										>
+										<TableCell colSpan={5} className='py-4 text-center'>
 											Пользоватеи не найдены
 										</TableCell>
 									</TableRow>
@@ -496,17 +444,15 @@ export function UserTable() {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Вы уверены?</AlertDialogTitle>
 						<AlertDialogDescription>
-							Это действие нельзя отменить. Пользователь{' '}
-							{userToDelete?.email} будет удален из системы.
+							Это действие нельзя отменить. Пользователь {userToDelete?.email} будет
+							удален из системы.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Отмена</AlertDialogCancel>
 						<AlertDialogAction
 							className='bg-red-600 hover:bg-red-700'
-							onClick={() =>
-								userToDelete && handleDeleteUser(userToDelete)
-							}
+							onClick={() => userToDelete && handleDeleteUser(userToDelete)}
 						>
 							Удалить
 						</AlertDialogAction>
