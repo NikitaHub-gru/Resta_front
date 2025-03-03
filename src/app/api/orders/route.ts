@@ -42,21 +42,21 @@ const getOrdersData = () => {
 			name: 'Малахова',
 			slots: timeSlots.map(time => ({
 				time,
-				orders: time === '11-12' || time === '16-17' ? 4 : 0
+				orders: 0
 			}))
 		},
 		{
 			name: 'Соц',
 			slots: timeSlots.map(time => ({
 				time,
-				orders: time === '11-12' || time === '16-17' ? 4 : 0
+				orders: 0
 			}))
 		},
 		{
 			name: 'Поляна',
 			slots: timeSlots.map(time => ({
 				time,
-				orders: time === '11-12' || time === '16-17' ? 4 : 0
+				orders: 0
 			}))
 		}
 	]
@@ -70,7 +70,53 @@ export async function POST(request: Request) {
 		const body = await request.json()
 		console.log('Received order request:', body)
 
-		// Update our in-memory data
+		// Handle order clearing (when an order is closed)
+		if (body.action === 'clear') {
+			locationsData = locationsData.map(loc => {
+				if (loc.name === body.location) {
+					return {
+						...loc,
+						slots: loc.slots.map(slot => {
+							if (slot.time === body.timeSlot) {
+								// Decrease order count, but don't go below 0
+								return {
+									...slot,
+									orders: Math.max(0, slot.orders - 1)
+								}
+							}
+							return slot
+						})
+					}
+				}
+				return loc
+			})
+
+			console.log('Emitting orderCleared event...')
+
+			// Emit the update to all connected clients
+			if (io) {
+				io.emit('orderUpdated', {
+					location: body.location,
+					timeSlot: body.timeSlot,
+					action: 'clear',
+					updatedLocations: locationsData
+				})
+			} else {
+				console.error('Socket.IO server not initialized')
+			}
+
+			return NextResponse.json(
+				{
+					success: true,
+					message: 'Order cleared successfully',
+					data: body,
+					locations: locationsData
+				},
+				{ status: 200 }
+			)
+		}
+
+		// Regular order creation (existing code)
 		locationsData = locationsData.map(loc => {
 			if (loc.name === body.location) {
 				return {

@@ -39,28 +39,27 @@ export default function Home() {
 		'21-22',
 		'22-23'
 	]
-
 	// Initialize with default data structure
 	const [locations, setLocations] = useState<LocationSchedule[]>([
 		{
 			name: 'Малахова',
 			slots: timeSlots.map(time => ({
 				time,
-				orders: time === '11-12' || time === '16-17' ? 4 : 0
+				orders: 0
 			}))
 		},
 		{
 			name: 'Соц',
 			slots: timeSlots.map(time => ({
 				time,
-				orders: time === '11-12' || time === '16-17' ? 4 : 0
+				orders: 0
 			}))
 		},
 		{
 			name: 'Поляна',
 			slots: timeSlots.map(time => ({
 				time,
-				orders: time === '11-12' || time === '16-17' ? 4 : 0
+				orders: 0
 			}))
 		}
 	])
@@ -204,7 +203,6 @@ export default function Home() {
 	return (
 		<div className='relative min-h-screen overflow-hidden bg-gray-100 p-8 dark:bg-[#171717]'>
 			<DotPattern
-				glow={true}
 				className={cn(
 					'absolute inset-0 z-0 h-full w-full opacity-45 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]'
 				)}
