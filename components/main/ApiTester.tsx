@@ -39,7 +39,7 @@ export default function ApiTester() {
 			}
 
 			const response = await fetch(
-				'nikitahub-gru-resta-back-c88a.twc1.net/request_api',
+				'https://nikitahub-gru-resta-back-c88a.twc1.net/request_api',
 				{
 					method: 'POST',
 					headers: {

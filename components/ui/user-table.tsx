@@ -57,7 +57,7 @@ export function UserTable() {
 
 	const fetchUsers = async () => {
 		try {
-			let url = 'nikitahub-gru-resta-back-c88a.twc1.net/olap/users'
+			let url = 'https://nikitahub-gru-resta-back-c88a.twc1.net/olap/users'
 
 			if (currentUserCorporation && currentUserCorporation !== 'RestaLabs') {
 				url += `?corporation=${currentUserCorporation}`
@@ -108,7 +108,7 @@ export function UserTable() {
 			}
 
 			const response = await fetch(
-				`nikitahub-gru-resta-back-c88a.twc1.net/olap/delete_users/${user.id}`,
+				`https://nikitahub-gru-resta-back-c88a.twc1.net/olap/delete_users/${user.id}`,
 				{
 					method: 'POST'
 				}
@@ -213,7 +213,7 @@ export function UserTable() {
 			if (userData.password) queryParams.set('password', userData.password)
 
 			const response = await fetch(
-				`nikitahub-gru-resta-back-c88a.twc1.net/olap/edit_user/${numericId}?${queryParams}`,
+				`https://nikitahub-gru-resta-back-c88a.twc1.net/olap/edit_user/${numericId}?${queryParams}`,
 				{ method: 'PUT' }
 			)
 
@@ -268,7 +268,7 @@ export function UserTable() {
 			console.log('Creating user with data:', userData)
 
 			// Формируем URL в правильном формате
-			const url = `nikitahub-gru-resta-back-c88a.twc1.net/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`
+			const url = `https://nikitahub-gru-resta-back-c88a.twc1.net/olap/create_user/${userData.email}/${userData.password}/${userData.role}/${userData.name}/${userData.first_name}/${currentUserCorporation !== 'RestaLabs' ? currentUserCorporation : userData.corporation}`
 
 			console.log('Request URL:', url)
 

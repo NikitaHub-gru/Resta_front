@@ -173,13 +173,13 @@ export default function DeliveryOrders() {
 					setIsLoading(false)
 					return
 				}
-				baseUrl = `nikitahub-gru-resta-back-c88a.twc1.net/grill/app/phone?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=23&corporation=${reportCorporation}&phone=${encodeURIComponent(
+				baseUrl = `https://nikitahub-gru-resta-back-c88a.twc1.net/grill/app/phone?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=23&corporation=${reportCorporation}&phone=${encodeURIComponent(
 					searchPhone
 				)}`
 			} else if (selectedReport.id === 22 && searchOrderNumber) {
-				baseUrl = `nikitahub-gru-resta-back-c88a.twc1.net/grill/app/extrNumb?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=22&corporation=${reportCorporation}&ExternalNumber=${searchOrderNumber}`
+				baseUrl = `https://nikitahub-gru-resta-back-c88a.twc1.net/grill/app/extrNumb?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=22&corporation=${reportCorporation}&ExternalNumber=${searchOrderNumber}`
 			} else {
-				baseUrl = `nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`
+				baseUrl = `https://nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`
 			}
 
 			if (!isMoreThanOneMonth(startDate, endDate)) {

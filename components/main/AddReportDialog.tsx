@@ -40,7 +40,7 @@ export function AddReportDialog({ onSuccess }: AddReportDialogProps) {
 			try {
 				console.log('Fetching corporations...')
 				const response = await fetch(
-					'nikitahub-gru-resta-back-c88a.twc1.net/olap/get_corporations',
+					'https://nikitahub-gru-resta-back-c88a.twc1.net/olap/get_corporations',
 					{
 						method: 'GET',
 						headers: {

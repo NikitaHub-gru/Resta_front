@@ -137,7 +137,7 @@ export default function GrcPage({
 			}
 
 			const response = await fetch(
-				'nikitahub-gru-resta-back-c88a.twc1.net/olap/send_grc',
+				'https://nikitahub-gru-resta-back-c88a.twc1.net/olap/send_grc',
 				{
 					method: 'POST',
 					headers: {

@@ -251,7 +251,7 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 			if (!isMoreThanOneMonth(startDate, endDate)) {
 				const response = await fetch(
 					// `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-					`nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+					`https://nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
 					{
 						method: 'POST',
 						headers: {
@@ -282,7 +282,7 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 
 					const response = await fetch(
 						// `http://192.168.77.47:8000/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
-						`nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
+						`https://nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${periodStartDate}&end_date=${periodEndDate}&report_id=${selectedReport.id}&corporation=${reportCorporation}`,
 						{
 							method: 'POST',
 							headers: {
@@ -1020,7 +1020,7 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 															const currentTimestamp = new Date().toISOString()
 
 															const response = await fetch(
-																'nikitahub-gru-resta-back-c88a.twc1.net/olap/save_report',
+																'https://nikitahub-gru-resta-back-c88a.twc1.net/olap/save_report',
 																{
 																	method: 'POST',
 																	headers: {

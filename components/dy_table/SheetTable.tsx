@@ -183,7 +183,7 @@ const SheetTable = () => {
 			const formattedEndDate = format(endDate, 'yyyy-MM-dd')
 
 			const response = await fetch(
-				`nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}`,
+				`https://nikitahub-gru-resta-back-c88a.twc1.net/olap/get_olap_sec?start_date=${formattedStartDate}&end_date=${formattedEndDate}`,
 				{
 					method: 'POST',
 					headers: {
