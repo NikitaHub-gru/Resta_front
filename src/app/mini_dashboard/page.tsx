@@ -1,14 +1,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { HomeIcon, Router } from 'lucide-react'
+import { HomeIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import io from 'socket.io-client'
 
-import { BorderBeam } from '@/components/ui/border-beam'
-import { Button } from '@/components/ui/button'
 import DotPattern from '@/components/ui/dot-pattern'
+import { supabase } from '@/lib/supabaseClient'
 import { cn } from '@/lib/utils'
 
 interface ScheduleSlot {
@@ -21,8 +19,12 @@ interface LocationSchedule {
 	slots: ScheduleSlot[]
 }
 
-// Create a singleton socket instance outside the component
-let socket: any
+// Organization ID to location name mapping
+const org_locations = {
+	'0372747c-0a0e-4c21-8f08-a150e94ad809': 'Поляна',
+	'34758b3b-1961-4306-96be-66bc316cd782': 'Малахова',
+	'd9892380-abaa-4eee-9fd9-013841cb7662': 'Соц'
+}
 
 export default function Home() {
 	const timeSlots = [
@@ -69,96 +71,48 @@ export default function Home() {
 	const theme = useTheme()
 	const shadowColor = theme.resolvedTheme === 'dark' ? 'white' : 'black'
 
-	// Manual update function that can be called directly
-	const updateOrderCount = (location: string, timeSlot: string) => {
-		setLocations(prevLocations =>
-			prevLocations.map(loc => {
-				if (loc.name === location) {
-					return {
-						...loc,
-						slots: loc.slots.map(slot => {
-							if (slot.time === timeSlot) {
-								return { ...slot, orders: slot.orders + 1 }
-							}
-							return slot
-						})
-					}
-				}
-				return loc
-			})
-		)
-	}
-
 	useEffect(() => {
-		// Try to load from localStorage first
-		const savedData = localStorage.getItem('schedulingData')
-		if (savedData) {
-			try {
-				setLocations(JSON.parse(savedData))
-			} catch (e) {
-				console.error('Failed to parse localStorage data')
-				fetchOrders() // Fallback to API
-			}
-		} else {
-			fetchOrders()
-		}
-
-		// Setup WebSocket connection only once
-		if (!socket) {
-			try {
-				socket = io('http://localhost:3001', {
-					reconnectionAttempts: 5,
-					reconnectionDelay: 1000,
-					transports: ['websocket']
-				})
-
-				console.log('Attempting to connect to WebSocket...')
-			} catch (error) {
-				console.error('Failed to initialize WebSocket:', error)
-			}
-		}
-
-		// Set up event listeners
-		const handleOrderUpdate = (data: any) => {
-			console.log('Order update received:', data)
-
-			if (data.location && data.timeSlot) {
-				updateOrderCount(data.location, data.timeSlot)
-			}
-
-			if (data.updatedLocations) {
-				setLocations(data.updatedLocations)
-				localStorage.setItem(
-					'schedulingData',
-					JSON.stringify(data.updatedLocations)
-				)
-			}
-		}
-
-		socket?.on('orderUpdated', handleOrderUpdate)
-
-		socket?.on('connect', () => {
-			console.log('WebSocket connected successfully')
-		})
-
-		socket?.on('connect_error', (err: any) => {
-			console.error('WebSocket connection error:', err)
-		})
-
-		return () => {
-			socket?.off('orderUpdated', handleOrderUpdate)
-		}
+		// Initial fetch of orders data
+		fetchOrders()
 	}, [])
-
+	useEffect(() => {
+		// Initial fetch of orders data
+		fetchOrders()
+	  // Set up real-time subscription
+	  const subscription = supabase
+	    .channel('dymmi-yamii-channel')
+	    .on(
+	      'postgres_changes',
+	      {
+	        event: '*',
+	        schema: 'public',
+	        table: 'DymmiYamii'  // Changed from 'orders' to 'DymmiYamii'
+	      },
+	      payload => {
+	        console.log('Real-time update received:', payload)
+	        fetchOrders() // Refresh data when changes occur
+	      }
+	    )
+	    .subscribe()
+	  // Cleanup subscription on component unmount
+	  return () => {
+	    subscription.unsubscribe()
+	  }
+	}, [])
 	const fetchOrders = async () => {
 		try {
 			const response = await fetch('/api/orders')
 			if (response.ok) {
 				const data = await response.json()
+				console.log('Fetched orders data:', data)
 				if (data.locations && data.locations.length > 0) {
+					console.log('Setting locations with:', data.locations)
 					setLocations(data.locations)
-					localStorage.setItem('schedulingData', JSON.stringify(data.locations))
+				} else {
+					console.log('No locations data available or empty array')
 				}
+			} else {
+				console.log('API response not OK:', response.status)
 			}
 		} catch (error) {
 			console.error('Failed to fetch orders:', error)
@@ -169,8 +123,14 @@ export default function Home() {
 		if (!selectedLocation || !selectedTimeSlot) return
 
 		try {
-			// Optimistically update UI immediately
-			updateOrderCount(selectedLocation, selectedTimeSlot)
+			// Find org_id for the selected location
+			const orgId = Object.keys(org_locations).find(
+				key => org_locations[key as keyof typeof org_locations] === selectedLocation
+			)
+
+			if (!orgId) {
+				throw new Error('Invalid location selected')
+			}
 
 			const response = await fetch('/api/orders', {
 				method: 'POST',
@@ -187,11 +147,6 @@ export default function Home() {
 				const data = await response.json()
 				console.log('Order created successfully:', data)
 
-				if (data.locations) {
-					setLocations(data.locations)
-					localStorage.setItem('schedulingData', JSON.stringify(data.locations))
-				}
-
 				setIsModalOpen(false)
 				setSelectedLocation('')
 				setSelectedTimeSlot('')
@@ -200,6 +155,7 @@ export default function Home() {
 			console.error('Failed to add order:', error)
 		}
 	}
+
 	return (
 		<div className='relative min-h-screen overflow-hidden bg-gray-100 p-8 dark:bg-[#171717]'>
 			<DotPattern
@@ -213,7 +169,7 @@ export default function Home() {
 				animate={{ opacity: 1, y: 0 }}
 				className='relative z-10 mb-8 text-center text-4xl font-bold text-[#171717] dark:text-white'
 			></motion.h1>
-			<div className='relative z-10 mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-3'>
+			<div className='relative z-10 mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3'>
 				{locations.map((location, locationIndex) => (
 					<motion.div
 						key={location.name}
@@ -226,7 +182,7 @@ export default function Home() {
 							{location.name}
 						</div>
 						<div className='p-4'>
-							<div className='mb-2 grid grid-cols-2 gap-4 font-semibold text-[#171717] dark:text-white'>
+							<div className='mx-auto mb-2 grid grid-cols-2 gap-4 pl-10 font-semibold text-[#171717] dark:text-white'>
 								<div>Время</div>
 								<div>Заказов</div>
 							</div>
@@ -236,13 +192,15 @@ export default function Home() {
 									initial={{ opacity: 0 }}
 									animate={{ opacity: 1 }}
 									transition={{ delay: index * 0.05 }}
-									className={`grid grid-cols-2 gap-4 p-2 ${
-										slot.orders > 0 ? 'bg-gray-100 dark:bg-[#2a2a2a]' : ''
-									} ${index % 2 === 0 ? 'bg-opacity-50' : ''}`}
+									className='p-2'
 								>
-									<div className='text-[#171717] dark:text-white'>{slot.time}</div>
-									<div className='text-[#171717] dark:text-white'>
-										{slot.orders || ''}
+									<div className='mx-auto grid grid-cols-2 gap-4 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 dark:border-gray-400 dark:bg-[#262626]'>
+										<div className='text-center text-[#171717] dark:text-white'>
+											{slot.time}
+										</div>
+										<div className='text-center font-medium text-[#171717] dark:text-white'>
+											{slot.orders || ''}
+										</div>
 									</div>
 								</motion.div>
 							))}
