@@ -262,218 +262,224 @@ export default function GrcPage({
 	}, [globalSettings, courierData])
 
 	return (
-		<ScrollArea className='h-[650px] overflow-y-auto'>
-			<div className='space-y-6 p-4'>
-				<h1 className='flex justify-center text-2xl font-semibold'>Курьеры</h1>
-				<p className='flex items-center justify-center'>Для всех курьеров</p>
+		<div className='relative flex h-[900px] max-h-[720px] min-h-[600px]'>
+			<ScrollArea className='w-full'>
+				<div className='space-y-6 p-4 pb-24'>
+					<h1 className='flex justify-center text-2xl font-semibold'>Курьеры</h1>
+					<p className='flex items-center justify-center'>Для всех курьеров</p>
 
-				{isSettingsExpired ? (
-					<Card>
-						<CardContent className='p-4'>
-							<CardTitle className='mb-4 text-center text-sm'>
-								Настройки устарели (действовали до {globalSettings.date})
-							</CardTitle>
-							<div className='flex justify-center gap-4'>
-								{!showCalendar ? (
-									<>
-										<Button variant='outline' onClick={() => setShowCalendar(true)}>
-											Перезаписать
-										</Button>
-										<Button onClick={() => router.push(`/report-settings/${report_id}`)}>
-											Изменить
-										</Button>
-									</>
-								) : (
-									<div className='space-y-4'>
-										<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-											<DialogTrigger asChild>
-												<Button variant='outline' className='w-full'>
-													<CalendarIcon className='mr-2 h-4 w-4' />
-													{newDate ? format(newDate, 'dd.MM.yyyy') : 'Выберите дату'}
-												</Button>
-											</DialogTrigger>
-											<DialogContent className='flex w-auto flex-col items-center justify-center p-0'>
-												<div className='w-full border-b p-4 text-center'>
-													<h2 className='font-medium'>Выберите новую дату</h2>
-												</div>
-												<div className='p-4'>
-													<Calendar
-														mode='single'
-														selected={newDate}
-														onSelect={date => {
-															setNewDate(date)
-															setIsDialogOpen(false) // Закрываем Dialog после выбора даты
-														}}
-														locale={ru}
-													/>
-												</div>
-											</DialogContent>
-										</Dialog>
-										{newDate && (
-											<div className='flex justify-center gap-2'>
-												<Button variant='outline' onClick={() => setShowCalendar(false)}>
-													Отмена
-												</Button>
-												<Button onClick={handleUpdateDate}>Обновить данные</Button>
-											</div>
-										)}
-									</div>
-								)}
-							</div>
-						</CardContent>
-					</Card>
-				) : globalSettings.hourlyWage ? (
-					<Card>
-						<CardContent className='p-4'>
-							<CardTitle className='text-center text-sm'>
-								Данные актуальные до {globalSettings.date}
-							</CardTitle>
-							<Table>
-								<TableBody>
-									<TableRow>
-										<TableCell className='font-medium'>З/П Часовая</TableCell>
-										<TableCell>{globalSettings.hourlyWage}</TableCell>
-										<TableCell className='w-[40px]'>
-											<RussianRuble color='green' size={20} />
-										</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell className='font-medium'>З/П по чекам</TableCell>
-										<TableCell>{globalSettings.checkWage}</TableCell>
-										<TableCell className='w-[40px]'>
-											<RussianRuble color='green' size={20} />
-										</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell className='font-medium'>ГСМ</TableCell>
-										<TableCell>{globalSettings.fuelExpense}</TableCell>
-										<TableCell className='w-[40px]'>
-											<RussianRuble color='green' size={20} />
-										</TableCell>
-									</TableRow>
-									<TableRow>
-										<TableCell className='font-medium'>Бонус за скорость</TableCell>
-										<TableCell>{globalSettings.speedBonus}</TableCell>
-										<TableCell className='w-[40px]'>
-											<RussianRuble color='green' size={20} />
-										</TableCell>
-									</TableRow>
-								</TableBody>
-							</Table>
-						</CardContent>
-					</Card>
-				) : (
-					<Card>
-						<CardContent className='p-6'>
-							<div className='flex flex-col items-center gap-4'>
-								<CardTitle className='text-center'>
-									Необходимо заполнить данные
-								</CardTitle>
-								<Button
-									onClick={() => router.push(`/report-settings/${report_id}`)}
-									className='w-full max-w-[200px]'
-								>
-									Заполнить данные
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
-				)}
-
-				<p className='flex items-center justify-center'>Для каждого курьера</p>
-				<div className='grid gap-6'>
-					{courierNames.map((courierName, index) => (
-						<Card key={index}>
+					{isSettingsExpired ? (
+						<Card>
 							<CardContent className='p-4'>
-								<div className='mb-4 text-lg font-medium'>{courierName}</div>
-								<div className='space-y-4'>
-									{courierData[courierName]?.map((entry, entryIndex) => (
-										<div key={entryIndex} className='flex flex-col gap-4'>
-											<div className='flex items-center gap-4'>
-												<Label className='min-w-[90px]'>КМ за день</Label>
-												<Input
-													className='min-w-[140px] flex-1'
-													placeholder='Введите данные'
-													value={entry.kmPerDay}
-													onChange={handleCourierChange(courierName, entryIndex, 'kmPerDay')}
-												/>
-												<Waypoints color='green' size={20} />
-											</div>
-											<div className='flex items-center gap-4'>
-												<Label className='min-w-[90px]'>Удержания</Label>
-												<Input
-													className='min-w-[140px] flex-1'
-													placeholder='Введите данные'
-													value={entry.deductions}
-													onChange={handleCourierChange(
-														courierName,
-														entryIndex,
-														'deductions'
-													)}
-												/>
-												<RussianRuble color='green' size={20} />
-											</div>
-											<div className='flex items-center gap-4'>
-												<Label className='min-w-[90px]'>Доставка персонала</Label>
-												<Input
-													className='min-w-[140px] flex-1'
-													placeholder='Введите данные'
-													value={entry.personnelDelivery}
-													onChange={handleCourierChange(
-														courierName,
-														entryIndex,
-														'personnelDelivery'
-													)}
-												/>
-												<RussianRuble color='green' size={20} />
-											</div>
-											<div className='flex items-center gap-4'>
-												<Label className='min-w-[90px]'>Доставленно за 30 мин</Label>
-												<Input
-													className='min-w-[140px] flex-1 gap-4'
-													placeholder='Введите данные'
-													value={entry.minutsDel}
-													onChange={handleCourierChange(
-														courierName,
-														entryIndex,
-														'minutsDel'
-													)}
-												/>
-												<ClockAlert color='green' size={20} />
-											</div>
+								<CardTitle className='mb-4 text-center text-sm'>
+									Настройки устарели (действовали до {globalSettings.date})
+								</CardTitle>
+								<div className='flex justify-center gap-4'>
+									{!showCalendar ? (
+										<>
+											<Button variant='outline' onClick={() => setShowCalendar(true)}>
+												Перезаписать
+											</Button>
+											<Button onClick={() => router.push(`/report-settings/${report_id}`)}>
+												Изменить
+											</Button>
+										</>
+									) : (
+										<div className='space-y-4'>
+											<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+												<DialogTrigger asChild>
+													<Button variant='outline' className='w-full'>
+														<CalendarIcon className='mr-2 h-4 w-4' />
+														{newDate ? format(newDate, 'dd.MM.yyyy') : 'Выберите дату'}
+													</Button>
+												</DialogTrigger>
+												<DialogContent className='flex w-auto flex-col items-center justify-center p-0'>
+													<div className='w-full border-b p-4 text-center'>
+														<h2 className='font-medium'>Выберите новую дату</h2>
+													</div>
+													<div className='p-4'>
+														<Calendar
+															mode='single'
+															selected={newDate}
+															onSelect={date => {
+																setNewDate(date)
+																setIsDialogOpen(false) // Закрываем Dialog после выбора даты
+															}}
+															locale={ru}
+														/>
+													</div>
+												</DialogContent>
+											</Dialog>
+											{newDate && (
+												<div className='flex justify-center gap-2'>
+													<Button variant='outline' onClick={() => setShowCalendar(false)}>
+														Отмена
+													</Button>
+													<Button onClick={handleUpdateDate}>Обновить данные</Button>
+												</div>
+											)}
 										</div>
-									))}
+									)}
 								</div>
 							</CardContent>
 						</Card>
-					))}
-				</div>
-			</div>
+					) : globalSettings.hourlyWage ? (
+						<Card>
+							<CardContent className='p-4'>
+								<CardTitle className='text-center text-sm'>
+									Данные актуальные до {globalSettings.date}
+								</CardTitle>
+								<Table>
+									<TableBody>
+										<TableRow>
+											<TableCell className='font-medium'>З/П Часовая</TableCell>
+											<TableCell>{globalSettings.hourlyWage}</TableCell>
+											<TableCell className='w-[40px]'>
+												<RussianRuble color='green' size={20} />
+											</TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell className='font-medium'>З/П по чекам</TableCell>
+											<TableCell>{globalSettings.checkWage}</TableCell>
+											<TableCell className='w-[40px]'>
+												<RussianRuble color='green' size={20} />
+											</TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell className='font-medium'>ГСМ</TableCell>
+											<TableCell>{globalSettings.fuelExpense}</TableCell>
+											<TableCell className='w-[40px]'>
+												<RussianRuble color='green' size={20} />
+											</TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell className='font-medium'>Бонус за скорость</TableCell>
+											<TableCell>{globalSettings.speedBonus}</TableCell>
+											<TableCell className='w-[40px]'>
+												<RussianRuble color='green' size={20} />
+											</TableCell>
+										</TableRow>
+									</TableBody>
+								</Table>
+							</CardContent>
+						</Card>
+					) : (
+						<Card>
+							<CardContent className='p-6'>
+								<div className='flex flex-col items-center gap-4'>
+									<CardTitle className='text-center'>
+										Необходимо заполнить данные
+									</CardTitle>
+									<Button
+										onClick={() => router.push(`/report-settings/${report_id}`)}
+										className='w-full max-w-[200px]'
+									>
+										Заполнить данные
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+					)}
 
-			{isSettingsExpired ? (
-				<SheetFooter className='flex flex-col items-center justify-center pt-5'>
-					<Button disabled={true} type='submit' className='h-[50px] w-full'>
-						<p className='text-center text-sm'>Необходимо обновить настройки</p>
-					</Button>
-					<SheetClose className='sheet-close-button hidden' />
-				</SheetFooter>
-			) : (
-				<SheetFooter className='pt-5'>
-					<Button
-						type='submit'
-						onClick={handleCalculate}
-						disabled={isSubmitting || isDataEmpty()}
-						className='h-[50px] w-full'
-					>
-						{isSubmitting
-							? 'Отправка...'
-							: isDataEmpty()
-								? 'Необходимо заполнить все данные'
-								: 'Рассчитать'}
-					</Button>
-					<SheetClose className='sheet-close-button hidden' />
-				</SheetFooter>
-			)}
-		</ScrollArea>
+					<p className='flex items-center justify-center'>Для каждого курьера</p>
+					<div className='grid gap-6'>
+						{courierNames.map((courierName, index) => (
+							<Card key={index}>
+								<CardContent className='p-4'>
+									<div className='mb-4 text-lg font-medium'>{courierName}</div>
+									<div className='space-y-4'>
+										{courierData[courierName]?.map((entry, entryIndex) => (
+											<div key={entryIndex} className='flex flex-col gap-4'>
+												<div className='flex items-center gap-4'>
+													<Label className='min-w-[90px]'>КМ за день</Label>
+													<Input
+														className='min-w-[140px] flex-1'
+														placeholder='Введите данные'
+														value={entry.kmPerDay}
+														onChange={handleCourierChange(
+															courierName,
+															entryIndex,
+															'kmPerDay'
+														)}
+													/>
+													<Waypoints color='green' size={20} />
+												</div>
+												<div className='flex items-center gap-4'>
+													<Label className='min-w-[90px]'>Удержания</Label>
+													<Input
+														className='min-w-[140px] flex-1'
+														placeholder='Введите данные'
+														value={entry.deductions}
+														onChange={handleCourierChange(
+															courierName,
+															entryIndex,
+															'deductions'
+														)}
+													/>
+													<RussianRuble color='green' size={20} />
+												</div>
+												<div className='flex items-center gap-4'>
+													<Label className='min-w-[90px]'>Доставка персонала</Label>
+													<Input
+														className='min-w-[140px] flex-1'
+														placeholder='Введите данные'
+														value={entry.personnelDelivery}
+														onChange={handleCourierChange(
+															courierName,
+															entryIndex,
+															'personnelDelivery'
+														)}
+													/>
+													<RussianRuble color='green' size={20} />
+												</div>
+												<div className='flex items-center gap-4'>
+													<Label className='min-w-[90px]'>Доставленно за 30 мин</Label>
+													<Input
+														className='min-w-[140px] flex-1 gap-4'
+														placeholder='Введите данные'
+														value={entry.minutsDel}
+														onChange={handleCourierChange(
+															courierName,
+															entryIndex,
+															'minutsDel'
+														)}
+													/>
+													<ClockAlert color='green' size={20} />
+												</div>
+											</div>
+										))}
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
+				</div>
+
+				{isSettingsExpired ? (
+					<SheetFooter className='flex flex-col items-center justify-center pt-5'>
+						<Button disabled={true} type='submit' className='h-[50px] w-full'>
+							<p className='text-center text-sm'>Необходимо обновить настройки</p>
+						</Button>
+						<SheetClose className='sheet-close-button hidden' />
+					</SheetFooter>
+				) : (
+					<SheetFooter className='pt-5'>
+						<Button
+							type='submit'
+							onClick={handleCalculate}
+							disabled={isSubmitting || isDataEmpty()}
+							className='h-[50px] w-full'
+						>
+							{isSubmitting
+								? 'Отправка...'
+								: isDataEmpty()
+									? 'Необходимо заполнить все данные'
+									: 'Рассчитать'}
+						</Button>
+						<SheetClose className='sheet-close-button hidden' />
+					</SheetFooter>
+				)}
+			</ScrollArea>
+		</div>
 	)
 }

@@ -931,6 +931,7 @@ export default function DeliveryOrders({ id }: ReportTableInfoProps) {
 																	console.error('Error during calculation:', error)
 																}
 															}}
+															report_id={''}
 														/>
 													</div>
 												</SheetContent>
