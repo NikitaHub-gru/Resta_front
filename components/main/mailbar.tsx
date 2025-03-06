@@ -185,7 +185,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 								)
 							}
 						]
-					: userData.corporation === 'DimmiYammi'
+					: userData.corporation === 'DimmiYammi' && userData.role !== 'OperatorCC'
 						? [
 								{
 									label: 'Отчеты',
