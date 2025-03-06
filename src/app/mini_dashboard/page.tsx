@@ -78,27 +78,47 @@ export default function Home() {
 	useEffect(() => {
 		// Initial fetch of orders data
 		fetchOrders()
-	  // Set up real-time subscription
-	  const subscription = supabase
-	    .channel('dymmi-yamii-channel')
-	    .on(
-	      'postgres_changes',
-	      {
-	        event: '*',
-	        schema: 'public',
-	        table: 'DymmiYamii'  // Changed from 'orders' to 'DymmiYamii'
-	      },
-	      payload => {
-	        console.log('Real-time update received:', payload)
-	        fetchOrders() // Refresh data when changes occur
-	      }
-	    )
-	    .subscribe()
-	  // Cleanup subscription on component unmount
-	  return () => {
-	    subscription.unsubscribe()
-	  }
+		// Set up real-time subscription
+		const subscription = supabase
+			.channel('dymmi-yamii-channel')
+			.on(
+				'postgres_changes',
+				{
+					event: '*',
+					schema: 'public',
+					table: 'DymmiYamii' // Changed from 'orders' to 'DymmiYamii'
+				},
+				payload => {
+					console.log('Real-time update received:', payload)
+					fetchOrders() // Refresh data when changes occur
+				}
+			)
+			.subscribe()
+		const refreshInterval = setInterval(() => {
+			console.log('Performing scheduled data refresh')
+			fetchOrders()
+			updateDashboard()
+		}, 600000)
+		return () => {
+			subscription.unsubscribe()
+			clearInterval(refreshInterval)
+		}
 	}, [])
+
+	const updateDashboard = async () => {
+		try {
+			const response = await fetch(
+				'https://nikitahub-gru-resta-back-c88a.twc1.net/restu/dashboard/update'
+			)
+			if (response.ok) {
+				console.log('Dashboard update API called successfully')
+			} else {
+				console.error('Dashboard update API returned error:', response.status)
+			}
+		} catch (error) {
+			console.error('Failed to call dashboard update API:', error)
+		}
+	}
 	const fetchOrders = async () => {
 		try {
 			const response = await fetch('/api/orders')

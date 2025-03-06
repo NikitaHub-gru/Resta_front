@@ -99,8 +99,16 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     console.log('GET request received for orders')
-    const { data, error } = await supabase.from('DymmiYamii').select('*')
-
+    
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0]
+    console.log('Filtering orders for date:', today)
+    
+    const { data, error } = await supabase
+      .from('DymmiYamii')
+      .select('*')
+      .eq('date_to', today) // Filter by today's date
+    
     if (error) {
       console.error('Supabase query error:', error)
       throw error
