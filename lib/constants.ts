@@ -3,7 +3,8 @@ export const USER_ROLES = [
 	'Manager',
 	'User',
 	'Engineer',
-	'Accountant'
+	'Accountant',
+	'OperatorCC'
 ] as const
 
 export const CORPORATIONS = [
