@@ -185,8 +185,15 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 								)
 							}
 						]
-					: userData.corporation === 'DimmiYammi' && userData.role === 'OperatorCC'
+					: userData.corporation === 'DimmiYammi'
 						? [
+								{
+									label: 'Отчеты',
+									href: '/reports',
+									icon: (
+										<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+									)
+								},
 								{
 									label: 'Мини дашбоард',
 									href: '/mini_dashboard',
@@ -195,39 +202,49 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 									)
 								}
 							]
-						: userData.corporation === 'Грильница'
+						: userData.role === 'OperatorCC'
 							? [
 									{
-										label: 'Отчеты',
-										href: '/reports',
+										label: 'Мини дашбоард',
+										href: '/mini_dashboard',
 										icon: (
-											<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-										)
-									},
-									{
-										label: 'История',
-										href: '/history',
-										icon: (
-											<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-										)
-									},
-									{
-										label: 'Настройка отчетов',
-										href: '/setDataReports',
-										icon: (
-											<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+											<SquareChartGantt className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
 										)
 									}
 								]
-							: [
-									{
-										label: 'Отчеты',
-										href: '/reports',
-										icon: (
-											<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
-										)
-									}
-								]),
+							: userData.corporation === 'Грильница'
+								? [
+										{
+											label: 'Отчеты',
+											href: '/reports',
+											icon: (
+												<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+											)
+										},
+										{
+											label: 'История',
+											href: '/history',
+											icon: (
+												<IconCalendarStar className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+											)
+										},
+										{
+											label: 'Настройка отчетов',
+											href: '/setDataReports',
+											icon: (
+												<Settings2 className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+											)
+										}
+									]
+								: [
+										{
+											label: 'Отчеты',
+											href: '/reports',
+											icon: (
+												<IconLayoutDashboardFilled className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+											)
+										}
+									]),
 
 			{
 				label: 'Dashboard',
