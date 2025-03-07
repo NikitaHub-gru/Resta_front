@@ -97,6 +97,7 @@ export default function Home() {
 		const refreshInterval = setInterval(() => {
 			console.log('Performing scheduled data refresh')
 			fetchOrders()
+			updateDashboardStatus()
 			updateDashboard()
 		}, 600000)
 		return () => {
@@ -109,6 +110,21 @@ export default function Home() {
 		try {
 			const response = await fetch(
 				'https://nikitahub-gru-resta-back-c88a.twc1.net/restu/dashboard/update'
+			)
+			if (response.ok) {
+				console.log('Dashboard update API called successfully')
+			} else {
+				console.error('Dashboard update API returned error:', response.status)
+			}
+		} catch (error) {
+			console.error('Failed to call dashboard update API:', error)
+		}
+	}
+
+	const updateDashboardStatus = async () => {
+		try {
+			const response = await fetch(
+				'https://nikitahub-gru-resta-back-c88a.twc1.net/restu/dashboard/get_status'
 			)
 			if (response.ok) {
 				console.log('Dashboard update API called successfully')
@@ -224,6 +240,14 @@ export default function Home() {
 									</div>
 								</motion.div>
 							))}
+							<div className='mt-4 flex justify-between rounded-lg border border-gray-300 bg-gray-100 p-3 dark:border-gray-500 dark:bg-[#2d2d2d]'>
+								<div className='font-semibold text-[#171717] dark:text-white'>
+									Всего заказов:
+								</div>
+								<div className='font-bold text-[#171717] dark:text-white'>
+									{location.slots.reduce((total, slot) => total + (slot.orders || 0), 0)}
+								</div>
+							</div>
 						</div>
 					</motion.div>
 				))}
