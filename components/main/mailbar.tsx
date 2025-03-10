@@ -18,7 +18,14 @@ import {
 	IconUsers
 } from '@tabler/icons-react'
 import { motion } from 'framer-motion'
-import { MoonIcon, Settings2, SquareChartGantt, SunIcon } from 'lucide-react'
+import {
+	MoonIcon,
+	Receipt,
+	Settings2,
+	SquareChartGantt,
+	SunIcon,
+	Workflow
+} from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Link from 'next/link'
@@ -298,6 +305,20 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 			)
 		}
 	]
+	const Integrationslinks = [
+		{
+			label: 'Интеграции',
+			href: '#',
+			className: 'py-4 gap-2 '
+		},
+		{
+			label: 'Ценники',
+			href: '/azc_price_tag',
+			icon: (
+				<Receipt className='h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200' />
+			)
+		}
+	]
 
 	return (
 		<div
@@ -365,6 +386,24 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 									<CollapsibleContent>
 										<div className='ml-2 flex flex-col gap-1'>
 											{Engineerlinks.slice(1).map((link, idx) => (
+												<SidebarLink key={idx} link={link} />
+											))}
+										</div>
+									</CollapsibleContent>
+								</Collapsible>
+							)}
+							{(userData.role === 'Engineer' || userData.role === 'Admin') && (
+								<Collapsible>
+									<CollapsibleTrigger className='flex w-full items-center justify-between rounded-lg px-3 py-2 text-neutral-700 transition-all duration-150 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-700'>
+										<div className='flex items-center gap-2'>
+											<Workflow className='h-5 w-5' />
+											{open && <span className='text-sm font-medium'>Интеграции</span>}
+										</div>
+										{open && <ChevronDown className='h-4 w-4' />}
+									</CollapsibleTrigger>
+									<CollapsibleContent>
+										<div className='ml-2 flex flex-col gap-1'>
+											{Integrationslinks.slice(1).map((link, idx) => (
 												<SidebarLink key={idx} link={link} />
 											))}
 										</div>
