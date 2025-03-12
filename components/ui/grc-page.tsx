@@ -3,6 +3,7 @@ import { ru } from 'date-fns/locale'
 import { CalendarIcon, ClockAlert, RussianRuble, Waypoints } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+import React from 'react'
 
 import { Button } from './button'
 import { SheetClose, SheetFooter } from './sheet'
@@ -12,7 +13,14 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow
+} from '@/components/ui/table'
 import { collectAndProcessGrcData } from '@/hooks/calcul-grc'
 import { supabase } from '@/lib/supabase'
 
@@ -268,10 +276,11 @@ export default function GrcPage({
 					<h1 className='flex justify-center text-2xl font-semibold'>Курьеры</h1>
 					<p className='flex items-center justify-center'>Для всех курьеров</p>
 
+					{/* Settings Card - Made more compact */}
 					{isSettingsExpired ? (
-						<Card>
-							<CardContent className='p-4'>
-								<CardTitle className='mb-4 text-center text-sm'>
+						<Card className='mx-auto max-w-[600px]'>
+							<CardContent className='p-3'>
+								<CardTitle className='mb-2 text-center text-sm'>
 									Настройки устарели (действовали до {globalSettings.date})
 								</CardTitle>
 								<div className='flex justify-center gap-4'>
@@ -324,9 +333,9 @@ export default function GrcPage({
 							</CardContent>
 						</Card>
 					) : globalSettings.hourlyWage ? (
-						<Card>
-							<CardContent className='p-4'>
-								<CardTitle className='text-center text-sm'>
+						<Card className='mx-auto max-w-full'>
+							<CardContent className='p-3'>
+								<CardTitle className='mb-2 text-center text-sm'>
 									Данные актуальные до {globalSettings.date}
 								</CardTitle>
 								<Table>
@@ -364,7 +373,7 @@ export default function GrcPage({
 							</CardContent>
 						</Card>
 					) : (
-						<Card>
+						<Card className='mx-auto max-w-[600px]'>
 							<CardContent className='p-6'>
 								<div className='flex flex-col items-center gap-4'>
 									<CardTitle className='text-center'>
@@ -382,76 +391,90 @@ export default function GrcPage({
 					)}
 
 					<p className='flex items-center justify-center'>Для каждого курьера</p>
-					<div className='grid gap-6'>
-						{courierNames.map((courierName, index) => (
-							<Card key={index}>
-								<CardContent className='p-4'>
-									<div className='mb-4 text-lg font-medium'>{courierName}</div>
-									<div className='space-y-4'>
+					{/* Restructured courier cards grid */}
+					<div className='w-full overflow-x-auto'>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead className='w-[200px]'>ФИО Курьера</TableHead>
+									<TableHead>КМ за день</TableHead>
+									<TableHead>Удержания</TableHead>
+									<TableHead>Доставка персонала</TableHead>
+									<TableHead>Доставлено за 30 мин</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{courierNames.map((courierName, index) => (
+									<TableRow key={index}>
+										<TableCell className='font-medium'>{courierName}</TableCell>
 										{courierData[courierName]?.map((entry, entryIndex) => (
-											<div key={entryIndex} className='flex flex-col gap-4'>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>КМ за день</Label>
-													<Input
-														className='min-w-[140px] flex-1'
-														placeholder='Введите данные'
-														value={entry.kmPerDay}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'kmPerDay'
-														)}
-													/>
-													<Waypoints color='green' size={20} />
-												</div>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>Удержания</Label>
-													<Input
-														className='min-w-[140px] flex-1'
-														placeholder='Введите данные'
-														value={entry.deductions}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'deductions'
-														)}
-													/>
-													<RussianRuble color='green' size={20} />
-												</div>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>Доставка персонала</Label>
-													<Input
-														className='min-w-[140px] flex-1'
-														placeholder='Введите данные'
-														value={entry.personnelDelivery}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'personnelDelivery'
-														)}
-													/>
-													<RussianRuble color='green' size={20} />
-												</div>
-												<div className='flex items-center gap-4'>
-													<Label className='min-w-[90px]'>Доставленно за 30 мин</Label>
-													<Input
-														className='min-w-[140px] flex-1 gap-4'
-														placeholder='Введите данные'
-														value={entry.minutsDel}
-														onChange={handleCourierChange(
-															courierName,
-															entryIndex,
-															'minutsDel'
-														)}
-													/>
-													<ClockAlert color='green' size={20} />
-												</div>
-											</div>
+											<React.Fragment key={entryIndex}>
+												<TableCell>
+													<div className='flex items-center gap-2'>
+														<Input
+															className='w-[135px]'
+															placeholder='Введите данные'
+															value={entry.kmPerDay}
+															onChange={handleCourierChange(
+																courierName,
+																entryIndex,
+																'kmPerDay'
+															)}
+														/>
+														<Waypoints color='green' size={16} />
+													</div>
+												</TableCell>
+												<TableCell>
+													<div className='flex items-center gap-2'>
+														<Input
+															className='w-[135px]'
+															placeholder='Введите данные'
+															value={entry.deductions}
+															onChange={handleCourierChange(
+																courierName,
+																entryIndex,
+																'deductions'
+															)}
+														/>
+														<RussianRuble color='green' size={16} />
+													</div>
+												</TableCell>
+												<TableCell>
+													<div className='flex items-center gap-2'>
+														<Input
+															className='w-[135px]'
+															placeholder='Введите данные'
+															value={entry.personnelDelivery}
+															onChange={handleCourierChange(
+																courierName,
+																entryIndex,
+																'personnelDelivery'
+															)}
+														/>
+														<RussianRuble color='green' size={16} />
+													</div>
+												</TableCell>
+												<TableCell>
+													<div className='flex items-center gap-2'>
+														<Input
+															className='w-[135px]'
+															placeholder='Введите данные'
+															value={entry.minutsDel}
+															onChange={handleCourierChange(
+																courierName,
+																entryIndex,
+																'minutsDel'
+															)}
+														/>
+														<ClockAlert color='green' size={16} />
+													</div>
+												</TableCell>
+											</React.Fragment>
 										))}
-									</div>
-								</CardContent>
-							</Card>
-						))}
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
 					</div>
 				</div>
 

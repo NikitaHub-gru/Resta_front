@@ -33,6 +33,14 @@ import { Button } from '@/components/ui/button'
 import Calculleit from '@/components/ui/calculleit'
 import { Calendar } from '@/components/ui/calendar'
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger
+} from '@/components/ui/dialog'
+import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
@@ -756,26 +764,18 @@ export default function DeliveryOrders({
 										{isDataFetched &&
 											selectedReport?.id !== undefined &&
 											[17, 30, 31, 32, 33, 34, 35, 44].includes(selectedReport.id) && (
-												<Sheet>
-													<SheetTrigger asChild>
+												<Dialog>
+													<DialogTrigger asChild>
 														<Button>Рассчитать</Button>
-													</SheetTrigger>
-													<SheetContent className='h-full'>
-														<SheetHeader>
-															<SheetTitle>Ввод данных</SheetTitle>
-															<SheetDescription>
-																Введите информацию о курьерах
-															</SheetDescription>
-														</SheetHeader>
-														<div>
+													</DialogTrigger>
+													<DialogContent className='h-[90vh] max-w-[90vw] overflow-hidden'>
+														<div className='h-full'>
 															<GrcPage
 																data={filteredData}
 																report_id={id.toString()}
 																onCalculate={formData => {
 																	try {
 																		console.log('Received form data in ReportTable:', formData)
-
-																		// Если есть данные от сервера, обновляем таблицу
 																		if (formData.serverResponse) {
 																			setData(formData.serverResponse)
 																			processReceivedData(formData.serverResponse)
@@ -786,8 +786,8 @@ export default function DeliveryOrders({
 																}}
 															/>
 														</div>
-													</SheetContent>
-												</Sheet>
+													</DialogContent>
+												</Dialog>
 											)}
 									</div>
 								</div>
