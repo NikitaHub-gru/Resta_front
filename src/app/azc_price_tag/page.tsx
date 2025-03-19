@@ -1,5 +1,6 @@
 'use client'
 
+import AzsPage from '@/components/azs/AzsPage'
 import Orderstable from '@/components/main/Orderstable'
 import { SidebarDemo } from '@/components/main/mailbar'
 import { Dashboard } from '@/components/main/rightbar'
@@ -10,7 +11,7 @@ export default function ReportsPage() {
 		<div className='h-screen w-screen bg-neutral-950'>
 			<SidebarDemo>
 				<Dashboard>
-					<></>
+					<AzsPage></AzsPage>
 				</Dashboard>
 			</SidebarDemo>
 		</div>
