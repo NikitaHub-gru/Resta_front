@@ -602,13 +602,20 @@ export default function DeliveryOrders({
 	}, [id])
 
 	// Add function to extract unique companies from reports
-	const extractCompanies = (reports: Report[]) => {
-		const uniqueCompanies = Array.from(
-			new Set(reports.map(report => report.corporation))
-		)
-		setCompanies(uniqueCompanies)
-	}
-
+	const monthNames = [
+		'Январь',
+		'Февраль',
+		'Март',
+		'Апрель',
+		'Май',
+		'Июнь',
+		'Июль',
+		'Август',
+		'Сентябрь',
+		'Октябрь',
+		'Ноябрь',
+		'Декабрь'
+	]
 	const fetchReportById = async (reportId: number): Promise<Report | null> => {
 		try {
 			const { data, error } = await supabase
@@ -632,26 +639,6 @@ export default function DeliveryOrders({
 	}
 
 	// Add company selection handler
-	const handleCompanySelect = (company: string) => {
-		setSelectedCompany(company === ALL_COMPANIES ? '' : company)
-		setSelectedReport(null) // Reset selected report when company changes
-	}
-
-	// Обработчик выбора отчета
-	const handleReportSelect = (report: Report) => {
-		setSelectedReport(report)
-		// Clear all active filters when selecting a new report
-		setActiveFilters({})
-		setFilterSearchTerms({})
-		setSearchTerm('')
-	}
-
-	const getReportDetailsById = (reportId: number) => {
-		const report = reports.find(r => r.id === reportId)
-		return report
-			? { name: report.tb_name, description: report.descript }
-			: { name: '', description: '' }
-	}
 
 	// После других useEffect
 	useEffect(() => {
@@ -684,47 +671,188 @@ export default function DeliveryOrders({
 						<div className='mb-6'>
 							<div className='rounded-md border p-4'>
 								<div className='flex items-center gap-4'>
-									<Popover>
-										<PopoverTrigger asChild>
-											<Button
-												variant='outline'
-												className='min-w-[155px] max-w-[300px] items-center justify-start bg-white text-left font-normal dark:bg-neutral-900'
+									{selectedReport?.id !== undefined &&
+									[28].includes(selectedReport.id) ? (
+										// Month selection calendar for specific reports
+										<Popover>
+											<PopoverTrigger asChild>
+												<Button
+													variant='outline'
+													className='min-w-[155px] max-w-[300px] items-center justify-start bg-white text-left font-normal dark:bg-neutral-900'
+												>
+													<CalendarIcon className='mr-2 h-4 w-4' />
+													{startDate
+														? `${monthNames[startDate.getMonth()]} ${format(startDate, 'yyyy', { locale: ru })}`
+														: 'Выберите месяц'}
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent
+												className='z-50 w-auto p-0'
+												align='start'
+												sideOffset={5}
+												side='bottom'
 											>
-												<CalendarIcon className='mr-2 h-4 w-4' />
-												{startDate && endDate
-													? format(startDate, 'd MMMM yyyy', { locale: ru }) +
-														' - ' +
-														format(endDate, 'd MMMM yyyy', { locale: ru })
-													: 'Выберите период'}
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent
-											className='z-50 w-auto p-0'
-											align='start'
-											sideOffset={5}
-											side='bottom'
-										>
-											<div
-												className='rounded-md border bg-white p-3 shadow-md dark:bg-neutral-900'
-												style={{ minWidth: '600px' }}
+												<div
+													className='rounded-md border bg-white p-3 shadow-md dark:bg-neutral-900'
+													style={{ minWidth: '300px' }}
+												>
+													<div className='mb-4 flex items-center justify-between'>
+														<button
+															onClick={() => {
+																const date = startDate || new Date()
+																const prevYear = new Date(date)
+																prevYear.setFullYear(date.getFullYear() - 1)
+																const firstDayOfMonth = startOfMonth(prevYear)
+																const lastDayOfMonth = endOfMonth(prevYear)
+																setStartDate(firstDayOfMonth)
+																setEndDate(lastDayOfMonth)
+															}}
+															className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-neutral-800'
+														>
+															&lt;&lt;
+														</button>
+														<button
+															onClick={() => {
+																const date = startDate || new Date()
+																const prevMonth = new Date(date)
+																prevMonth.setMonth(date.getMonth() - 1)
+																const firstDayOfMonth = startOfMonth(prevMonth)
+																const lastDayOfMonth = endOfMonth(prevMonth)
+																setStartDate(firstDayOfMonth)
+																setEndDate(lastDayOfMonth)
+															}}
+															className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-neutral-800'
+														>
+															&lt;
+														</button>
+														<div className='text-center font-medium'>
+															{startDate
+																? format(startDate, 'yyyy', { locale: ru })
+																: format(new Date(), 'yyyy', { locale: ru })}
+														</div>
+														<button
+															onClick={() => {
+																const date = startDate || new Date()
+																const nextMonth = new Date(date)
+																nextMonth.setMonth(date.getMonth() + 1)
+																const firstDayOfMonth = startOfMonth(nextMonth)
+																const lastDayOfMonth = endOfMonth(nextMonth)
+																setStartDate(firstDayOfMonth)
+																setEndDate(lastDayOfMonth)
+															}}
+															className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-neutral-800'
+														>
+															&gt;
+														</button>
+														<button
+															onClick={() => {
+																const date = startDate || new Date()
+																const nextYear = new Date(date)
+																nextYear.setFullYear(date.getFullYear() + 1)
+																const firstDayOfMonth = startOfMonth(nextYear)
+																const lastDayOfMonth = endOfMonth(nextYear)
+																setStartDate(firstDayOfMonth)
+																setEndDate(lastDayOfMonth)
+															}}
+															className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-neutral-800'
+														>
+															&gt;&gt;
+														</button>
+													</div>
+													<div className='grid grid-cols-3 gap-2'>
+														{Array.from({ length: 12 }).map((_, i) => {
+															const date = startDate || new Date()
+															const monthDate = new Date(date.getFullYear(), i, 1)
+															const isCurrentMonth =
+																date.getMonth() === i &&
+																(startDate
+																	? startDate.getFullYear() === date.getFullYear()
+																	: true)
+															const monthNames = [
+																'Январь',
+																'Февраль',
+																'Март',
+																'Апрель',
+																'Май',
+																'Июнь',
+																'Июль',
+																'Август',
+																'Сентябрь',
+																'Октябрь',
+																'Ноябрь',
+																'Декабрь'
+															]
+															return (
+																<button
+																	key={`month-${i}`}
+																	className={`rounded-md p-2 text-center hover:bg-gray-100 dark:hover:bg-neutral-800 ${
+																		isCurrentMonth
+																			? 'bg-black text-white hover:bg-black dark:bg-white dark:text-black dark:hover:bg-white'
+																			: ''
+																	}`}
+																	onClick={() => {
+																		const year = startDate
+																			? startDate.getFullYear()
+																			: new Date().getFullYear()
+																		const selectedDate = new Date(year, i, 1)
+																		const firstDayOfMonth = startOfMonth(selectedDate)
+																		const lastDayOfMonth = endOfMonth(selectedDate)
+																		setStartDate(firstDayOfMonth)
+																		setEndDate(lastDayOfMonth)
+																	}}
+																>
+																	{monthNames[i]}
+																</button>
+															)
+														})}
+													</div>
+												</div>
+											</PopoverContent>
+										</Popover>
+									) : (
+										// Original date range calendar for other reports
+										<Popover>
+											<PopoverTrigger asChild>
+												<Button
+													variant='outline'
+													className='min-w-[155px] max-w-[300px] items-center justify-start bg-white text-left font-normal dark:bg-neutral-900'
+												>
+													<CalendarIcon className='mr-2 h-4 w-4' />
+													{startDate && endDate
+														? format(startDate, 'd MMMM yyyy', { locale: ru }) +
+															' - ' +
+															format(endDate, 'd MMMM yyyy', { locale: ru })
+														: 'Выберите период'}
+												</Button>
+											</PopoverTrigger>
+											<PopoverContent
+												className='z-50 w-auto p-0'
+												align='start'
+												sideOffset={5}
+												side='bottom'
 											>
-												<Calendar
-													mode='range'
-													selected={{
-														from: startDate,
-														to: endDate
-													}}
-													onSelect={range => {
-														setStartDate(range?.from)
-														setEndDate(range?.to)
-													}}
-													numberOfMonths={2}
-													locale={ru}
-													className='w-full bg-white dark:bg-neutral-900'
-												/>
-											</div>
-										</PopoverContent>
-									</Popover>
+												<div
+													className='rounded-md border bg-white p-3 shadow-md dark:bg-neutral-900'
+													style={{ minWidth: '600px' }}
+												>
+													<Calendar
+														mode='range'
+														selected={{
+															from: startDate,
+															to: endDate
+														}}
+														onSelect={range => {
+															setStartDate(range?.from)
+															setEndDate(range?.to)
+														}}
+														numberOfMonths={2}
+														locale={ru}
+														className='w-full bg-white dark:bg-neutral-900'
+													/>
+												</div>
+											</PopoverContent>
+										</Popover>
+									)}
 
 									<div className='flex gap-2'>
 										<Button
