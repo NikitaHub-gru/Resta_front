@@ -36,6 +36,7 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import {
 	Popover,
 	PopoverContent,
@@ -49,6 +50,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 
 const COLUMN_ORDER = [
 	'Торговое предприятие',
@@ -93,6 +95,8 @@ interface ReportData {
 			[key: string]: any
 		}>
 	}
+	last_changes: string | null
+	last_change_date: string | null
 }
 
 function MonthPicker({
@@ -142,6 +146,44 @@ function MonthPicker({
 	)
 }
 
+interface EditableCellProps {
+	value: any
+	onChange: (value: any) => void
+	type?: 'text' | 'number'
+	isEditing: boolean
+	onDoubleClick: () => void
+	onBlur: () => void
+}
+
+const EditableCell: React.FC<EditableCellProps> = ({
+	value,
+	onChange,
+	type = 'text',
+	isEditing,
+	onDoubleClick,
+	onBlur
+}) => {
+	if (isEditing) {
+		return (
+			<Input
+				type={type}
+				value={value}
+				onChange={e =>
+					onChange(type === 'number' ? Number(e.target.value) : e.target.value)
+				}
+				onBlur={onBlur}
+				autoFocus
+				className='h-8 w-full'
+			/>
+		)
+	}
+	return (
+		<div onDoubleClick={onDoubleClick} className='cursor-pointer'>
+			{value === null || value === undefined ? '—' : value}
+		</div>
+	)
+}
+
 export default function ReportsSettingsPage() {
 	const [rawData, setRawData] = useState<ReportData[]>([])
 	const [selectedReportId, setSelectedReportId] = useState<string>('all')
@@ -150,6 +192,11 @@ export default function ReportsSettingsPage() {
 	const [viewModalOpen, setViewModalOpen] = useState(false)
 	const [selectedReport, setSelectedReport] = useState<ReportData | null>(null)
 	const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(undefined)
+	const [editingCell, setEditingCell] = useState<{
+		rowIndex: number
+		columnName: string
+	} | null>(null)
+	const { toast } = useToast()
 
 	const getReportLocation = (reportId: number): string => {
 		const locationMap: { [key: number]: string } = {
@@ -280,6 +327,68 @@ export default function ReportsSettingsPage() {
 		}
 	}
 
+	const handleCellEdit = async (
+		rowIndex: number,
+		columnName: string,
+		newValue: any
+	) => {
+		if (!selectedReport) return
+
+		try {
+			// Create a deep copy of the selected report
+			const updatedReport = JSON.parse(JSON.stringify(selectedReport))
+
+			// Update the value in the copied data
+			updatedReport.data.data[rowIndex][columnName] = newValue
+
+			// Get current user's name
+			const {
+				data: { session },
+				error: sessionError
+			} = await supabase.auth.getSession()
+			if (sessionError) throw sessionError
+
+			const currentUserName =
+				session?.user?.user_metadata?.full_name ||
+				session?.user?.email ||
+				'Unknown User'
+			const currentDate = new Date().toISOString()
+
+			// Update the database with new data and last change info
+			const { error } = await supabase
+				.from('Users')
+				.update({
+					data: updatedReport.data,
+					last_changes: currentUserName,
+					last_change_date: currentDate
+				})
+				.eq('id', selectedReport.id)
+
+			if (error) throw error
+
+			// Update local state with new data and last change info
+			updatedReport.last_changes = currentUserName
+			updatedReport.last_change_date = currentDate
+
+			setSelectedReport(updatedReport)
+			setRawData(prev =>
+				prev.map(item => (item.id === selectedReport.id ? updatedReport : item))
+			)
+
+			toast({
+				title: 'Успешно обновлено',
+				description: 'Изменения сохранены в базе данных'
+			})
+		} catch (error) {
+			console.error('Error updating cell:', error)
+			toast({
+				title: 'Ошибка обновления',
+				description: 'Не удалось сохранить изменения',
+				variant: 'destructive'
+			})
+		}
+	}
+
 	return (
 		<div className='h-screen w-screen bg-white dark:bg-neutral-900'>
 			<SidebarDemo>
@@ -348,6 +457,8 @@ export default function ReportsSettingsPage() {
 													<th className='p-4 text-left'>Дата окончания</th>
 													<th className='p-4 text-left'>Дата создания</th>
 													<th className='p-4 text-left'>Пользователь</th>
+													<th className='p-4 text-left'>Последние изменения</th>
+													<th className='p-4 text-left'>Дата изменения</th>
 													<th className='p-4 text-right'>Действия</th>
 												</tr>
 											</thead>
@@ -360,6 +471,12 @@ export default function ReportsSettingsPage() {
 														<td className='p-4'>{formatDate(item.created_at)}</td>
 														<td className='items-center justify-center p-4'>
 															{item.full_name || 'Нет имени'}
+														</td>
+														<td className='p-4'>
+															{item.last_changes || 'Изменений не было'}
+														</td>
+														<td className='p-4'>
+															{item.last_change_date ? formatDate(item.last_change_date) : '—'}
 														</td>
 														<td className='p-4 text-right'>
 															<Button
@@ -477,15 +594,32 @@ export default function ReportsSettingsPage() {
 												>
 													{COLUMN_ORDER.map(columnName => {
 														let value = row[columnName]
+														const isEditing =
+															editingCell?.rowIndex === index &&
+															editingCell?.columnName === columnName
+														const type = typeof value === 'number' ? 'number' : 'text'
+
 														if (columnName === 'Дата' && value) {
 															value = formatDate(value)
 														}
-														if (typeof value === 'number') {
+														if (typeof value === 'number' && !isEditing) {
 															value = value.toFixed(2)
 														}
+
 														return (
 															<td key={columnName} className='whitespace-nowrap p-4 text-sm'>
-																{value === null || value === undefined ? '—' : value}
+																<EditableCell
+																	value={value}
+																	onChange={newValue =>
+																		handleCellEdit(index, columnName, newValue)
+																	}
+																	type={type}
+																	isEditing={isEditing}
+																	onDoubleClick={() =>
+																		setEditingCell({ rowIndex: index, columnName })
+																	}
+																	onBlur={() => setEditingCell(null)}
+																/>
 															</td>
 														)
 													})}
