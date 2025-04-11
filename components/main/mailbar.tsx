@@ -392,7 +392,8 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 									</CollapsibleContent>
 								</Collapsible>
 							)}
-							{((userData.role === 'Admin' && userData.corporation === 'AZS') ||
+							{(userData.role === 'Admin' ||
+								userData.corporation === 'AZS' ||
 								userData.corporation === 'RestaLabs') && (
 								<Collapsible>
 									<CollapsibleTrigger className='flex w-full items-center justify-between rounded-lg px-3 py-2 text-neutral-700 transition-all duration-150 hover:bg-neutral-200 dark:text-neutral-200 dark:hover:bg-neutral-700'>
