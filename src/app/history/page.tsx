@@ -50,6 +50,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select'
+import { getAuthUser } from '@/hooks/getauthuser'
 import { useToast } from '@/hooks/use-toast'
 
 const COLUMN_ORDER = [
@@ -196,7 +197,16 @@ export default function ReportsSettingsPage() {
 		rowIndex: number
 		columnName: string
 	} | null>(null)
+	const [userRole, setUserRole] = useState<string>('')
 	const { toast } = useToast()
+
+	useEffect(() => {
+		const checkUserRole = async () => {
+			const user = await getAuthUser()
+			setUserRole(user.role)
+		}
+		checkUserRole()
+	}, [])
 
 	const getReportLocation = (reportId: number): string => {
 		const locationMap: { [key: number]: string } = {
@@ -269,6 +279,15 @@ export default function ReportsSettingsPage() {
 	)
 
 	const handleDelete = async (id: number) => {
+		if (userRole === 'User') {
+			toast({
+				title: 'Ошибка доступа',
+				description: 'У вас нет прав для удаления отчетов',
+				variant: 'destructive'
+			})
+			return
+		}
+
 		try {
 			const { error } = await supabase.from('Users').delete().eq('id', id)
 
@@ -333,6 +352,15 @@ export default function ReportsSettingsPage() {
 		newValue: any
 	) => {
 		if (!selectedReport) return
+
+		if (userRole === 'User') {
+			toast({
+				title: 'Ошибка доступа',
+				description: 'У вас нет прав для редактирования отчетов',
+				variant: 'destructive'
+			})
+			return
+		}
 
 		try {
 			// Create a deep copy of the selected report
@@ -490,17 +518,19 @@ export default function ReportsSettingsPage() {
 															>
 																<Eye className='h-4 w-4' />
 															</Button>
-															<Button
-																variant='ghost'
-																size='icon'
-																className='text-red-500'
-																onClick={() => {
-																	setReportToDelete(item.id)
-																	setDeleteDialogOpen(true)
-																}}
-															>
-																<Trash2 className='h-4 w-4' />
-															</Button>
+															{userRole !== 'User' && (
+																<Button
+																	variant='ghost'
+																	size='icon'
+																	className='text-red-500'
+																	onClick={() => {
+																		setReportToDelete(item.id)
+																		setDeleteDialogOpen(true)
+																	}}
+																>
+																	<Trash2 className='h-4 w-4' />
+																</Button>
+															)}
 														</td>
 													</tr>
 												))}
@@ -614,8 +644,9 @@ export default function ReportsSettingsPage() {
 																		handleCellEdit(index, columnName, newValue)
 																	}
 																	type={type}
-																	isEditing={isEditing}
+																	isEditing={isEditing && userRole !== 'User'}
 																	onDoubleClick={() =>
+																		userRole !== 'User' &&
 																		setEditingCell({ rowIndex: index, columnName })
 																	}
 																	onBlur={() => setEditingCell(null)}
